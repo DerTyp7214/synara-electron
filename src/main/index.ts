@@ -25,7 +25,15 @@ function createWindow(): void {
     autoHideMenuBar: true,
     titleBarStyle: "hidden",
     ...(platform.isLinux ? { icon, transparent: true } : {}),
-    ...(platform.isMacOS ? { vibrancy: "fullscreen-ui" } : {}),
+    ...(platform.isMacOS
+      ? {
+          vibrancy: "fullscreen-ui",
+          trafficLightPosition: {
+            x: 20,
+            y: 20,
+          },
+        }
+      : {}),
     ...(platform.isWindows ? { backgroundMaterial: "mica" } : {}),
     webPreferences: {
       preload: join(__dirname, "../preload/index.js"),
