@@ -76,7 +76,7 @@ function buildUrl(
   path: string,
   query: Record<string, PropertyKey | undefined>,
 ): URL {
-  const url = new URL(path, get(apiBaseStore) ?? "http://localhost:8080/");
+  const url = new URL(path, getApiUrl());
 
   for (const [key, value] of Object.entries(query)) {
     if (value) url.searchParams.append(key, value.toString());
@@ -135,4 +135,8 @@ export async function apiCall<T>(options: {
       );
     }
   }
+}
+
+export function getApiUrl() {
+  return get(apiBaseStore) ?? "http://localhost:8080/";
 }

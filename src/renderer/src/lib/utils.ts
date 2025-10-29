@@ -1,10 +1,9 @@
-import { get } from "svelte/store";
-import { apiBaseStore } from "$lib/api/utils";
+import { getApiUrl } from "$lib/api/utils";
 
 export function getImageUrl<K extends string | undefined>(imageId: K): K {
   if (!imageId) return undefined as K;
 
-  const apiBase = get(apiBaseStore) ?? "http://localhost:8080/";
+  const apiBase = getApiUrl();
   if (!apiBase) return undefined as K;
 
   return new URL(`/image/byId/${imageId}`, apiBase).toString() as K;
@@ -16,7 +15,7 @@ export function getStreamUrl<K extends string | undefined>(
 ): K {
   if (!songId) return undefined as K;
 
-  const apiBase = get(apiBaseStore) ?? "http://localhost:8080/";
+  const apiBase = getApiUrl();
   if (!apiBase) return undefined as K;
 
   const url = new URL(`/stream/${songId}`, apiBase);
