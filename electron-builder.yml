@@ -1,5 +1,9 @@
 appId: dev.dertyp.synara
 productName: synara
+electronVersion: 37.2.5
+electronDownload:
+  version: 37.2.5+wvcus
+  mirror: https://github.com/castlabs/electron-releases/releases/download/v
 directories:
   buildResources: build
 files:
@@ -14,6 +18,7 @@ asarUnpack:
   - resources/**
 afterSign: build/notarize.js
 win:
+  artifactName: "synara"
   executableName: synara
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
@@ -37,9 +42,35 @@ linux:
     - deb
   maintainer: DerTyp7214
   category: Utility
+  executableName: synara-desktop
+  executableArgs:
+    [
+      "--ozone-platform-hint=auto",
+      "--enable-features=WaylandWindowDecorations",
+      "--enable-wayland-ime",
+      "--use-angle",
+    ]
+  desktop:
+    entry:
+      Encoding: "UTF-8"
+      Name: "Synara"
+      GenericName: "Synara"
+      Comment: "Synara Destktop application."
+      Icon: "synara"
+      StartupNotify: "true"
+      Terminal: "false"
+      Type: "Application"
+      Categories: "Network;Application;AudioVideo;Audio;Video"
+      StartupWMClass: "synara"
+      X-PulseAudio-Properties: "media.role=music"
+      MimeType: "x-scheme-handler/synara;"
 appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
 publish:
   provider: generic
   url: https://example.com/auto-updates
+protocols:
+  name: "synara"
+  role: "Viewer"
+  schemes: ["synara"]

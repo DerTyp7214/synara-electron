@@ -17,7 +17,6 @@ export const pinkNoise = [
   2.1029779444138, 2.0654643664757, 2.0357843961318,
 ];
 
-export const APP_ID = "dev.dertyp.synara";
 export const isElectron = () => {
   return window.electron;
 };

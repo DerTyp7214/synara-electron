@@ -15,9 +15,6 @@
       "src/shared/types",
       "node_modules/@types"
     ],
-    "composite": true,
-    "types": [
-      "electron-vite/node"
-    ]
+    "composite": true
   }
 }

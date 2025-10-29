@@ -3,7 +3,7 @@ import { MediaInfo } from "../shared/models/mediaInfo";
 import { PlaybackStatus } from "../shared/models/playbackStatus";
 import { RepeatMode } from "../shared/models/repeatMode";
 import { ObjectToDotNotation } from "../preload/utils";
-import { APP_ID } from "../renderer/src/lib/consts";
+import { APP_ID } from "../shared/consts";
 
 let player: Player;
 
