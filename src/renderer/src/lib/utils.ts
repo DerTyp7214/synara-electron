@@ -122,3 +122,5 @@ export function idToUuid(strippedId: string): string {
     strippedId.slice(20, 32),
   ].join("-");
 }
+
+export const { isMac, isLinux, isWindows } = window.api;

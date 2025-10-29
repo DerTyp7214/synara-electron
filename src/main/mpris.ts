@@ -4,11 +4,12 @@ import { PlaybackStatus } from "../shared/models/playbackStatus";
 import { RepeatMode } from "../shared/models/repeatMode";
 import { ObjectToDotNotation } from "../preload/utils";
 import { APP_ID } from "../shared/consts";
+import { platform } from "@electron-toolkit/utils";
 
 let player: Player;
 
 export function addMPRIS() {
-  if (process.platform === "linux") {
+  if (platform.isLinux) {
     try {
       player = new Player({
         name: "synara",

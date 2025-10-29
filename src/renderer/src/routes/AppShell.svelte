@@ -9,6 +9,7 @@
   import LikedSongsBg from "$lib/assets/LikedSongsBg.svelte";
   import { goto } from "$app/navigation";
   import { resolve } from "$app/paths";
+  import { isLinux, isMac } from "$lib/utils";
 
   const { children } = $props();
 
@@ -30,39 +31,57 @@
   >
     <aside
       class={cn(
-        "bg-surface-50-950/40 flex-col",
-        "flex-shrink-0 overflow-y-auto",
+        "flex-col",
+        "flex-shrink-0 overflow-hidden",
         "max-w-3xs lg:max-w-xs",
-        "rounded-container shadow-md",
-        "transition-colors",
         "!hidden md:!flex",
       )}
     >
-      <Logo
-        small
-        class="ms-4 me-4 mt-4 mb-2"
-        onclick={() => goto(resolve("/"))}
-      />
-
-      <span class="text-surface-700-300 text-md ms-4 me-4 mt-2 font-bold"
-        >{$t("likedSongs.title")}</span
+      {#if !isLinux()}
+        <div
+          class={cn(
+            "bg-surface-50-950/40",
+            "rounded-container shadow-md",
+            "mb-2 min-h-8 w-full",
+            "draggable",
+          )}
+        ></div>
+      {/if}
+      <div
+        class={cn(
+          "bg-surface-50-950/40 flex-col",
+          "flex-shrink-0 overflow-y-auto",
+          "flex h-full w-full",
+          "rounded-container shadow-md",
+          "transition-colors",
+        )}
       >
+        <Logo
+          small
+          class="ms-4 me-4 mt-4 mb-2"
+          onclick={() => goto(resolve("/"))}
+        />
 
-      <button
-        class="bg-secondary-950-50/20 rounded-container ms-4 me-4 mt-2 mb-4 p-2"
-        onclick={() => goto(resolve("/likedSongs"))}
-      >
-        <LikedSongsBg />
-      </button>
+        <span class="text-surface-700-300 text-md ms-4 me-4 mt-2 font-bold"
+          >{$t("likedSongs.title")}</span
+        >
 
-      <div class="bg-surface-600-400 ms-4 me-4 h-1 rounded-full"></div>
+        <button
+          class="bg-secondary-950-50/20 rounded-container ms-4 me-4 mt-2 mb-4 p-2"
+          onclick={() => goto(resolve("/likedSongs"))}
+        >
+          <LikedSongsBg />
+        </button>
 
-      <span class="text-surface-700-300 text-md ms-4 me-4 mt-4 font-bold"
-        >{$t("playlists.title")}</span
-      >
+        <div class="bg-surface-600-400 ms-4 me-4 h-1 rounded-full"></div>
 
-      <div class="flex h-full w-full flex-col gap-2 overflow-auto p-4">
-        <PlaylistList />
+        <span class="text-surface-700-300 text-md ms-4 me-4 mt-4 font-bold"
+          >{$t("playlists.title")}</span
+        >
+
+        <div class="flex h-full w-full flex-col gap-2 overflow-auto p-4">
+          <PlaylistList />
+        </div>
       </div>
     </aside>
 
@@ -73,11 +92,10 @@
           "flex-shrink-0 overflow-y-auto p-8",
           "rounded-container shadow-md",
           "transition-colors",
-          "draggable",
         )}
       >
         Top Bar
-        <LightSwitch class="interactive" />
+        <LightSwitch />
       </div>
 
       <main

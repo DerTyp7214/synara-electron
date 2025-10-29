@@ -70,7 +70,6 @@ export class AudioSession {
   }
 
   async play() {
-    debugLog("info", "CAN PLAY FLAC", this.audio.canPlayType("audio/flac"));
     await this.audio.play();
   }
 

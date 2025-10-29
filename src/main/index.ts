@@ -1,6 +1,6 @@
 import { app, shell, BrowserWindow, ipcMain, components } from "electron";
 import { join } from "path";
-import { electronApp, optimizer, is } from "@electron-toolkit/utils";
+import { electronApp, optimizer, is, platform } from "@electron-toolkit/utils";
 // @ts-expect-error works though
 import icon from "../../resources/icon.png?asset";
 import serve from "electron-serve";
@@ -24,9 +24,9 @@ function createWindow(): void {
     frame: false,
     autoHideMenuBar: true,
     titleBarStyle: "hidden",
-    ...(process.platform === "linux" ? { icon, transparent: true } : {}),
-    ...(process.platform === "darwin" ? { vibrancy: "fullscreen-ui" } : {}),
-    ...(process.platform === "win32" ? { backgroundMaterial: "mica" } : {}),
+    ...(platform.isLinux ? { icon, transparent: true } : {}),
+    ...(platform.isMacOS ? { vibrancy: "fullscreen-ui" } : {}),
+    ...(platform.isWindows ? { backgroundMaterial: "mica" } : {}),
     webPreferences: {
       preload: join(__dirname, "../preload/index.js"),
       sandbox: false,
