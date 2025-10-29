@@ -1,0 +1,108 @@
+diff --git a/dist/index.js b/dist/index.js
+index f76e7ee6ee43b8fd8ee81405e0e01000608f5f33..0cbdbff899088d94dfcb097be579f1c7343633c1 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -6,7 +6,7 @@ const util = require('util');
+ 
+ const dbus = require('dbus-next');
+ 
+-dbus.setBigIntCompat(true);
++dbus.setBigIntCompat(false);
+ 
+ const PlayerInterface = require('./interfaces/player');
+ 
+diff --git a/dist/interfaces/player.js b/dist/interfaces/player.js
+index a8e32c8247b76983b3e151e22bd5c5592037a6ff..61327221ac0726c9692539593d29916ebeb604c5 100644
+--- a/dist/interfaces/player.js
++++ b/dist/interfaces/player.js
+@@ -36,8 +36,6 @@ const MprisInterface = require('./mpris-interface');
+ 
+ const Variant = dbus.Variant;
+ 
+-const JSBI = require('jsbi');
+-
+ const constants = require('../constants');
+ 
+ let {
+@@ -421,7 +419,7 @@ let PlayerInterface = _decorate(null, function (_initialize, _MprisInterface) {
+       key: "Seek",
+       value: function Seek(offset) {
+         // XXX overflow
+-        offset = JSBI.toNumber(offset);
++        offset = Number(offset);
+         this.player.emit('seek', offset);
+       }
+     }, {
+@@ -434,7 +432,7 @@ let PlayerInterface = _decorate(null, function (_initialize, _MprisInterface) {
+         let e = {
+           trackId: trackId,
+           // XXX overflow
+-          position: JSBI.toNumber(position)
++          position: Number(position)
+         };
+         this.player.emit('position', e);
+       }
+diff --git a/package.json b/package.json
+index 97d48a089ef23d9b942a3181a85c5c0ac94146bd..1f348bd710a7c10aacd90662700a7a4e50376ed4 100644
+--- a/package.json
++++ b/package.json
+@@ -27,7 +27,7 @@
+   },
+   "homepage": "https://github.com/dbusjs/mpris-service",
+   "dependencies": {
+-    "dbus-next": "^0.9.2",
++    "dbus-next": "^0.10.2",
+     "deep-equal": "^1.0.1",
+     "source-map-support": "^0.5.11"
+   },
+@@ -43,7 +43,6 @@
+     "gulp-cli": "^2.1.0",
+     "gulp-sourcemaps": "^2.6.4",
+     "jest": "^24.1.0",
+-    "jsbi": "^2.0.5",
+     "jsdoc": "^3.6.6",
+     "regenerator-runtime": "^0.13.1"
+   },
+diff --git a/src/index.js b/src/index.js
+index 96333bc40dd51e057134dc98766ec984abaf2e79..f2404aeb31e24f12bccde236f12fd9136c94d582 100644
+--- a/src/index.js
++++ b/src/index.js
+@@ -4,7 +4,7 @@ const events = require('events');
+ const util = require('util');
+ 
+ const dbus = require('dbus-next');
+-dbus.setBigIntCompat(true);
++dbus.setBigIntCompat(false);
+ const PlayerInterface = require('./interfaces/player');
+ const RootInterface = require('./interfaces/root');
+ const PlaylistsInterface = require('./interfaces/playlists');
+diff --git a/src/interfaces/player.js b/src/interfaces/player.js
+index 1c3f5e538cb11b68f1dfadb0011acea8cb77ecf1..bf96539a34856fce6b06838c809ea20177c41b9f 100644
+--- a/src/interfaces/player.js
++++ b/src/interfaces/player.js
+@@ -1,7 +1,6 @@
+ const dbus = require('dbus-next');
+ const MprisInterface = require('./mpris-interface');
+ const Variant = dbus.Variant;
+-const JSBI = require('jsbi');
+ const constants = require('../constants');
+ 
+ let {
+@@ -173,7 +172,7 @@ class PlayerInterface extends MprisInterface {
+   @method({inSignature: 'x'})
+   Seek(offset) {
+     // XXX overflow
+-    offset = JSBI.toNumber(offset);
++    offset = Number(offset);
+     this.player.emit('seek', offset);
+   }
+ 
+@@ -182,7 +181,7 @@ class PlayerInterface extends MprisInterface {
+     let e = {
+       trackId: trackId,
+       // XXX overflow
+-      position: JSBI.toNumber(position)
++      position: Number(position)
+     };
+     this.player.emit('position', e);
+   }

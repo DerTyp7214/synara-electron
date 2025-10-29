@@ -1,6 +1,0 @@
-[submodule "mpris-service"]
-	path = mpris-service
-	url = git@github.com:DerTyp7214/mpris-service.git
-[submodule "node-dbus-next"]
-	path = node-dbus-next
-	url = git@github.com:DerTyp7214/node-dbus-next.git
