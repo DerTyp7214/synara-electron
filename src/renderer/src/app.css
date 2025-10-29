@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+@import '@skeletonlabs/skeleton';
+@import '@skeletonlabs/skeleton-svelte';
+@import './main-theme.css';
+
+@import '@fontsource/major-mono-display/400.css';
+
+@plugin '@tailwindcss/forms';
+@plugin '@tailwindcss/typography';
+
+@custom-variant dark (&:where([data-mode=dark], [data-mode=dark] *));
+
+@source inline('{w,max-w}-{1..96}');
+
+@theme {
+    --font-major-mono-display: 'Major Mono Display', monospace;
+    --font-size-2xs: 0.625rem; /* 10px */
+    --line-height-2xs: 0.875rem; /* 14px */
+}
+
+@utility text-2xs {
+    font-size: var(--font-size-2xs);
+    line-height: var(--line-height-2xs);
+}
+
+html, body {
+    background: transparent;
+}
