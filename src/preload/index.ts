@@ -8,6 +8,15 @@ const api: CustomApi = {
   updateMpris(mediaInfo: MediaInfo) {
     void ipcRenderer.invoke("media-info-update", mediaInfo);
   },
+  isMac() {
+    return process.platform === "darwin";
+  },
+  isLinux() {
+    return process.platform === "linux";
+  },
+  isWindows() {
+    return process.platform === "win32";
+  },
 };
 
 // Use `contextBridge` APIs to expose Electron APIs to

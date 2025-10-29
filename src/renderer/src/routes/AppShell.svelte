@@ -9,7 +9,7 @@
   import LikedSongsBg from "$lib/assets/LikedSongsBg.svelte";
   import { goto } from "$app/navigation";
   import { resolve } from "$app/paths";
-  import { isLinux, isMac } from "$lib/utils";
+  import { isLinux } from "$lib/utils";
 
   const { children } = $props();
 
@@ -42,7 +42,7 @@
           class={cn(
             "bg-surface-50-950/40",
             "rounded-container shadow-md",
-            "mb-2 min-h-8 w-full",
+            "mb-2 min-h-10 w-full",
             "draggable",
           )}
         ></div>
