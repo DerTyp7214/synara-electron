@@ -25,6 +25,8 @@ function createWindow(): void {
     transparent: true,
     frame: false,
     ...(process.platform === "linux" ? { icon } : {}),
+    ...(process.platform === "darwin" ? { vibrancy: "fullscreen-ui" } : {}),
+    ...(process.platform === "win32" ? { backgroundMaterial: "mica" } : {}),
     webPreferences: {
       preload: join(__dirname, "../preload/index.js"),
       sandbox: false,

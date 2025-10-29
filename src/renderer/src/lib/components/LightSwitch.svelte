@@ -14,6 +14,8 @@
     localStorage.setItem("mode", mode);
     checked = event.checked;
   };
+
+  const { class: clazz = "" } = $props();
 </script>
 
 <svelte:head>
@@ -23,7 +25,7 @@
   </script>
 </svelte:head>
 
-<Switch {checked} {onCheckedChange}>
+<Switch {checked} {onCheckedChange} class={clazz}>
   <Switch.Control class="data-[state=checked]:preset-filled-secondary-500">
     <Switch.Thumb />
   </Switch.Control>

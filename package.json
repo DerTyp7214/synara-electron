@@ -31,6 +31,7 @@
     "@electron-toolkit/eslint-config-ts": "^3.1.0",
     "@electron-toolkit/tsconfig": "^2.0.0",
     "@electron/notarize": "^3.1.0",
+    "@electron/rebuild": "^4.0.1",
     "@eslint/compat": "^1.4.0",
     "@eslint/js": "^9.38.0",
     "@fontsource/major-mono-display": "^5.2.8",
@@ -72,6 +73,7 @@
     "onlyBuiltDependencies": [
       "abstract-socket",
       "electron",
+      "electron-vibrancy",
       "esbuild",
       "usocket"
     ],

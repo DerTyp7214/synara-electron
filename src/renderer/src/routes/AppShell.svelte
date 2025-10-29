@@ -73,10 +73,11 @@
           "flex-shrink-0 overflow-y-auto p-8",
           "rounded-container shadow-md",
           "transition-colors",
+          "draggable",
         )}
       >
         Top Bar
-        <LightSwitch />
+        <LightSwitch class="interactive" />
       </div>
 
       <main

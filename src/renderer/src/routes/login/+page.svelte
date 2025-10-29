@@ -35,7 +35,7 @@
   <title>{$t("login.title")}</title>
 </svelte:head>
 
-<main class="flex h-full w-full items-center justify-center">
+<main class="draggable flex h-full w-full items-center justify-center">
   <div
     class="absolute top-2 left-2 opacity-0 transition-opacity hover:opacity-100"
   >
