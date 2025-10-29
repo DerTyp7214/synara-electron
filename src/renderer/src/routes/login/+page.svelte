@@ -37,7 +37,7 @@
 
 <main class="draggable flex h-full w-full items-center justify-center">
   <div
-    class="absolute top-2 left-2 opacity-0 transition-opacity hover:opacity-100"
+    class="interactive absolute top-2 left-2 opacity-0 transition-opacity hover:opacity-100"
   >
     <LightSwitch />
   </div>
@@ -46,7 +46,7 @@
     class={cn(
       "bg-surface-200-800/60",
       "m-auto transition-all",
-      "w-xs",
+      "interactive w-xs",
       "rounded-container",
       "px-5 py-10",
       "shadow-md",

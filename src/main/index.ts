@@ -21,10 +21,10 @@ function createWindow(): void {
     width: 900,
     height: 670,
     show: false,
-    autoHideMenuBar: true,
-    transparent: true,
     frame: false,
-    ...(process.platform === "linux" ? { icon } : {}),
+    autoHideMenuBar: true,
+    titleBarStyle: "hidden",
+    ...(process.platform === "linux" ? { icon, transparent: true } : {}),
     ...(process.platform === "darwin" ? { vibrancy: "fullscreen-ui" } : {}),
     ...(process.platform === "win32" ? { backgroundMaterial: "mica" } : {}),
     webPreferences: {
