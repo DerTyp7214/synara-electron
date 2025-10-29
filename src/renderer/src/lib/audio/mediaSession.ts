@@ -6,6 +6,7 @@ import { createCurve } from "$lib/audio/utils";
 import { electronController } from "$lib/audio/electronController";
 import { RepeatMode } from "$shared/models/repeatMode";
 import { PlaybackStatus } from "$shared/models/playbackStatus";
+import { tick } from "svelte";
 
 export class MediaSession {
   private readonly audioContext: AudioContext;
@@ -89,7 +90,8 @@ export class MediaSession {
 
     this.currentIndex.subscribe(async (index) => {
       const song = get(this.queue)[index];
-      const streamUrl = getStreamUrl(song.id);
+
+      const streamUrl = getStreamUrl(song?.id);
       if (!streamUrl) return;
 
       await this.playUrl(streamUrl, !get(this.paused));
@@ -282,6 +284,7 @@ export class MediaSession {
   async playSong(songId: Song["id"]) {
     const queue = get(this.queue);
     const index = queue.findIndex((song) => song.id === songId);
+    this.paused.set(false);
     this.currentIndex.set(index);
   }
 
@@ -346,7 +349,9 @@ export class MediaSession {
     this.shuffledQueue.set(data.shuffledQueue ?? []);
     this.repeatMode.set(data.repeatMode ?? RepeatMode.None);
     this.currentSong.set(data.currentSong);
-    this.currentIndex.set(data.currentIndex ?? 0);
+    this.currentIndex.set(
+      (data.queue ?? []).length > 0 ? (data.currentIndex ?? -1) : -1,
+    );
     this.volume.set(data.volume ?? 50);
   }
 }

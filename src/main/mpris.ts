@@ -3,6 +3,7 @@ import { MediaInfo } from "../shared/models/mediaInfo";
 import { PlaybackStatus } from "../shared/models/playbackStatus";
 import { RepeatMode } from "../shared/models/repeatMode";
 import { ObjectToDotNotation } from "../preload/utils";
+import { APP_ID } from "../renderer/src/lib/consts";
 
 let player: Player;
 
@@ -11,7 +12,7 @@ export function addMPRIS() {
     try {
       player = new Player({
         name: "synara",
-        identity: "dev.dertyp.synara",
+        identity: APP_ID,
         supportedUriSchemes: ["file"],
         supportedMimeTypes: ["audio/mpeg", "audio/flac", "application/ogg"],
         supportedInterfaces: ["player"],
