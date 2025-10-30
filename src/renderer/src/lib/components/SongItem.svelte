@@ -27,10 +27,13 @@
     size = 46,
     addedAt,
     originalUrl = "",
+    class: clazz = "",
     playingSource,
     playlistRef,
     songRef,
+    scrollIntoActive = false,
   }: Song & {
+    class?: string;
     hideAlbum?: boolean;
     showNumber?: number;
     addedAt?: number;
@@ -38,7 +41,10 @@
     playingSource: PlayingSource;
     playlistRef: Array<Song>;
     songRef: Song;
+    scrollIntoActive?: boolean;
   } = $props();
+
+  let songElement: HTMLDivElement;
 
   function getOrigin(): SongOrigin | null {
     if (originalUrl.includes("tidal.com")) return "tidal";
@@ -56,13 +62,27 @@
   const textClasses = ["line-clamp-1", "overflow-ellipsis", ...baseTextClasses];
 
   const currentSong = $derived(mediaSession.currentSong);
+
+  $effect(() => {
+    if (scrollIntoActive && $currentSong?.id === id) {
+      setTimeout(() => {
+        songElement?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }, 400);
+    }
+  });
 </script>
 
 <div
+  bind:this={songElement}
+  data-songId={id}
   class={cn(
     "rounded-container box-border",
     "flex flex-row gap-2 p-3 shadow-md",
     "transition-colors",
+    clazz,
     {
       "bg-surface-300-700/40": $currentSong?.id !== id,
       "bg-secondary-300-700/40": $currentSong?.id === id,
@@ -124,14 +144,15 @@
   </div>
   {#if !hideAlbum}
     {#if album}
-      <a
-        href="{resolve('/albums')}?albumId={album.id}"
-        class="mt-auto mb-auto flex-1"
-      >
-        <span class={cn(textClasses, "font-bold", "overflow-hidden break-all")}>
-          {album.name}
-        </span>
-      </a>
+      <div class="mt-auto mb-auto flex flex-1">
+        <a href="{resolve('/albums')}?albumId={album.id}">
+          <span
+            class={cn(textClasses, "font-bold", "overflow-hidden break-all")}
+          >
+            {album.name}
+          </span>
+        </a>
+      </div>
     {:else}
       <div class="flex-1"></div>
     {/if}

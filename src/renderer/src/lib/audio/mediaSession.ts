@@ -1,12 +1,13 @@
 import { audioSession } from "$lib/audio/audioSession";
 import { getContentLength, type Song, songById } from "$lib/api/songs";
 import { getStreamUrl, roundRect, toShuffledArray } from "$lib/utils";
-import { get, type Unsubscriber, writable } from "svelte/store";
+import { derived, get, type Unsubscriber, writable } from "svelte/store";
 import { createCurve } from "$lib/audio/utils";
 import { electronController } from "$lib/audio/electronController";
 import { RepeatMode } from "$shared/models/repeatMode";
 import { PlaybackStatus } from "$shared/models/playbackStatus";
 import type { UUID } from "node:crypto";
+import type { PagedResponse } from "$lib/api/apiTypes";
 
 export enum PlayingSourceType {
   Playlist = "playlist",
@@ -32,7 +33,7 @@ export class MediaSession {
   private shuffledQueue = writable<Array<Song>>([]);
 
   playingSourceType = writable<PlayingSourceType>(PlayingSourceType.LikedSongs);
-  playingSourceId = writable<UUID | undefined>();
+  playingSourceId = writable<UUID>("----");
 
   currentSong = writable<Song | null>(null);
   volume = writable<number>(50);
@@ -42,13 +43,17 @@ export class MediaSession {
   shuffled = writable<boolean>(false);
   repeatMode = writable<RepeatMode>(RepeatMode.None);
 
-  currentIndex = writable<number>(0);
+  currentIndex = writable<number>(-2);
   currentPosition = writable<number>(0);
   currentBuffer = writable<number>(0);
 
   private minDecibels = writable<number | undefined>(-90);
   private maxDecibels = writable<number | undefined>(-20);
   private smoothingTimeConstant = writable(0.75);
+
+  // noinspection TypeScriptFieldCanBeMadeReadonly
+  private initialLoad = true;
+  private continuePlay = false;
 
   private unsubscribers: Array<Unsubscriber> = [];
 
@@ -108,9 +113,16 @@ export class MediaSession {
     });
 
     this.shuffled.subscribe(async (shuffled) => {
-      if (!shuffled) return;
-
-      this.shuffleQueue();
+      if (this.initialLoad) return;
+      this.writeToStorage();
+      if (!shuffled) {
+        const currentSong = get(this.currentSong);
+        const index = get(this.queue).findIndex(
+          (s) => s.id === currentSong?.id,
+        );
+        this.continuePlay = true;
+        this.currentIndex.set(index);
+      } else this.shuffleQueue();
     });
 
     this.currentIndex.subscribe(async (index) => {
@@ -120,7 +132,9 @@ export class MediaSession {
       const streamUrl = getStreamUrl(song?.id);
       if (!streamUrl) return;
 
-      await this.playUrl(streamUrl, !get(this.paused));
+      if (!this.continuePlay || this.initialLoad)
+        await this.playUrl(streamUrl, !get(this.paused));
+      else this.continuePlay = false;
       const currentSong = await songById(song.id);
       this.currentSong.set(currentSong);
 
@@ -137,6 +151,8 @@ export class MediaSession {
         paused ? PlaybackStatus.Paused : PlaybackStatus.Playing,
       );
     });
+
+    this.initialLoad = false;
   }
 
   private currentQueue() {
@@ -159,6 +175,7 @@ export class MediaSession {
       currentSong,
       ...toShuffledArray(currentQueue.filter((s) => s.id !== currentSongId)),
     ]);
+    this.continuePlay = true;
     this.currentIndex.set(-1);
     this.currentIndex.set(0);
   }
@@ -413,6 +430,39 @@ export class MediaSession {
     return Array.from(this.currentQueue());
   }
 
+  getDerivedQueue() {
+    return derived(
+      [this.shuffled, this.shuffledQueue, this.queue],
+      ([shuffled, shuffledQueue, queue]) => {
+        return shuffled ? shuffledQueue : queue;
+      },
+    );
+  }
+
+  async loadSongsFromQueue(
+    page: number,
+    pageSize: number,
+  ): Promise<PagedResponse<Song>> {
+    if (page < 0) return { page, pageSize, data: [], hasNextPage: false };
+
+    const queue = this.currentQueue();
+
+    const startIndex = pageSize * page;
+
+    const data = Array.from(queue).slice(startIndex, startIndex + pageSize);
+
+    return {
+      page,
+      pageSize,
+      data,
+      hasNextPage: data.length === pageSize,
+    };
+  }
+
+  getPage(pageSize: number) {
+    return Math.max(0, Math.ceil(get(this.currentIndex) / pageSize) - 1);
+  }
+
   setQueue(queue: Array<Song>) {
     this.queue.set(queue);
     this.shuffleQueue();
@@ -425,7 +475,7 @@ export class MediaSession {
       shuffledQueue: get(this.shuffledQueue),
       repeatMode: get(this.repeatMode),
       currentSong: get(this.currentSong),
-      currentIndex: get(this.currentIndex),
+      currentIndex: get(this.currentIndex) === -2 ? 0 : get(this.currentIndex),
       volume: get(this.volume),
       shuffled: get(this.shuffled),
       playingSourceType: get(this.playingSourceType),
@@ -443,14 +493,15 @@ export class MediaSession {
     this.shuffledQueue.set(data.shuffledQueue ?? []);
     this.repeatMode.set(data.repeatMode ?? RepeatMode.None);
     this.currentSong.set(data.currentSong);
-    this.currentIndex.set(
-      (data.queue ?? []).length > 0 ? (data.currentIndex ?? -1) : -1,
-    );
+    this.continuePlay = false;
     this.volume.set(data.volume ?? 50);
     this.playingSourceType.set(
       data.playingSourceType ?? PlayingSourceType.LikedSongs,
     );
     this.playingSourceId.set(data.playingSourceId);
+    this.currentIndex.set(
+      (data.queue ?? []).length > 0 ? (data.currentIndex ?? -1) : -1,
+    );
   }
 }
 

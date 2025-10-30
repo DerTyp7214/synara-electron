@@ -1,7 +1,7 @@
 <script lang="ts">
   import { timecodeToMilliseconds } from "$lib/utils.js";
   import cn from "classnames";
-  import { onDestroy } from "svelte";
+  import { onMount } from "svelte";
 
   let lyricsView: HTMLDivElement;
 
@@ -9,7 +9,7 @@
     lyrics,
     class: clazz = "",
     timecode,
-    range = 8,
+    range = 4,
     minOpacity = 0.1,
   }: {
     lyrics: string;
@@ -30,9 +30,10 @@
     lyrics.split("\n").forEach((line) => {
       const match = regex.exec(line);
       if (match) {
-        list[timecodeToMilliseconds(match[1])] = line
-          .replace(match[0], "")
-          .trim();
+        const trimmedLine = line.replace(match[0], "").trim();
+        if (trimmedLine.length > 0)
+          list[timecodeToMilliseconds(match[1])] = trimmedLine;
+        else list[timecodeToMilliseconds(match[1])] = "???";
       }
     });
 
@@ -50,12 +51,8 @@
     return lyricsArray.findIndex(([timestamp]) => timestamp === activeLine);
   });
 
-  function getOpacity(timestamp: string): number {
+  function getFactor(timestamp: string): number {
     const currentLineIndex = lyricsArray.findIndex(([t]) => t === timestamp);
-
-    if (currentLineIndex === -1 || activeIndex === -1) {
-      return 0.55;
-    }
 
     const distance = Math.abs(currentLineIndex - activeIndex);
 
@@ -74,9 +71,14 @@
     const keys = Object.keys(lyricsList);
     const index = keys.findIndex((t) => Number(t) >= normalizedTimecode) - 1;
 
-    const line = keys[index];
+    let line = keys[index];
 
-    if (line) {
+    if (normalizedTimecode < Number(keys[0])) {
+      lyricsView.scrollTo({ behavior: "smooth", top: 0 });
+      line = keys[0];
+    }
+
+    if (line && activeLine !== line) {
       activeLine = line;
 
       if (!isUserScrolling) {
@@ -85,8 +87,6 @@
           block: "center",
         });
       }
-    } else if (normalizedTimecode < Number(keys[0])) {
-      lyricsView.scrollTo({ behavior: "smooth", top: 0 });
     }
   });
 
@@ -110,13 +110,17 @@
     }, 2000);
   }
 
-  onDestroy(() => {
-    if (scrollTimeout) clearTimeout(scrollTimeout);
+  onMount(() => {
+    handleScroll();
+
+    return () => {
+      if (scrollTimeout) clearTimeout(scrollTimeout);
+    };
   });
 </script>
 
 <div
-  class="flex flex-col items-center overflow-y-scroll {clazz} h-[400px] px-2"
+  class="flex flex-col items-center overflow-y-scroll {clazz} px-2"
   bind:this={lyricsView}
   onscroll={handleScroll}
 >
@@ -125,11 +129,13 @@
   {#each lyricsArray as [timestamp, line] (timestamp)}
     <span
       data-timestamp={timestamp.toString()}
-      class={cn("h2 my-0.5 text-center transition-all", {
-        "scale-100": timestamp.toString() === activeLine,
-        "scale-70": timestamp.toString() !== activeLine,
+      class={cn("h2 text-center transition-all", {
+        "text-secondary-100 my-2 !scale-100":
+          timestamp.toString() === activeLine,
+        "my-0.5 text-white": timestamp.toString() !== activeLine,
       })}
-      style={`opacity: ${getOpacity(timestamp)}`}>{line}</span
+      style={`opacity: ${getFactor(timestamp)}; scale: ${60 + getFactor(timestamp) * 30}%`}
+      >{line}</span
     >
   {/each}
   <div class="flex-shrink-0" style="height: 45%;"></div>

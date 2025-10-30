@@ -1,17 +1,9 @@
 <script lang="ts">
-  import { t } from "$lib/i18n/i18n.js";
-  import { debugLog } from "$lib/logger";
-  import { onMount } from "svelte";
-  import Spinner from "$lib/components/Spinner.svelte";
   import SongItem from "$lib/components/SongItem.svelte";
   import type { PagedResponse } from "$lib/api/apiTypes";
   import type { Song } from "$lib/api/songs";
   import type { PlayingSource } from "$lib/audio/mediaSession";
-
-  let isLoading = $state(false);
-  let hasNextPage = $state(true);
-  let songPage = $state(0);
-  let allSongs = $state<Array<Song>>([]);
+  import InfiniteScroll from "$lib/components/InfiniteScroll.svelte";
 
   const {
     getSongs,
@@ -20,55 +12,31 @@
     hideAlbum = false,
   }: {
     getSongs(page: number, pageSize: number): Promise<PagedResponse<Song>>;
-    pageSize?: number;
+    pageSize: number;
     playingSource: PlayingSource;
     hideAlbum?: boolean;
   } = $props();
 
-  async function loadSongPage() {
-    if (isLoading || !hasNextPage) return;
-
-    isLoading = true;
-    try {
-      const response = await getSongs(songPage, pageSize);
-
-      hasNextPage = response.hasNextPage;
-      allSongs = [...allSongs, ...response.data];
-      songPage = response.page + 1;
-    } catch (e) {
-      debugLog("error", e);
-    }
-
-    isLoading = false;
-  }
-
-  onMount(() => {
-    loadSongPage();
-  });
+  let items: Array<Song> = $state([]);
 </script>
 
-<div class="flex flex-col gap-2">
-  {#each allSongs as song, i (song.id)}
+<InfiniteScroll
+  class="gap-2"
+  {pageSize}
+  bind:items
+  initialPageUp={-1}
+  initialPageDown={0}
+  loadMoreUp={getSongs}
+  loadMoreDown={getSongs}
+>
+  {#snippet renderItem({ item, index })}
     <SongItem
-      {...song}
+      {...item}
       {playingSource}
-      songRef={song}
-      playlistRef={allSongs}
-      showNumber={i + 1}
+      songRef={item}
+      playlistRef={items}
+      showNumber={index + 1}
       {hideAlbum}
     />
-  {/each}
-  {#if hasNextPage}
-    <button
-      disabled={isLoading}
-      type="button"
-      class="btn btn-sm preset-outlined-surface-700-300 mt-2"
-      onclick={loadSongPage}
-    >
-      {#if isLoading}
-        <Spinner size={12} />
-      {/if}
-      {$t("songs.loadMore")}</button
-    >
-  {/if}
-</div>
+  {/snippet}
+</InfiniteScroll>

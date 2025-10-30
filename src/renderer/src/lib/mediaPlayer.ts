@@ -6,6 +6,7 @@ import {
 } from "$lib/audio/mediaSession";
 import { listSongsByPlaylist, type Playlist } from "$lib/api/playlists";
 import { tick } from "svelte";
+import { type Album, listSongsByAlbum } from "$lib/api/albums";
 
 export async function playSong(
   song: Song,
@@ -39,6 +40,26 @@ export async function playPlaylist(
     {
       type: PlayingSourceType.Playlist,
       id: playlist.id,
+    },
+    shuffle,
+  );
+}
+
+export async function playAlbum(
+  album: Album,
+  shuffle: boolean = false,
+): Promise<void> {
+  const response = await listSongsByAlbum(album.id, 0, Number.MAX_SAFE_INTEGER);
+
+  const index = shuffle ? Math.floor(Math.random() * album.songCount) : 0;
+
+  mediaSession.shuffled.set(shuffle);
+  await playSong(
+    response.data[index],
+    response.data,
+    {
+      type: PlayingSourceType.Album,
+      id: album.id,
     },
     shuffle,
   );

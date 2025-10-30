@@ -1,6 +1,8 @@
+<!--suppress ALL -->
 <script lang="ts">
   import { Avatar } from "@skeletonlabs/skeleton-svelte";
   import {
+    ArrowUp,
     ListMusic,
     MicVocal,
     Pause,
@@ -30,6 +32,11 @@
   import { mediaSession } from "$lib/audio/mediaSession";
   import { RepeatMode } from "$shared/models/repeatMode";
   import LyricsView from "$lib/components/LyricsView.svelte";
+  import SongItem from "$lib/components/SongItem.svelte";
+  import { get } from "svelte/store";
+  import InfiniteScroll from "$lib/components/InfiniteScroll.svelte";
+  import Spinner from "$lib/components/Spinner.svelte";
+  import type { Song } from "$lib/api/songs";
 
   let {
     isOpen = $bindable(false),
@@ -38,10 +45,12 @@
   } = $props();
 
   let visualizerCanvas = $state<HTMLCanvasElement>();
+  let queueElement = $state<HTMLDivElement>();
 
   const currentPosition = $derived(mediaSession.currentPosition);
   const currentBuffer = $derived(mediaSession.currentBuffer);
   const currentVolume = $derived(mediaSession.volume);
+  const currentQueue = $derived(mediaSession.getDerivedQueue());
   const currentSong = $derived(mediaSession.currentSong);
   const repeatMode = $derived(mediaSession.repeatMode);
   const shuffled = $derived(mediaSession.shuffled);
@@ -93,6 +102,19 @@
     };
   }
 
+  function scrollIntoActiveSong() {
+    if (queueElement) {
+      const songElement = queueElement.querySelector(
+        `[data-songId="${$currentSong?.id}"]`,
+      );
+      if (songElement)
+        songElement.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+    }
+  }
+
   onMount(() => {
     mediaSession.drawVisualizer(visualizerCanvas!);
 
@@ -121,6 +143,28 @@
 
   $effect(() => {
     if (($currentSong?.lyrics ?? "") === "") showLyrics = false;
+  });
+
+  $effect(() => {
+    if (!isOpen) {
+      showQueue = false;
+      showLyrics = false;
+    }
+  });
+
+  const pageSize = 30;
+
+  let queue: Array<Song> = $state([]);
+  let nextUpPage: number = $state(mediaSession.getPage(pageSize) - 1);
+  let nextDownPage: number = $state(mediaSession.getPage(pageSize));
+
+  $effect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    $shuffled;
+
+    nextUpPage = mediaSession.getPage(pageSize) - 1;
+    nextDownPage = mediaSession.getPage(pageSize);
+    queue = [];
   });
 </script>
 
@@ -166,15 +210,59 @@
     })}
   >
     <div
+      bind:this={queueElement}
       class={cn(
-        "flex h-full min-w-[100vw] transition-transform",
-        "flex-col items-center justify-center",
+        "flex h-full max-h-full min-w-[100vw] transition-transform",
+        "flex-col items-center justify-center overflow-hidden",
+        "relative",
         {
-          "-translate-x-full": showLyrics,
-          "translate-x-0": !showLyrics,
+          "-translate-x-full": !showQueue,
+          "translate-x-0": showQueue,
         },
       )}
-    ></div>
+    >
+      {#if showQueue}
+        {#key $shuffled}
+          <InfiniteScroll
+            class="flex w-full flex-1 flex-col gap-2 overflow-y-auto p-8"
+            initialPageUp={mediaSession.getPage(30) - 1}
+            initialPageDown={mediaSession.getPage(30)}
+            bind:nextUpPage
+            bind:nextDownPage
+            {pageSize}
+            loadMoreUp={mediaSession.loadSongsFromQueue.bind(mediaSession)}
+            loadMoreDown={mediaSession.loadSongsFromQueue.bind(mediaSession)}
+            bind:items={queue}
+          >
+            {#snippet renderItem({ item, index })}
+              <SongItem
+                {...item}
+                playingSource={{
+                  type: get(mediaSession.playingSourceType),
+                  id: get(mediaSession.playingSourceId),
+                }}
+                songRef={item}
+                playlistRef={$currentQueue}
+                showNumber={index + 1}
+              />
+            {/snippet}
+            {#snippet loadingDown()}
+              <div class="ms-auto me-auto flex w-max items-center gap-3">
+                <Spinner />
+                <span>{$t("songs.loadMore")}</span>
+              </div>
+            {/snippet}
+          </InfiniteScroll>
+        {/key}
+        <button
+          type="button"
+          class={cn("btn-icon preset-filled", "absolute right-7 bottom-2")}
+          onclick={scrollIntoActiveSong}
+        >
+          <ArrowUp />
+        </button>
+      {/if}
+    </div>
     <div
       class={cn(
         "flex h-full min-w-[100vw] transition-transform",
@@ -203,6 +291,10 @@
           "h-[20vh] w-11/12 transition-all",
           "absolute right-auto bottom-0 left-auto",
           "overflow-hidden",
+          {
+            "max-h-0": !isOpen,
+            "max-h-[20vh]": isOpen,
+          },
         )}
         bind:this={visualizerCanvas}
       ></canvas>
@@ -217,7 +309,7 @@
         },
       )}
     >
-      {#if $currentSong?.lyrics}
+      {#if $currentSong?.lyrics && showLyrics}
         <LyricsView
           class="max-h-full flex-1"
           timecode={$currentPosition}
@@ -256,6 +348,7 @@
         <div class="line-clamp-1 flex flex-row">
           {#each song.artists as artist, i (artist.id)}
             <a
+              onclick={() => (isOpen = false)}
               href="{resolve('/artists')}?artistId={artist.id}"
               class={cn(baseTextClasses, "font-medium", "whitespace-nowrap")}
               >{artist.name}</a
@@ -340,6 +433,7 @@
     >
       <button
         onclick={() => {
+          isOpen = true;
           showLyrics = false;
           showQueue = !showQueue;
         }}
@@ -351,6 +445,7 @@
       </button>
       <button
         onclick={() => {
+          isOpen = true;
           showQueue = false;
           showLyrics = !showLyrics;
         }}
