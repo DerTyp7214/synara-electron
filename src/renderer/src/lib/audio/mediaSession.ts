@@ -1,13 +1,25 @@
 import { audioSession } from "$lib/audio/audioSession";
-import { getContentLength, type Song } from "$lib/api/songs";
-import { getStreamUrl, roundRect } from "$lib/utils";
+import { getContentLength, type Song, songById } from "$lib/api/songs";
+import { getStreamUrl, roundRect, toShuffledArray } from "$lib/utils";
 import { get, type Unsubscriber, writable } from "svelte/store";
 import { createCurve } from "$lib/audio/utils";
 import { electronController } from "$lib/audio/electronController";
 import { RepeatMode } from "$shared/models/repeatMode";
 import { PlaybackStatus } from "$shared/models/playbackStatus";
-import { tick } from "svelte";
+import type { UUID } from "node:crypto";
 
+export enum PlayingSourceType {
+  Playlist = "playlist",
+  Album = "album",
+  LikedSongs = "likedSongs",
+}
+
+export type PlayingSource = {
+  type: PlayingSourceType;
+  id: UUID;
+};
+
+// noinspection JSUnusedGlobalSymbols
 export class MediaSession {
   private readonly audioContext: AudioContext;
   private audioAnalyser: AnalyserNode | undefined;
@@ -18,6 +30,9 @@ export class MediaSession {
 
   private queue = writable<Array<Song>>([]);
   private shuffledQueue = writable<Array<Song>>([]);
+
+  playingSourceType = writable<PlayingSourceType>(PlayingSourceType.LikedSongs);
+  playingSourceId = writable<UUID | undefined>();
 
   currentSong = writable<Song | null>(null);
   volume = writable<number>(50);
@@ -30,6 +45,10 @@ export class MediaSession {
   currentIndex = writable<number>(0);
   currentPosition = writable<number>(0);
   currentBuffer = writable<number>(0);
+
+  private minDecibels = writable<number | undefined>(-90);
+  private maxDecibels = writable<number | undefined>(-20);
+  private smoothingTimeConstant = writable(0.75);
 
   private unsubscribers: Array<Unsubscriber> = [];
 
@@ -88,14 +107,22 @@ export class MediaSession {
       await this.updatePlaybackVolume(volume);
     });
 
+    this.shuffled.subscribe(async (shuffled) => {
+      if (!shuffled) return;
+
+      this.shuffleQueue();
+    });
+
     this.currentIndex.subscribe(async (index) => {
-      const song = get(this.queue)[index];
+      if (index === -1) return;
+      const song = this.songByIndex(index);
 
       const streamUrl = getStreamUrl(song?.id);
       if (!streamUrl) return;
 
       await this.playUrl(streamUrl, !get(this.paused));
-      this.currentSong.set(song);
+      const currentSong = await songById(song.id);
+      this.currentSong.set(currentSong);
 
       this.writeToStorage();
     });
@@ -110,6 +137,30 @@ export class MediaSession {
         paused ? PlaybackStatus.Paused : PlaybackStatus.Playing,
       );
     });
+  }
+
+  private currentQueue() {
+    return get(this.shuffled) ? get(this.shuffledQueue) : get(this.queue);
+  }
+
+  private songByIndex(index: number) {
+    return this.currentQueue()[index];
+  }
+
+  private shuffleQueue(songId?: Song["id"]) {
+    const currentSongId = songId ?? get(this.currentSong)?.id;
+    const currentQueue = get(this.queue);
+    if (!currentSongId) return;
+
+    const currentSong = currentQueue.find((s) => s.id === currentSongId);
+    if (!currentSong) return;
+
+    this.shuffledQueue.set([
+      currentSong,
+      ...toShuffledArray(currentQueue.filter((s) => s.id !== currentSongId)),
+    ]);
+    this.currentIndex.set(-1);
+    this.currentIndex.set(0);
   }
 
   private async updateMetadata(song: Song) {
@@ -169,10 +220,33 @@ export class MediaSession {
 
     this.audioAnalyser = this.audioContext.createAnalyser();
 
+    const minDecibels = get(this.minDecibels);
+    const maxDecibels = get(this.maxDecibels);
+    const smoothingTimeConstant = get(this.smoothingTimeConstant);
+
+    this.unsubscribers.push(
+      this.minDecibels.subscribe((minDecibels) => {
+        if (minDecibels !== undefined && this.audioAnalyser)
+          this.audioAnalyser.minDecibels = minDecibels;
+      }),
+    );
+    this.unsubscribers.push(
+      this.maxDecibels.subscribe((maxDecibels) => {
+        if (maxDecibels !== undefined && this.audioAnalyser)
+          this.audioAnalyser.maxDecibels = maxDecibels;
+      }),
+    );
+    this.unsubscribers.push(
+      this.smoothingTimeConstant.subscribe((smoothingTimeConstant) => {
+        if (this.audioAnalyser)
+          this.audioAnalyser.smoothingTimeConstant = smoothingTimeConstant;
+      }),
+    );
+
     for (const analyser of [this.audioAnalyser]) {
-      analyser.minDecibels = -80;
-      analyser.maxDecibels = -20;
-      analyser.smoothingTimeConstant = 0.9;
+      if (minDecibels !== undefined) analyser.minDecibels = minDecibels;
+      if (maxDecibels !== undefined) analyser.maxDecibels = maxDecibels;
+      analyser.smoothingTimeConstant = smoothingTimeConstant;
       analyser.fftSize = 512;
     }
 
@@ -237,19 +311,14 @@ export class MediaSession {
 
     ctx.fillStyle = "rgba(255, 255, 255, .8)";
 
-    const dataArray = createCurve([...this.dataArray], WIDTH / 5 / 2);
-    const manipulators = createCurve(
-      [0.5, 0.7, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-      dataArray.length,
+    const dataArray = createCurve(
+      [...this.dataArray].slice(0, -Math.floor(this.dataArray.length / 8)),
+      WIDTH / 5 / 2,
     );
-
-    for (let i = 0; i < manipulators.length; i++) {
-      dataArray[i] *= manipulators[i];
-    }
 
     const data = [...dataArray.toReversed(), ...dataArray];
 
-    const multiplier = 1.3;
+    const multiplier = 0.9;
     const barSpacing = 1;
     const barWidth = WIDTH / data.length - 1;
     const barRadius = 5;
@@ -281,21 +350,35 @@ export class MediaSession {
     else this.currentIndex.set(get(this.currentIndex));
   }
 
-  async playSong(songId: Song["id"]) {
-    const queue = get(this.queue);
+  async playSong(songId: Song["id"], shuffle: boolean = false) {
+    this.currentIndex.set(-1);
+    if (shuffle) this.shuffleQueue(songId);
+    const queue = this.currentQueue();
     const index = queue.findIndex((song) => song.id === songId);
     this.paused.set(false);
     this.currentIndex.set(index);
+    await audioSession.play();
   }
 
   playNext() {
-    this.currentIndex.update((index) =>
-      Math.min(get(this.queue).length - 1, index + 1),
-    );
+    this.currentIndex.update((index) => {
+      const newIndex = index + 1;
+      if (newIndex > this.currentQueue().length - 1) {
+        if (get(this.repeatMode) === RepeatMode.List) return 0;
+        audioSession.seekToSeconds(audioSession.getDurationInSeconds());
+        this.pause();
+        this.paused.set(true);
+        return index;
+      } else return newIndex;
+    });
   }
 
   playPrev() {
-    this.currentIndex.update((index) => Math.max(0, index - 1));
+    this.currentIndex.update((index) => {
+      const newIndex = index - 1;
+      if (newIndex < 0) return this.currentQueue().length - 1;
+      else return newIndex;
+    });
   }
 
   pause() {
@@ -308,6 +391,7 @@ export class MediaSession {
 
   addToQueue(song: Song) {
     this.queue.update((queue) => [...queue, song]);
+    this.shuffledQueue.update((queue) => [...queue, song]);
     this.writeToStorage();
   }
 
@@ -317,15 +401,21 @@ export class MediaSession {
       if (index >= 0) queue.splice(index, 1);
       return queue;
     });
+    this.shuffledQueue.update((queue) => {
+      const index = queue.indexOf(song);
+      if (index >= 0) queue.splice(index, 1);
+      return queue;
+    });
     this.writeToStorage();
   }
 
   getQueue() {
-    return Array.from(get(this.queue));
+    return Array.from(this.currentQueue());
   }
 
   setQueue(queue: Array<Song>) {
     this.queue.set(queue);
+    this.shuffleQueue();
     this.writeToStorage();
   }
 
@@ -337,6 +427,9 @@ export class MediaSession {
       currentSong: get(this.currentSong),
       currentIndex: get(this.currentIndex),
       volume: get(this.volume),
+      shuffled: get(this.shuffled),
+      playingSourceType: get(this.playingSourceType),
+      playingSourceId: get(this.playingSourceId),
     };
 
     localStorage.setItem("mediaSession", JSON.stringify(data));
@@ -345,6 +438,7 @@ export class MediaSession {
   private loadFromStorage() {
     const data = JSON.parse(localStorage.getItem("mediaSession") ?? "{}");
 
+    this.shuffled.set(data.shuffled);
     this.queue.set(data.queue ?? []);
     this.shuffledQueue.set(data.shuffledQueue ?? []);
     this.repeatMode.set(data.repeatMode ?? RepeatMode.None);
@@ -353,6 +447,10 @@ export class MediaSession {
       (data.queue ?? []).length > 0 ? (data.currentIndex ?? -1) : -1,
     );
     this.volume.set(data.volume ?? 50);
+    this.playingSourceType.set(
+      data.playingSourceType ?? PlayingSourceType.LikedSongs,
+    );
+    this.playingSourceId.set(data.playingSourceId);
   }
 }
 

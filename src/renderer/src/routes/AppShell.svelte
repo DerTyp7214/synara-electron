@@ -9,7 +9,7 @@
   import LikedSongsBg from "$lib/assets/LikedSongsBg.svelte";
   import { goto } from "$app/navigation";
   import { resolve } from "$app/paths";
-  import { isLinux } from "$lib/utils";
+  import { isMac } from "$lib/utils";
 
   const { children } = $props();
 
@@ -37,7 +37,7 @@
         "!hidden md:!flex",
       )}
     >
-      {#if !isLinux()}
+      {#if isMac()}
         <div
           class={cn(
             "bg-surface-50-950/40",
@@ -100,11 +100,9 @@
 
       <main
         class={cn(
-          "bg-surface-50-950/60",
-          "overflow-y-auto p-8",
+          "bg-surface-50-950/60 overflow-hidden",
           "rounded-container shadow-md",
-          "transition-colors",
-          "h-full",
+          "flex-1 transition-colors",
         )}
       >
         {@render children()}

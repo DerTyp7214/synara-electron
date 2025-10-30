@@ -3,10 +3,16 @@
   import { t } from "$lib/i18n/i18n";
   import Spotify from "$lib/assets/Spotify.svelte";
   import Tidal from "$lib/assets/Tidal.svelte";
+  import cn from "classnames";
+  import { resolve } from "$app/paths";
+  import { goto } from "$app/navigation";
+  import type { Playlist } from "$lib/api/playlists";
+  import { mediaSession, PlayingSourceType } from "$lib/audio/mediaSession";
 
   type PlaylistOrigin = "tidal" | "spotify";
 
   const {
+    playlistRef,
     name,
     by,
     songCount,
@@ -14,6 +20,7 @@
     imageUrl,
     size = 64,
   }: {
+    playlistRef: Playlist;
     name: string;
     by?: string;
     songCount: number;
@@ -21,10 +28,27 @@
     imageUrl?: string;
     size?: number;
   } = $props();
+
+  const playingSourceType = $derived(mediaSession.playingSourceType);
+  const playingSourceId = $derived(mediaSession.playingSourceId);
+
+  const isSameSource = $derived(
+    $playingSourceType === PlayingSourceType.Playlist &&
+      $playingSourceId === playlistRef.id,
+  );
 </script>
 
-<div
-  class="bg-surface-300-700/40 rounded-container flex flex-row gap-2 p-3 shadow-md"
+<button
+  class={cn(
+    "rounded-container flex flex-row",
+    "gap-2 p-3 shadow-md",
+    "text-start transition-colors",
+    {
+      "bg-surface-300-700/40": !isSameSource,
+      "bg-secondary-300-700/40": isSameSource,
+    },
+  )}
+  onclick={() => goto(`${resolve("/playlists")}?playlistId=${playlistRef.id}`)}
 >
   <Avatar
     class="rounded-base"
@@ -51,4 +75,4 @@
   {:else if origin === "tidal"}
     <Tidal class="ms-auto mt-auto mb-auto" size={size / 3} />
   {/if}
-</div>
+</button>

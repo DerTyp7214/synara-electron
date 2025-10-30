@@ -53,6 +53,10 @@
   }
 }
 
+[data-mode="dark"] {
+  color-scheme: dark;
+}
+
 html, body {
     background: transparent;
 }

@@ -4,7 +4,10 @@ export default {
 
     "player.playingAt": "Playing At {{bitrate}}kbps",
 
+    duration: "Duration",
+
     songs: "Songs",
+    "n-songs": "{{amount}} Songs",
     "songs.loadMore": "Load More",
 
     "likedSongs.title": "Liked Songs",

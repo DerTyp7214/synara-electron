@@ -10,7 +10,7 @@
   import ToolTip from "$lib/components/ToolTip.svelte";
   import { playSong } from "$lib/mediaPlayer";
   import Explicit from "$lib/assets/Explicit.svelte";
-  import { mediaSession } from "$lib/audio/mediaSession";
+  import { mediaSession, type PlayingSource } from "$lib/audio/mediaSession";
 
   type SongOrigin = "tidal" | "spotify";
 
@@ -27,6 +27,7 @@
     size = 46,
     addedAt,
     originalUrl = "",
+    playingSource,
     playlistRef,
     songRef,
   }: Song & {
@@ -34,6 +35,7 @@
     showNumber?: number;
     addedAt?: number;
     size?: number;
+    playingSource: PlayingSource;
     playlistRef: Array<Song>;
     songRef: Song;
   } = $props();
@@ -78,7 +80,7 @@
     style="min-width: {size}px; min-height: {size}px; max-width: {size}px; max-height: {size}px;"
   >
     <Avatar class="h-full w-full rounded-none">
-      <Avatar.Image src={getImageUrl(coverId)} />
+      <Avatar.Image src={getImageUrl(coverId, size)} />
       <Avatar.Fallback
         >{title
           .split(" ")
@@ -88,7 +90,7 @@
       >
     </Avatar>
     <button
-      onclick={() => playSong(songRef, playlistRef)}
+      onclick={() => playSong(songRef, playlistRef, playingSource)}
       class={cn(
         "bg-surface-50-950/60",
         "absolute top-0 left-0",

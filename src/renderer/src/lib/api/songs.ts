@@ -20,6 +20,7 @@ export interface Song {
   explicit: boolean;
   fileSize: number;
   originalUrl: string;
+  lyrics?: string;
   path: string;
   releaseDate?: number;
 }

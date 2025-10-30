@@ -1,6 +1,7 @@
 import { App } from "electron";
 
 export function setFlags(app: App) {
+  app.commandLine.appendSwitch("enable-features", "ParallelDownloading");
   for (const [key, value] of Object.entries(flags)) {
     if (value) {
       flags[key].forEach((flag) => {

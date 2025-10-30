@@ -57,7 +57,7 @@ async function getHeaders(
   return result;
 }
 
-async function refreshJwt() {
+export async function refreshJwt() {
   const response = await apiCall<TokenResponse>({
     path: "/refresh-token",
     method: "POST",
@@ -70,6 +70,8 @@ async function refreshJwt() {
     jwtStore.set(token.token);
     refreshTokenStore.set(token.refreshToken);
   }
+
+  return response.isOk();
 }
 
 function buildUrl(

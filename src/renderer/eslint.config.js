@@ -67,6 +67,7 @@ export default defineConfig(
       "svelte/require-each-key": "warn",
       "svelte/require-event-dispatcher-types": "warn",
       "no-console": "error",
+      "svelte/no-navigation-without-resolve": "warn",
     },
   },
 );

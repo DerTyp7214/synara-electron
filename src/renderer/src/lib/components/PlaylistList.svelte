@@ -5,6 +5,7 @@
   import { debugLog } from "$lib/logger";
   import { onMount } from "svelte";
   import Spinner from "$lib/components/Spinner.svelte";
+  import { getImageUrl } from "$lib/utils.js";
 
   let isLoading = $state(false);
   let hasNextPage = $state(true);
@@ -36,7 +37,13 @@
 </script>
 
 {#each allPlaylists as playlist (playlist.id)}
-  <PlaylistItem name={playlist.name} songCount={playlist.songs.length} {size} />
+  <PlaylistItem
+    playlistRef={playlist}
+    name={playlist.name}
+    imageUrl={getImageUrl(playlist.imageId, size)}
+    songCount={playlist.songs.length}
+    {size}
+  />
 {/each}
 {#if hasNextPage}
   <button

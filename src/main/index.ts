@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain, components } from "electron";
+import { app, shell, Tray, BrowserWindow, ipcMain, components } from "electron";
 import { join } from "path";
 import { electronApp, optimizer, is, platform } from "@electron-toolkit/utils";
 // @ts-expect-error works though
@@ -14,6 +14,7 @@ setFlags(app);
 
 addMPRIS();
 
+let tray: Tray;
 let mainWindow: BrowserWindow;
 function createWindow(): void {
   // Create the browser window.
@@ -21,9 +22,6 @@ function createWindow(): void {
     width: 900,
     height: 670,
     show: false,
-    frame: false,
-    autoHideMenuBar: true,
-    titleBarStyle: "hidden",
     ...(platform.isLinux ? { icon, transparent: true } : {}),
     ...(platform.isMacOS
       ? {
@@ -34,7 +32,20 @@ function createWindow(): void {
           },
         }
       : {}),
-    ...(platform.isWindows ? { backgroundMaterial: "mica" } : {}),
+    ...(platform.isWindows
+      ? {
+          backgroundMaterial: "mica",
+          titleBarStyle: "default",
+          frame: true,
+          autoHideMenuBar: false,
+          titleBarOverlay: true,
+        }
+      : {
+          titleBarStyle: "hidden",
+          frame: false,
+          autoHideMenuBar: true,
+          titleBarOverlay: false,
+        }),
     webPreferences: {
       preload: join(__dirname, "../preload/index.js"),
       sandbox: false,
@@ -71,6 +82,12 @@ function loadVite(): void {
     });
 }
 
+function setupTray() {
+  tray = new Tray(icon);
+  tray.setTitle("Synara");
+  tray.setToolTip("Synara");
+}
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -86,6 +103,7 @@ app.whenReady().then(async () => {
     optimizer.watchWindowShortcuts(window);
   });
 
+  setupTray();
   createWindow();
 
   app.on("activate", function () {

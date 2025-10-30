@@ -1,4 +1,9 @@
-import { apiCall, jwtStore, refreshTokenStore } from "$lib/api/utils";
+import {
+  apiCall,
+  jwtStore,
+  refreshJwt,
+  refreshTokenStore,
+} from "$lib/api/utils";
 import { ApiResponse, type TokenResponse } from "$lib/api/apiTypes";
 import { get, writable } from "svelte/store";
 import { isJwtValid } from "$lib/api/jwt";
@@ -7,13 +12,14 @@ import { goto } from "$app/navigation";
 
 export const loggedIn = writable<boolean>(false);
 
-export function checkLogin(): boolean {
+export async function checkLogin(): Promise<boolean> {
   const isValid = isJwtValid(get(jwtStore));
 
   loggedIn.set(isValid);
 
   if (isValid) return true;
   else {
+    if (await refreshJwt()) return checkLogin();
     void goto(resolve("/login"));
     return false;
   }

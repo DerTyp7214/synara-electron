@@ -36,7 +36,7 @@
   class={cn("relative", clazz)}
 >
   <Slider.Control>
-    <Slider.Track class="h-1 cursor-pointer">
+    <Slider.Track class="h-1.5 cursor-pointer">
       <Slider.Range class="bg-surface-300-700" style="width: {buffer}%" />
       <Slider.Range class="bg-secondary-700-300" />
     </Slider.Track>

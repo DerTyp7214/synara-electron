@@ -1,12 +1,17 @@
 import { getApiUrl } from "$lib/api/utils";
 
-export function getImageUrl<K extends string | undefined>(imageId: K): K {
+export function getImageUrl<K extends string | undefined>(
+  imageId: K,
+  size?: number,
+): K {
   if (!imageId) return undefined as K;
 
   const apiBase = getApiUrl();
   if (!apiBase) return undefined as K;
 
-  return new URL(`/image/byId/${imageId}`, apiBase).toString() as K;
+  const url = new URL(`/image/byId/${imageId}`, apiBase);
+  if (size) url.searchParams.set("size", size.toString());
+  return url.toString() as K;
 }
 
 export function getStreamUrl<K extends string | undefined>(
@@ -121,6 +126,46 @@ export function idToUuid(strippedId: string): string {
     strippedId.slice(16, 20),
     strippedId.slice(20, 32),
   ].join("-");
+}
+
+export function shuffleArray<T>(array: Array<T>) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+export function toShuffledArray<T>(array: Array<T>) {
+  return shuffleArray(Array.from(array));
+}
+
+export function timecodeToMilliseconds(timecodeString: string) {
+  const [mainTime, msString] = timecodeString.split(".");
+
+  const parts = mainTime.split(":").map((part) => parseInt(part, 10));
+
+  let totalMilliseconds = 0;
+
+  if (parts.length === 3) {
+    const [hours, minutes, seconds] = parts;
+    totalMilliseconds += hours * 3600 * 1000;
+    totalMilliseconds += minutes * 60 * 1000;
+    totalMilliseconds += seconds * 1000;
+  } else if (parts.length === 2) {
+    // Format is MM:SS
+    const [minutes, seconds] = parts;
+    totalMilliseconds += minutes * 60 * 1000;
+    totalMilliseconds += seconds * 1000;
+  } else {
+    throw new Error("Invalid timecode format.");
+  }
+
+  const fractionalMilliseconds = parseInt(msString.padEnd(3, "0"), 10);
+  totalMilliseconds += fractionalMilliseconds;
+
+  return totalMilliseconds;
 }
 
 export const { isMac, isLinux, isWindows } = window.api;
