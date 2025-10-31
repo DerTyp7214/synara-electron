@@ -166,6 +166,10 @@
     nextDownPage = mediaSession.getPage(pageSize);
     queue = [];
   });
+
+  $effect(() => {
+    if (showQueue) scrollIntoActiveSong();
+  });
 </script>
 
 <footer
