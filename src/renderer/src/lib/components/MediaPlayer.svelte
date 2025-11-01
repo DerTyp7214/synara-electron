@@ -25,6 +25,7 @@
     getImageUrl,
     millisecondsToHumanReadable,
     fullscreen,
+    isMac,
   } from "$lib/utils";
   import { resolve } from "$app/paths";
   import { Explicit } from "$lib/assets";
@@ -339,9 +340,20 @@
         />
       {/if}
     </div>
-    <div class="absolute top-0 left-0 flex w-full justify-between p-2">
+    <div
+      class={cn(
+        "absolute",
+        "top-0 left-0",
+        "flex w-full",
+        "justify-between p-2",
+        "transition-all",
+        {
+          "draggable ps-20": isMac() && !$fullscreen && isOpen,
+        },
+      )}
+    >
       <button
-        class={cn("p-2 transition-opacity hover:opacity-80", {
+        class={cn("interactive p-2", "transition-opacity hover:opacity-80", {
           hidden: showQueue,
         })}
         onclick={() =>
@@ -357,7 +369,7 @@
       </button>
       <button
         onclick={() => (showVisualizer = !showVisualizer)}
-        class={cn("p-2 transition-all hover:opacity-80", {
+        class={cn("interactive p-2 transition-all hover:opacity-80", {
           "text-secondary-400": showVisualizer,
           hidden: showQueue || showLyrics,
         })}
