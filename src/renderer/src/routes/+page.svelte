@@ -1,5 +1,7 @@
-<script lang="ts"></script>
+<script lang="ts">
+  import { loggedIn } from "$lib/api/auth";
+</script>
 
-<main>
-  <span>Hello World</span>
-</main>
+{#if $loggedIn}
+  Yo
+{/if}
