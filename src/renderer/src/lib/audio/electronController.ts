@@ -15,6 +15,7 @@ import {
   playSongById,
 } from "$lib/mediaPlayer";
 import { mediaSession } from "$lib/audio/mediaSession";
+import { playBackStateToMediaSessionState } from "$lib/audio/utils";
 
 declare global {
   interface Window {
@@ -146,6 +147,30 @@ class ElectronController {
     position: number,
     volume: number,
   ) {
+    if ("mediaSession" in navigator && song) {
+      const artwork: Array<MediaImage> = [];
+
+      if (song.coverId)
+        artwork.push({
+          src: getImageUrl(song.coverId),
+        });
+
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: song.title,
+        album: song.album?.name ?? song.title,
+        artist: song.artists.map((a) => a.name).join(", "),
+        artwork: artwork,
+      });
+
+      navigator.mediaSession.setPositionState({
+        position: position / 1000,
+        duration: song.duration / 1000,
+      });
+
+      navigator.mediaSession.playbackState =
+        playBackStateToMediaSessionState(playbackStatus);
+    }
+
     if (!isElectron() || !song) return;
 
     const metadata: MediaInfo = {

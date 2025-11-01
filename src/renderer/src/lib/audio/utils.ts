@@ -1,3 +1,5 @@
+import { PlaybackStatus } from "$shared/models/playbackStatus";
+
 export function createCurve(
   manipulator: Array<number>,
   count: number,
@@ -52,35 +54,15 @@ export function createCurve(
   return curve;
 }
 
-export function killBrowserMediaSession(audio: HTMLAudioElement) {
-  function suppressWebviewSession() {
-    if ("mediaSession" in navigator) {
-      navigator.mediaSession.metadata = null;
-
-      const noop = () => {};
-      (
-        [
-          "play",
-          "pause",
-          "seekbackward",
-          "seekforward",
-          "previoustrack",
-          "nexttrack",
-        ] as const
-      ).forEach((action) =>
-        navigator.mediaSession.setActionHandler(action, noop),
-      );
-
-      navigator.mediaSession.setPositionState({
-        duration: 0,
-        playbackRate: 1,
-        position: 0,
-      });
-    }
+export function playBackStateToMediaSessionState(
+  playbackState: PlaybackStatus,
+): MediaSessionPlaybackState {
+  switch (playbackState) {
+    case PlaybackStatus.Paused:
+      return "paused";
+    case PlaybackStatus.Playing:
+      return "playing";
+    default:
+      return "none";
   }
-
-  audio.addEventListener("play", suppressWebviewSession);
-  audio.addEventListener("loadedmetadata", suppressWebviewSession);
-  window.removeEventListener("load", suppressWebviewSession);
-  window.addEventListener("load", suppressWebviewSession);
 }

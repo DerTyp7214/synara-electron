@@ -1,7 +1,6 @@
 import { debugLog } from "$lib/logger";
 import type { PartialRecord } from "$lib/types";
-import { killBrowserMediaSession } from "$lib/audio/utils";
-import { isElectron } from "$lib/consts";
+import { mediaSession } from "$lib/audio/mediaSession";
 
 type Listeners = keyof HTMLMediaElementEventMap;
 
@@ -31,7 +30,9 @@ export class AudioSession {
     this.audio.preload = "metadata";
     document.body.appendChild(this.audio);
 
-    if (isElectron()) killBrowserMediaSession(this.audio);
+    this.audio.addEventListener("play", () => this.setupNavigatorEvents(), {
+      once: true,
+    });
 
     this.addListeners();
   }
@@ -175,6 +176,39 @@ export class AudioSession {
     this.listeners[key].push(listener);
 
     this.addListeners();
+  }
+
+  private setupNavigatorEvents() {
+    if ("mediaSession" in navigator) {
+      const defaultSeekOffset = 10;
+      navigator.mediaSession.setActionHandler("play", () => {
+        void mediaSession.play();
+      });
+      navigator.mediaSession.setActionHandler("pause", () => {
+        mediaSession.pause();
+      });
+      navigator.mediaSession.setActionHandler("previoustrack", () => {
+        mediaSession.playPrev();
+      });
+      navigator.mediaSession.setActionHandler("nexttrack", () => {
+        mediaSession.playNext();
+      });
+      navigator.mediaSession.setActionHandler("seekto", (details) => {
+        audioSession.seekToSeconds(details.seekTime ?? 0);
+      });
+      navigator.mediaSession.setActionHandler("seekforward", (details) => {
+        this.seekToSeconds(
+          this.getPositionInSeconds() +
+            (details.seekOffset ?? defaultSeekOffset),
+        );
+      });
+      navigator.mediaSession.setActionHandler("seekbackward", (details) => {
+        this.seekToSeconds(
+          this.getPositionInSeconds() -
+            (details.seekOffset ?? defaultSeekOffset),
+        );
+      });
+    }
   }
 }
 
