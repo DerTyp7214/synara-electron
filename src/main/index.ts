@@ -1,4 +1,12 @@
-import { app, shell, Tray, BrowserWindow, ipcMain, components } from "electron";
+import {
+  app,
+  shell,
+  Tray,
+  BrowserWindow,
+  ipcMain,
+  components,
+  Menu,
+} from "electron";
 import { join } from "path";
 import { electronApp, optimizer, is, platform } from "@electron-toolkit/utils";
 // @ts-expect-error works though
@@ -16,6 +24,7 @@ setFlags(app);
 
 let tray: Tray;
 let mainWindow: BrowserWindow;
+let isQuitting = false;
 
 addMPRIS((eventName: MprisEventName, data: MprisEventData<MprisEventName>) => {
   mainWindow?.webContents.send("mpris-event", { eventName, data });
@@ -68,6 +77,13 @@ function createWindow(): void {
     mainWindow.show();
   });
 
+  mainWindow.on("close", (event) => {
+    if (!isQuitting) {
+      event.preventDefault();
+      mainWindow.hide();
+    }
+  });
+
   mainWindow.webContents.setWindowOpenHandler((details) => {
     void shell.openExternal(details.url);
     return { action: "deny" };
@@ -99,6 +115,23 @@ function setupTray() {
   tray = new Tray(icon);
   tray.setTitle("Synara");
   tray.setToolTip("Synara");
+
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: "Show Synara",
+      click: () => mainWindow.show(),
+    },
+    {
+      label: "Quit",
+      click: () => {
+        isQuitting = true;
+        app.quit();
+      },
+    },
+  ]);
+
+  tray.setContextMenu(contextMenu);
+  tray.on("click", () => mainWindow.show());
 }
 
 // This method will be called when Electron has finished
@@ -130,9 +163,7 @@ app.whenReady().then(async () => {
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
-    app.quit();
-  }
+  app.quit();
 });
 
 // In this file you can include the rest of your app's specific main process
