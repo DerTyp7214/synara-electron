@@ -39,13 +39,13 @@ const api: CustomApi = {
     );
   },
   registerBonjourListener(listener: BonjourEventListener) {
-    ipcRenderer.on(
-      "bonjour-event",
-      (_: IpcRendererEvent, eventData: Service) => {
-        listener(eventData);
-      },
-    );
+    const ipcListener = (_: IpcRendererEvent, eventData: Service) => {
+      listener(eventData);
+    };
+    ipcRenderer.on("bonjour-event", ipcListener);
     void ipcRenderer.invoke("bonjour-start");
+
+    return () => ipcRenderer.removeListener("bonjour-event", ipcListener);
   },
 };
 

@@ -51,5 +51,5 @@ export interface CustomApi {
   isLinux(): boolean;
   isWindows(): boolean;
   registerListener(listener: MprisEventListener<MprisEventName>): void;
-  registerBonjourListener(listener: BonjourEventListener): void;
+  registerBonjourListener(listener: BonjourEventListener): () => void;
 }

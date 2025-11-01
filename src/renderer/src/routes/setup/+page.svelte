@@ -36,11 +36,13 @@
   }
 
   onMount(() => {
-    window.api?.registerBonjourListener((service) => {
+    const unsubscriber = window.api?.registerBonjourListener((service) => {
       services = [...services, service];
     });
 
     if (apiAddress.length > 0) handleSubmit(new CustomEvent(""));
+
+    return () => unsubscriber?.();
   });
 </script>
 
