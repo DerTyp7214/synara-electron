@@ -27,7 +27,7 @@ export const flags: {
     {
       flag: "disable-features",
       value: "HardwareMediaKeyHandling",
-      handle: !platform.isMacOS,
+      handle: platform.isLinux,
     },
   ],
   enableWaylandSupport: [
