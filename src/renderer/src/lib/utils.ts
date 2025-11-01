@@ -1,4 +1,7 @@
 import { getApiUrl } from "$lib/api/utils";
+import { readable } from "svelte/store";
+import { debugLog } from "$lib/logger";
+import type { UUID } from "node:crypto";
 
 export function getImageUrl<K extends string | undefined>(
   imageId: K,
@@ -113,10 +116,10 @@ export function uuidToId(id: string): string {
   return id.replaceAll("-", "");
 }
 
-export function idToUuid(strippedId: string): string {
+export function idToUuid<T extends string>(strippedId: T): UUID {
   if (strippedId.length !== 32) {
-    console.error("Input ID must be 32 characters long.");
-    return strippedId;
+    debugLog("error", "Input ID must be 32 characters long.");
+    return strippedId as UUID;
   }
 
   return [
@@ -125,7 +128,7 @@ export function idToUuid(strippedId: string): string {
     strippedId.slice(12, 16),
     strippedId.slice(16, 20),
     strippedId.slice(20, 32),
-  ].join("-");
+  ].join("-") as UUID;
 }
 
 export function shuffleArray<T>(array: Array<T>) {
@@ -167,5 +170,25 @@ export function timecodeToMilliseconds(timecodeString: string) {
 
   return totalMilliseconds;
 }
+
+export const fullscreen = readable(false, (set) => {
+  set(!!document.fullscreenElement);
+
+  const handler = () => {
+    set(!!document.fullscreenElement);
+  };
+
+  document.addEventListener("fullscreenchange", handler);
+  document.addEventListener("webkitfullscreenchange", handler);
+  document.addEventListener("mozfullscreenchange", handler);
+  document.addEventListener("MSFullscreenChange", handler);
+
+  return () => {
+    document.removeEventListener("fullscreenchange", handler);
+    document.removeEventListener("webkitfullscreenchange", handler);
+    document.removeEventListener("mozfullscreenchange", handler);
+    document.removeEventListener("MSFullscreenChange", handler);
+  };
+});
 
 export const { isMac, isLinux, isWindows } = window.api;

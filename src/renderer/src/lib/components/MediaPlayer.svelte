@@ -17,15 +17,17 @@
     Volume2,
     VolumeX,
   } from "@lucide/svelte";
+  import { Minimize, Maximize, AudioLines, ChevronUp } from "@jis3r/icons";
   import cn from "classnames";
   import { onMount } from "svelte";
   import {
     createResizeListener,
     getImageUrl,
     millisecondsToHumanReadable,
+    fullscreen,
   } from "$lib/utils";
   import { resolve } from "$app/paths";
-  import Explicit from "$lib/assets/Explicit.svelte";
+  import { Explicit } from "$lib/assets";
   import { t } from "$lib/i18n/i18n";
   import Slider from "$lib/components/Slider.svelte";
   import { audioSession } from "$lib/audio/audioSession";
@@ -44,9 +46,13 @@
     showLyrics = $bindable(false),
   } = $props();
 
+  let showVisualizer = $state(true);
+
+  let footerElement = $state<HTMLElement>();
   let visualizerCanvas = $state<HTMLCanvasElement>();
   let queueElement = $state<HTMLDivElement>();
 
+  const playingSourceId = $derived(mediaSession.playingSourceId);
   const currentPosition = $derived(mediaSession.currentPosition);
   const currentBuffer = $derived(mediaSession.currentBuffer);
   const currentVolume = $derived(mediaSession.volume);
@@ -149,6 +155,8 @@
     if (!isOpen) {
       showQueue = false;
       showLyrics = false;
+
+      if ($fullscreen) document.exitFullscreen();
     }
   });
 
@@ -157,13 +165,20 @@
   let queue: Array<Song> = $state([]);
   let nextUpPage: number = $state(mediaSession.getPage(pageSize) - 1);
   let nextDownPage: number = $state(mediaSession.getPage(pageSize));
+  let hasMoreUp: boolean = $state(true);
+  let hasMoreDown: boolean = $state(true);
 
   $effect(() => {
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     $shuffled;
+    $playingSourceId;
 
     nextUpPage = mediaSession.getPage(pageSize) - 1;
     nextDownPage = mediaSession.getPage(pageSize);
+
+    hasMoreUp = true;
+    hasMoreDown = true;
+
     queue = [];
   });
 
@@ -173,6 +188,7 @@
 </script>
 
 <footer
+  bind:this={footerElement}
   data-mode={isOpen ? "dark" : undefined}
   class={cn(
     "flex flex-shrink-0",
@@ -226,13 +242,15 @@
       )}
     >
       {#if showQueue}
-        {#key $shuffled}
+        {#key [$shuffled, $playingSourceId]}
           <InfiniteScroll
             class="flex w-full flex-1 flex-col gap-2 overflow-y-auto p-8"
-            initialPageUp={mediaSession.getPage(30) - 1}
-            initialPageDown={mediaSession.getPage(30)}
+            initialPageUp={mediaSession.getPage(pageSize) - 1}
+            initialPageDown={mediaSession.getPage(pageSize)}
             bind:nextUpPage
             bind:nextDownPage
+            bind:hasMoreUp
+            bind:hasMoreDown
             {pageSize}
             loadMoreUp={mediaSession.loadSongsFromQueue.bind(mediaSession)}
             loadMoreDown={mediaSession.loadSongsFromQueue.bind(mediaSession)}
@@ -243,7 +261,7 @@
                 {...item}
                 playingSource={{
                   type: get(mediaSession.playingSourceType),
-                  id: get(mediaSession.playingSourceId),
+                  id: $playingSourceId,
                 }}
                 songRef={item}
                 playlistRef={$currentQueue}
@@ -296,8 +314,8 @@
           "absolute right-auto bottom-0 left-auto",
           "overflow-hidden",
           {
-            "max-h-0": !isOpen,
-            "max-h-[20vh]": isOpen,
+            "max-h-0": !isOpen || !showVisualizer,
+            "max-h-[20vh]": isOpen && showVisualizer,
           },
         )}
         bind:this={visualizerCanvas}
@@ -321,12 +339,38 @@
         />
       {/if}
     </div>
+    <div class="absolute top-0 left-0 flex w-full justify-between p-2">
+      <button
+        class={cn("p-2 transition-opacity hover:opacity-80", {
+          hidden: showQueue,
+        })}
+        onclick={() =>
+          $fullscreen
+            ? document.exitFullscreen()
+            : footerElement?.requestFullscreen()}
+      >
+        {#if $fullscreen}
+          <Minimize />
+        {:else}
+          <Maximize />
+        {/if}
+      </button>
+      <button
+        onclick={() => (showVisualizer = !showVisualizer)}
+        class={cn("p-2 transition-all hover:opacity-80", {
+          "text-secondary-400": showVisualizer,
+          hidden: showQueue || showLyrics,
+        })}
+      >
+        <AudioLines />
+      </button>
+    </div>
   </div>
 
   <!-- Bottombar -->
   <div class="z-20 flex max-h-24 min-h-24 w-full items-center gap-2 p-4">
     <div class="flex flex-1 overflow-hidden">
-      <button onclick={() => (isOpen = !isOpen)}>
+      <div class="rounded-base relative min-h-16 min-w-16 overflow-hidden">
         <Avatar class="rounded-base h-16 w-16">
           <Avatar.Image src={getImageUrl(song?.coverId, 64)} />
           <Avatar.Fallback
@@ -337,7 +381,28 @@
               .join("")}</Avatar.Fallback
           >
         </Avatar>
-      </button>
+        <button
+          onclick={() => (isOpen = !isOpen)}
+          class={cn(
+            "transition-opacity",
+            "absolute flex",
+            "top-0 left-0",
+            "h-full w-full",
+            "bg-black/40",
+            "items-center justify-center",
+            "opacity-0 hover:opacity-100",
+          )}
+        >
+          <div
+            class={cn("p-2 transition-transform", {
+              "rotate-180": isOpen,
+              "rotate-0": !isOpen,
+            })}
+          >
+            <ChevronUp />
+          </div>
+        </button>
+      </div>
       <div
         class="ms-2 mb-auto flex flex-grow flex-col justify-center overflow-hidden"
       >

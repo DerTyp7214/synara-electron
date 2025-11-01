@@ -22,6 +22,9 @@
     nextUpPage?: number;
     nextDownPage?: number;
 
+    hasMoreUp?: boolean;
+    hasMoreDown?: boolean;
+
     renderItem: Snippet<[{ item: T; index: number }]>;
     head?: Snippet;
     loadingUp?: Snippet;
@@ -41,6 +44,8 @@
     initialPageDown,
     nextUpPage = $bindable(initialPageUp),
     nextDownPage = $bindable(initialPageDown),
+    hasMoreUp = $bindable(true),
+    hasMoreDown = $bindable(true),
     renderItem,
     head,
     loadingUp,
@@ -49,9 +54,6 @@
     noMoreDown,
     noItems,
   }: Props<T> = $props();
-
-  let hasMoreUp = $state(true);
-  let hasMoreDown = $state(true);
 
   let scrollContainer = $state<HTMLElement>();
   let topSentinel = $state<HTMLElement>();
@@ -84,9 +86,7 @@
       }
 
       hasMoreUp = response.hasNextPage;
-      if (response.hasNextPage) {
-        nextUpPage = response.page - 1;
-      }
+      nextUpPage = response.page - 1;
     } catch (error) {
       debugLog("error", "Error loading content up:", error);
     } finally {
@@ -106,9 +106,8 @@
       }
 
       hasMoreDown = response.hasNextPage;
-      if (response.hasNextPage) {
-        nextDownPage = response.page + 1;
-      }
+      nextDownPage = response.page + 1;
+      console.log(response);
     } catch (error) {
       debugLog("error", "Error loading content down:", error);
     } finally {

@@ -47,14 +47,22 @@ declare class Player {
   constructor(opts: InitOptions);
 
   getPosition(): number;
-  seeked(): void;
+
+  seeked(position: number): void;
+
   getTrackIndex(trackId: number): number;
+
   getTrack(trackId: number): string;
+
   addTrack(track: object): void;
+
   removeTrack(trackId: number): number;
+
   getPlaylistIndex(playlistId: number): number;
+
   setPlaylists(playlists: object): void;
+
   setActivePlaylist(playlistId: number): void;
 
-  on(event: string | symbol, listener: (...args: object[]) => void): this;
+  on(event: string | symbol, listener: (...args: any[]) => void): this;
 }

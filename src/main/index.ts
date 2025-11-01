@@ -7,15 +7,19 @@ import serve from "electron-serve";
 import { setFlags } from "./utils";
 import { addMPRIS, updateMpris } from "./mpris";
 import { MediaInfo } from "../shared/models/mediaInfo";
+import { MprisEventData, MprisEventName } from "../shared/types/api";
 
 const serveURL = serve({ directory: join(__dirname, "..", "renderer") });
 
 setFlags(app);
 
-addMPRIS();
-
 let tray: Tray;
 let mainWindow: BrowserWindow;
+
+addMPRIS((eventName: MprisEventName, data: MprisEventData<MprisEventName>) => {
+  mainWindow?.webContents.send("mpris-event", { eventName, data });
+});
+
 function createWindow(): void {
   // Create the browser window.
   mainWindow = new BrowserWindow({

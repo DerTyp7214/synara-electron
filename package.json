@@ -1,5 +1,5 @@
 {
-  "name": "synara-electron",
+  "name": "synara-desktop",
   "version": "1.0.0",
   "description": "An Electron application with Svelte and TypeScript",
   "main": "./out/main/index.js",
@@ -36,6 +36,7 @@
     "@eslint/compat": "^1.4.0",
     "@eslint/js": "^9.38.0",
     "@fontsource/major-mono-display": "^5.2.8",
+    "@jis3r/icons": "^1.2.0",
     "@lucide/svelte": "^0.548.0",
     "@skeletonlabs/skeleton": "^4.2.0",
     "@skeletonlabs/skeleton-svelte": "^4.2.0",
@@ -73,6 +74,7 @@
   "pnpm": {
     "onlyBuiltDependencies": [
       "abstract-socket",
+      "core-js",
       "electron",
       "electron-vibrancy",
       "esbuild",

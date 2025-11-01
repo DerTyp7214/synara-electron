@@ -1,4 +1,4 @@
-import { type Song } from "$lib/api/songs";
+import { type Song, songById } from "$lib/api/songs";
 import {
   mediaSession,
   type PlayingSource,
@@ -7,6 +7,32 @@ import {
 import { listSongsByPlaylist, type Playlist } from "$lib/api/playlists";
 import { tick } from "svelte";
 import { type Album, listSongsByAlbum } from "$lib/api/albums";
+
+export async function playSongById(id: Song["id"]) {
+  if (!mediaSession.getQueue().find((s) => s.id === id)) {
+    const song = await songById(id as Song["id"]);
+    mediaSession.setQueue([song]);
+  }
+  mediaSession.playingSourceType.set(PlayingSourceType.Playlist);
+  mediaSession.playingSourceId.set(id);
+  await mediaSession.playSong(id);
+}
+
+export async function playAlbumById(id: Album["id"]) {
+  const songs = await listSongsByAlbum(id, 0, Number.MAX_SAFE_INTEGER);
+  mediaSession.setQueue(songs.data);
+  mediaSession.playingSourceType.set(PlayingSourceType.Album);
+  mediaSession.playingSourceId.set(id);
+  await mediaSession.playSong(songs.data[0].id);
+}
+
+export async function playPlaylistById(id: Playlist["id"]) {
+  const songs = await listSongsByPlaylist(id, 0, Number.MAX_SAFE_INTEGER);
+  mediaSession.setQueue(songs.data);
+  mediaSession.playingSourceType.set(PlayingSourceType.Playlist);
+  mediaSession.playingSourceId.set(id);
+  await mediaSession.playSong(songs.data[0].id);
+}
 
 export async function playSong(
   song: Song,

@@ -5,10 +5,16 @@ import { RepeatMode } from "../shared/models/repeatMode";
 import { ObjectToDotNotation } from "../preload/utils";
 import { APP_ID } from "../shared/consts";
 import { platform } from "@electron-toolkit/utils";
+import {
+  MprisEventData,
+  MprisEventListener,
+  MprisEventName,
+} from "../shared/types/api";
+import { MediaPlayerInfo } from "../shared/models/mediaPlayerInfo";
 
 let player: Player;
 
-export function addMPRIS() {
+export function addMPRIS(eventListener: MprisEventListener<MprisEventName>) {
   if (platform.isLinux) {
     try {
       player = new Player({
@@ -18,25 +24,62 @@ export function addMPRIS() {
         supportedMimeTypes: ["audio/mpeg", "audio/flac", "application/ogg"],
         supportedInterfaces: ["player"],
       });
-    } catch (_) {}
+
+      const events: Array<MprisEventName> = [
+        "next",
+        "previous",
+        "pause",
+        "playpause",
+        "stop",
+        "play",
+        "loopStatus",
+        "shuffle",
+        "seek",
+        "volume",
+        "position",
+        "open",
+      ];
+      events.forEach(function (eventName) {
+        player.on(eventName, function (event: MprisEventData<MprisEventName>) {
+          eventListener(eventName, event);
+        });
+      });
+    } catch (_) {
+      /* empty */
+    }
   }
 }
 
 export function updateMpris(mediaInfo: MediaInfo) {
   if (player) {
-    player.metadata = {
-      "xesam:title": mediaInfo.title,
-      "xesam:artist": mediaInfo.artists,
-      "xesam:album": mediaInfo.album,
-      "xesam:url": mediaInfo.url,
-      "mpris:artUrl": mediaInfo.image,
-      "mpris:length": mediaInfo.duration,
-      "mpris:trackid": "/org/mpris/MediaPlayer2/track/" + mediaInfo.trackId,
-      ...ObjectToDotNotation(mediaInfo, "custom:"),
+    const mediaPlayer: MediaPlayerInfo = {
+      ...(mediaInfo.player ?? {}),
+      ...((player.metadata as any).player ?? {}),
     };
-    player.playbackStatus = mediaInfo.player?.status ?? PlaybackStatus.Stopped;
-    player.shuffle = mediaInfo.player?.shuffle === true;
-    player.loopStatus = mediaInfo.player?.repeat ?? RepeatMode.None;
-    player.volume = mediaInfo.player?.volume ?? 0;
+    player.metadata = {
+      ...{
+        "xesam:title": mediaInfo.title,
+        "xesam:artist": mediaInfo.artists,
+        "xesam:album": mediaInfo.album,
+        "xesam:url": mediaInfo.url,
+        "mpris:artUrl": mediaInfo.image,
+        "mpris:length": mediaInfo.duration,
+        "mpris:trackid": "/org/mpris/MediaPlayer2/track/" + mediaInfo.trackId,
+      },
+      ...ObjectToDotNotation({ ...mediaInfo, player: mediaPlayer }, "custom:"),
+      ...player.metadata,
+    };
+    player.getPosition = () => mediaInfo.current * 1000;
+    player.playbackStatus = mediaPlayer?.status ?? PlaybackStatus.Stopped;
+    player.shuffle = mediaPlayer?.shuffle === true;
+    player.loopStatus = mediaPlayer?.repeat ?? RepeatMode.None;
+    player.volume = mediaPlayer?.volume ?? 0;
+
+    player.canPlay = true;
+    player.canPause = true;
+    player.canSeek = true;
+    player.canControl = true;
+    player.canGoNext = true;
+    player.canGoPrevious = true;
   }
 }

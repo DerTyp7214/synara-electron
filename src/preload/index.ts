@@ -1,6 +1,11 @@
-import { contextBridge, ipcRenderer } from "electron";
+import { contextBridge, ipcRenderer, type IpcRendererEvent } from "electron";
 import { electronAPI } from "@electron-toolkit/preload";
-import { CustomApi } from "../shared/types/api";
+import {
+  CustomApi,
+  MprisEventData,
+  MprisEventListener,
+  MprisEventName,
+} from "../shared/types/api";
 import { MediaInfo } from "../shared/models/mediaInfo";
 
 // Custom APIs for renderer
@@ -16,6 +21,20 @@ const api: CustomApi = {
   },
   isWindows() {
     return process.platform === "win32";
+  },
+  registerListener(listener: MprisEventListener<MprisEventName>) {
+    ipcRenderer.on(
+      "mpris-event",
+      (
+        _: IpcRendererEvent,
+        eventData: {
+          eventName: MprisEventName;
+          data: MprisEventData<MprisEventName>;
+        },
+      ) => {
+        listener(eventData.eventName, eventData.data);
+      },
+    );
   },
 };
 

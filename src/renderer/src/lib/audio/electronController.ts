@@ -1,12 +1,20 @@
-import type { Song } from "$lib/api/songs";
-import { mediaSession } from "$lib/audio/mediaSession";
-import { getImageUrl, getStreamUrl, uuidToId } from "$lib/utils";
+import { type Song } from "$lib/api/songs";
+import { getImageUrl, getStreamUrl, idToUuid, uuidToId } from "$lib/utils";
 import { isElectron } from "$lib/consts";
 import type { ElectronAPI } from "@electron-toolkit/preload";
 import type { MediaInfo } from "$shared/models/mediaInfo";
-import type { CustomApi } from "$shared/types/api";
-import type { PlaybackStatus } from "$shared/models/playbackStatus";
+import type { CustomApi, MprisEventData } from "$shared/types/api";
+import { PlaybackStatus } from "$shared/models/playbackStatus";
 import type { RepeatMode } from "$shared/models/repeatMode";
+import { get } from "svelte/store";
+import { debugLog } from "$lib/logger";
+import { audioSession } from "$lib/audio/audioSession";
+import {
+  playAlbumById,
+  playPlaylistById,
+  playSongById,
+} from "$lib/mediaPlayer";
+import { mediaSession } from "$lib/audio/mediaSession";
 
 declare global {
   interface Window {
@@ -25,6 +33,101 @@ class ElectronController {
 
   private async initElectron() {
     if (!isElectron()) return;
+
+    window.api.registerListener(async (event, data) => {
+      const player = {
+        repeat: data as RepeatMode,
+        volume: get(mediaSession.volume) / 100,
+        status: get(mediaSession.paused)
+          ? PlaybackStatus.Paused
+          : PlaybackStatus.Playing,
+        shuffle: get(mediaSession.shuffled),
+      };
+      switch (event) {
+        case "loopStatus": {
+          mediaSession.repeatMode.set(data as RepeatMode);
+          player.repeat = data as RepeatMode;
+          break;
+        }
+        case "shuffle": {
+          mediaSession.shuffled.set(data as boolean);
+          player.shuffle = data as boolean;
+          break;
+        }
+        case "pause": {
+          mediaSession.pause();
+          return;
+        }
+        case "play": {
+          void mediaSession.play();
+          return;
+        }
+        case "playpause": {
+          if (get(mediaSession.paused)) void mediaSession.play();
+          else mediaSession.pause();
+          return;
+        }
+        case "previous": {
+          mediaSession.playPrev();
+          return;
+        }
+        case "next": {
+          mediaSession.playNext();
+          return;
+        }
+        case "stop": {
+          mediaSession.pause();
+          return;
+        }
+        case "volume": {
+          mediaSession.volume.set((data as number) * 100);
+          player.volume = data as number;
+          break;
+        }
+        case "position": {
+          audioSession.seekToMilliseconds(
+            Number((data as MprisEventData<"position">).position) / 1000,
+          );
+          return;
+        }
+        case "open": {
+          const { uri } = data as MprisEventData<"open">;
+          let trackId: string | undefined;
+
+          if (uri.startsWith("/org/mpris/MediaPlayer2/")) {
+            const regex = /\/org\/mpris\/MediaPlayer2\/(.+)\/(.+)/;
+            const result = uri.match(regex);
+            if (result?.length !== 3) return;
+
+            const type = result[1];
+            const id = idToUuid(result[2]);
+
+            switch (type) {
+              case "track": {
+                await playSongById(id);
+                return;
+              }
+              case "playlist": {
+                await playPlaylistById(id);
+                return;
+              }
+              case "album": {
+                await playAlbumById(id);
+                return;
+              }
+            }
+          } else if (uri.startsWith("synara:")) {
+          }
+
+          if (!trackId) return;
+          return;
+        }
+        default: {
+          debugLog("warn", "uncaught mpris-event", event, data);
+        }
+      }
+      window.api.updateMpris({ player });
+    });
   }
 
   /**

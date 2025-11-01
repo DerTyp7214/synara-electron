@@ -1,7 +1,7 @@
 <script lang="ts">
   import { t } from "$lib/i18n/i18n";
   import cn from "classnames";
-  import { ArrowRightIcon } from "@lucide/svelte";
+  import { ArrowRight } from "@jis3r/icons";
   import Logo from "$lib/components/Logo.svelte";
   import LightSwitch from "$lib/components/LightSwitch.svelte";
   import Spinner from "$lib/components/Spinner.svelte";
@@ -92,7 +92,7 @@
         {#if loading}
           <Spinner size={18} />
         {:else}
-          <ArrowRightIcon size="18" />
+          <ArrowRight size={18} />
         {/if}
         <span class="">{$t("login.submit")}</span>
       </button>

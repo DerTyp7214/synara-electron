@@ -58,20 +58,25 @@ async function getHeaders(
 }
 
 export async function refreshJwt() {
-  const response = await apiCall<TokenResponse>({
-    path: "/refresh-token",
-    method: "POST",
-    body: { refreshToken: get(refreshTokenStore) },
-  });
+  try {
+    const response = await apiCall<TokenResponse>({
+      path: "/refresh-token",
+      method: "POST",
+      body: { refreshToken: get(refreshTokenStore) },
+    });
 
-  if (response.isOk()) {
-    const token = await response.getData();
+    if (response.isOk()) {
+      const token = await response.getData();
 
-    jwtStore.set(token.token);
-    refreshTokenStore.set(token.refreshToken);
+      jwtStore.set(token.token);
+      refreshTokenStore.set(token.refreshToken);
+    }
+
+    return response.isOk();
+  } catch (error) {
+    debugLog("error", "refreshJwt", error);
+    return false;
   }
-
-  return response.isOk();
 }
 
 function buildUrl(

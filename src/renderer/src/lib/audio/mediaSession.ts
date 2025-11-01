@@ -264,7 +264,7 @@ export class MediaSession {
       if (minDecibels !== undefined) analyser.minDecibels = minDecibels;
       if (maxDecibels !== undefined) analyser.maxDecibels = maxDecibels;
       analyser.smoothingTimeConstant = smoothingTimeConstant;
-      analyser.fftSize = 512;
+      analyser.fftSize = 1024;
     }
 
     const distortion = this.audioContext.createWaveShaper();

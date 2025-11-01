@@ -1,8 +1,51 @@
 import { MediaInfo } from "../models/mediaInfo";
+import { MediaPlayerInfo } from "../models/mediaPlayerInfo";
+import { RepeatMode } from "../models/repeatMode";
+
+export type MprisEventName =
+  | "next"
+  | "previous"
+  | "pause"
+  | "playpause"
+  | "stop"
+  | "play"
+  | "loopStatus"
+  | "shuffle"
+  | "seek"
+  | "position"
+  | "open"
+  | "volume";
+
+export type MprisEventData<T extends MprisEventName> = T extends "loopStatus"
+  ? RepeatMode
+  : T extends "shuffle"
+    ? boolean
+    : T extends "volume"
+      ? number
+      : T extends "position"
+        ? {
+            position: number; // position in microseconds
+            trackId: string;
+          }
+        : T extends "open"
+          ? {
+              uri: string;
+            }
+          : undefined;
+
+export type MprisEventListener<T extends MprisEventName> = (
+  eventName: T,
+  data: MprisEventData<T>,
+) => void;
 
 export interface CustomApi {
-  updateMpris(mediaInfo: MediaInfo): void;
+  updateMpris(
+    mediaInfo: Partial<
+      Omit<MediaInfo, "player"> & { player: Partial<MediaPlayerInfo> }
+    >,
+  ): void;
   isMac(): boolean;
   isLinux(): boolean;
   isWindows(): boolean;
+  registerListener(listener: MprisEventListener<MprisEventName>): void;
 }
