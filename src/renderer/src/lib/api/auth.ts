@@ -9,6 +9,7 @@ import { get, writable } from "svelte/store";
 import { isJwtValid } from "$lib/api/jwt";
 import { resolve } from "$app/paths";
 import { goto } from "$app/navigation";
+import { health } from "$lib/api/main";
 
 export const loggedIn = writable<boolean>(false);
 
@@ -17,8 +18,9 @@ export async function checkLogin(): Promise<boolean> {
 
   loggedIn.set(isValid);
 
-  if (isValid) return true;
-  else {
+  if (isValid) {
+    return await health().then((r) => r.available);
+  } else {
     if (await refreshJwt()) return checkLogin();
     void goto(resolve("/login"));
     return false;

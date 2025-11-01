@@ -1,12 +1,14 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from "electron";
 import { electronAPI } from "@electron-toolkit/preload";
 import {
+  BonjourEventListener,
   CustomApi,
   MprisEventData,
   MprisEventListener,
   MprisEventName,
 } from "../shared/types/api";
 import { MediaInfo } from "../shared/models/mediaInfo";
+import type { Service } from "bonjour-service";
 
 // Custom APIs for renderer
 const api: CustomApi = {
@@ -35,6 +37,15 @@ const api: CustomApi = {
         listener(eventData.eventName, eventData.data);
       },
     );
+  },
+  registerBonjourListener(listener: BonjourEventListener) {
+    ipcRenderer.on(
+      "bonjour-event",
+      (_: IpcRendererEvent, eventData: Service) => {
+        listener(eventData);
+      },
+    );
+    void ipcRenderer.invoke("bonjour-start");
   },
 };
 

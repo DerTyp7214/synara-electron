@@ -20,3 +20,5 @@ export const pinkNoise = [
 export const isElectron = () => {
   return window.electron;
 };
+
+export const SERVER_SERVICE_TYPE = "_synara-api._tcp.local.";

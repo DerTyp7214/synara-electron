@@ -8,6 +8,7 @@ import { RepeatMode } from "$shared/models/repeatMode";
 import { PlaybackStatus } from "$shared/models/playbackStatus";
 import type { UUID } from "node:crypto";
 import type { PagedResponse } from "$lib/api/apiTypes";
+import { loggedIn } from "$lib/api/auth";
 
 export enum PlayingSourceType {
   Playlist = "playlist",
@@ -22,7 +23,7 @@ export type PlayingSource = {
 
 // noinspection JSUnusedGlobalSymbols
 export class MediaSession {
-  private readonly audioContext: AudioContext;
+  private audioContext: AudioContext | undefined;
   private audioAnalyser: AnalyserNode | undefined;
   private audioSource: MediaElementAudioSourceNode | undefined;
 
@@ -58,6 +59,15 @@ export class MediaSession {
   private unsubscribers: Array<Unsubscriber> = [];
 
   constructor() {
+    let sub: Unsubscriber;
+    // eslint-disable-next-line prefer-const
+    sub = loggedIn.subscribe((loggedIn) => {
+      if (loggedIn) this.setup();
+      sub?.();
+    });
+  }
+
+  private setup() {
     this.loadFromStorage();
 
     this.audioContext = new (window.AudioContext ||
@@ -234,6 +244,8 @@ export class MediaSession {
     } catch (_) {
       /* empty */
     }
+
+    if (!this.audioContext) return;
 
     this.audioAnalyser = this.audioContext.createAnalyser();
 

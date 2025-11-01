@@ -1,6 +1,7 @@
 import { MediaInfo } from "../models/mediaInfo";
 import { MediaPlayerInfo } from "../models/mediaPlayerInfo";
 import { RepeatMode } from "../models/repeatMode";
+import type { Service } from "bonjour-service";
 
 export type MprisEventName =
   | "next"
@@ -38,6 +39,8 @@ export type MprisEventListener<T extends MprisEventName> = (
   data: MprisEventData<T>,
 ) => void;
 
+export type BonjourEventListener = (service: Service) => void;
+
 export interface CustomApi {
   updateMpris(
     mediaInfo: Partial<
@@ -48,4 +51,5 @@ export interface CustomApi {
   isLinux(): boolean;
   isWindows(): boolean;
   registerListener(listener: MprisEventListener<MprisEventName>): void;
+  registerBonjourListener(listener: BonjourEventListener): void;
 }

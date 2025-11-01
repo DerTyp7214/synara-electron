@@ -8,6 +8,7 @@ import { setFlags } from "./utils";
 import { addMPRIS, updateMpris } from "./mpris";
 import { MediaInfo } from "../shared/models/mediaInfo";
 import { MprisEventData, MprisEventName } from "../shared/types/api";
+import { Bonjour } from "bonjour-service";
 
 const serveURL = serve({ directory: join(__dirname, "..", "renderer") });
 
@@ -18,6 +19,14 @@ let mainWindow: BrowserWindow;
 
 addMPRIS((eventName: MprisEventName, data: MprisEventData<MprisEventName>) => {
   mainWindow?.webContents.send("mpris-event", { eventName, data });
+});
+
+const bonjour = new Bonjour();
+
+ipcMain.handle("bonjour-start", () => {
+  bonjour.find({ type: "synara-api" }, (service) => {
+    mainWindow?.webContents.send("bonjour-event", service);
+  });
 });
 
 function createWindow(): void {
