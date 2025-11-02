@@ -398,7 +398,7 @@
             "absolute flex",
             "top-0 left-0",
             "h-full w-full",
-            "bg-black/40",
+            "bg-black/40 text-white",
             "items-center justify-center",
             "opacity-0 hover:opacity-100",
           )}

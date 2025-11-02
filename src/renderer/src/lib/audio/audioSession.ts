@@ -188,10 +188,10 @@ export class AudioSession {
         mediaSession.pause();
       });
       navigator.mediaSession.setActionHandler("previoustrack", () => {
-        mediaSession.playPrev();
+        void mediaSession.playPrev();
       });
       navigator.mediaSession.setActionHandler("nexttrack", () => {
-        mediaSession.playNext();
+        void mediaSession.playNext();
       });
       navigator.mediaSession.setActionHandler("seekto", (details) => {
         audioSession.seekToSeconds(details.seekTime ?? 0);

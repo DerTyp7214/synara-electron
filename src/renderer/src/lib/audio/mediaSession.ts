@@ -9,7 +9,6 @@ import { PlaybackStatus } from "$shared/models/playbackStatus";
 import type { UUID } from "node:crypto";
 import type { PagedResponse } from "$lib/api/apiTypes";
 import { loggedIn } from "$lib/api/auth";
-import { debugLog } from "$lib/logger";
 
 export enum PlayingSourceType {
   Playlist = "playlist",
@@ -59,6 +58,8 @@ export class MediaSession {
 
   private unsubscribers: Array<Unsubscriber> = [];
 
+  private hasPlayed = false;
+
   constructor() {
     let sub: Unsubscriber;
     // eslint-disable-next-line prefer-const
@@ -84,7 +85,7 @@ export class MediaSession {
       if (get(this.repeatMode) === RepeatMode.Track) await this.reset();
       else {
         this.paused.set(false);
-        this.playNext();
+        await this.playNext();
       }
     });
 
@@ -152,6 +153,7 @@ export class MediaSession {
     });
 
     this.paused.subscribe(async (paused) => {
+      if (!paused) this.hasPlayed = true;
       await this.updatePlaybackStatus(
         paused ? PlaybackStatus.Paused : PlaybackStatus.Playing,
       );
@@ -385,6 +387,7 @@ export class MediaSession {
   }
 
   async play() {
+    if (!this.hasPlayed) return await this.playSong(get(this.currentSong)!.id);
     if (audioSession.hasSource()) await audioSession.play();
     else this.currentIndex.set(get(this.currentIndex));
   }
@@ -397,25 +400,37 @@ export class MediaSession {
     await audioSession.play();
   }
 
-  playNext() {
-    this.currentIndex.update((index) => {
-      const newIndex = index + 1;
-      if (newIndex > this.currentQueue().length - 1) {
-        if (get(this.repeatMode) === RepeatMode.List) return 0;
-        audioSession.seekToSeconds(audioSession.getDurationInSeconds());
-        this.pause();
-        this.paused.set(true);
-        return index;
-      } else return newIndex;
-    });
+  async playNext() {
+    const index = get(this.currentIndex);
+    const newIndex = index + 1;
+    if (newIndex > this.currentQueue().length - 1) {
+      if (get(this.repeatMode) === RepeatMode.List) {
+        await this.playIndex(0);
+        this.currentIndex.set(0);
+        return;
+      }
+      audioSession.seekToSeconds(audioSession.getDurationInSeconds());
+      this.pause();
+      this.paused.set(true);
+      await this.playIndex(index);
+      this.currentIndex.set(index);
+    } else {
+      await this.playIndex(newIndex);
+      this.currentIndex.set(newIndex);
+    }
   }
 
-  playPrev() {
-    this.currentIndex.update((index) => {
-      const newIndex = index - 1;
-      if (newIndex < 0) return this.currentQueue().length - 1;
-      else return newIndex;
-    });
+  async playPrev() {
+    const index = get(this.currentIndex);
+    const newIndex = index - 1;
+    if (newIndex < 0) {
+      const startIndex = this.currentQueue().length - 1;
+      await this.playIndex(startIndex);
+      this.currentIndex.set(startIndex);
+    } else {
+      await this.playIndex(newIndex);
+      this.currentIndex.set(newIndex);
+    }
   }
 
   pause() {

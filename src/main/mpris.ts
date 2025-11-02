@@ -54,9 +54,10 @@ export function updateMpris(mediaInfo: MediaInfo) {
   if (player) {
     const mediaPlayer: MediaPlayerInfo = {
       ...(mediaInfo.player ?? {}),
-      ...((player.metadata as any).player ?? {}),
+      ...((player.metadata as any)?.player ?? {}),
     };
     player.metadata = {
+      ...player.metadata,
       ...{
         "xesam:title": mediaInfo.title,
         "xesam:artist": mediaInfo.artists,
@@ -67,7 +68,6 @@ export function updateMpris(mediaInfo: MediaInfo) {
         "mpris:trackid": "/org/mpris/MediaPlayer2/track/" + mediaInfo.trackId,
       },
       ...ObjectToDotNotation({ ...mediaInfo, player: mediaPlayer }, "custom:"),
-      ...player.metadata,
     };
     player.getPosition = () => mediaInfo.current * 1000;
     player.playbackStatus = mediaPlayer?.status ?? PlaybackStatus.Stopped;

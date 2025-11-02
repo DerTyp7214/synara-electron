@@ -51,6 +51,10 @@
   * {
     scrollbar-color: theme('colors.primary.500') transparent;
   }
+
+  *:focus-visible {
+    outline: none;
+  }
 }
 
 [data-mode="dark"] {

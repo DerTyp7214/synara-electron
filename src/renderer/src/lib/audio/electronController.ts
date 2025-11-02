@@ -69,11 +69,11 @@ class ElectronController {
           return;
         }
         case "previous": {
-          mediaSession.playPrev();
+          void mediaSession.playPrev();
           return;
         }
         case "next": {
-          mediaSession.playNext();
+          void mediaSession.playNext();
           return;
         }
         case "stop": {
@@ -148,27 +148,31 @@ class ElectronController {
     volume: number,
   ) {
     if ("mediaSession" in navigator && song) {
-      const artwork: Array<MediaImage> = [];
+      try {
+        const artwork: Array<MediaImage> = [];
 
-      if (song.coverId)
-        artwork.push({
-          src: getImageUrl(song.coverId),
+        if (song.coverId)
+          artwork.push({
+            src: getImageUrl(song.coverId),
+          });
+
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: song.title,
+          album: song.album?.name ?? song.title,
+          artist: song.artists.map((a) => a.name).join(", "),
+          artwork: artwork,
         });
 
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title: song.title,
-        album: song.album?.name ?? song.title,
-        artist: song.artists.map((a) => a.name).join(", "),
-        artwork: artwork,
-      });
+        navigator.mediaSession.setPositionState({
+          position: position / 1000,
+          duration: song.duration / 1000,
+        });
 
-      navigator.mediaSession.setPositionState({
-        position: position / 1000,
-        duration: song.duration / 1000,
-      });
-
-      navigator.mediaSession.playbackState =
-        playBackStateToMediaSessionState(playbackStatus);
+        navigator.mediaSession.playbackState =
+          playBackStateToMediaSessionState(playbackStatus);
+      } catch (e) {
+        debugLog("error", "updateMediaControls > mediaSession", e);
+      }
     }
 
     if (!isElectron() || !song) return;
