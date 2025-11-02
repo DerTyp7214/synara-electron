@@ -5,13 +5,10 @@
     ArrowUp,
     ListMusic,
     MicVocal,
-    Pause,
     Play,
     Repeat,
     Repeat1,
     Shuffle,
-    SkipBack,
-    SkipForward,
     Volume,
     Volume1,
     Volume2,
@@ -28,7 +25,7 @@
     isMac,
   } from "$lib/utils";
   import { resolve } from "$app/paths";
-  import { Explicit } from "$lib/assets";
+  import { Explicit, SkipBack, SkipForward, Pause } from "$lib/assets";
   import { t } from "$lib/i18n/i18n";
   import Slider from "$lib/components/Slider.svelte";
   import { audioSession } from "$lib/audio/audioSession";
@@ -40,6 +37,7 @@
   import InfiniteScroll from "$lib/components/InfiniteScroll.svelte";
   import Spinner from "$lib/components/Spinner.svelte";
   import type { Song } from "$lib/api/songs";
+  import LiquidGlassContainer from "$lib/components/LiquidGlassContainer.svelte";
 
   let {
     isOpen = $bindable(false),
@@ -122,17 +120,6 @@
     }
   }
 
-  onMount(() => {
-    mediaSession.drawVisualizer(visualizerCanvas!);
-
-    const cleanupResizeListener = createResizeListener(visualizerCanvas!);
-
-    return () => {
-      audioSession.kill();
-      cleanupResizeListener();
-    };
-  });
-
   const song = $derived.by(() => ({
     title: "No Song",
     bitRate: 0,
@@ -185,6 +172,17 @@
 
   $effect(() => {
     if (showQueue) scrollIntoActiveSong();
+  });
+
+  onMount(() => {
+    mediaSession.drawVisualizer(visualizerCanvas!);
+
+    const cleanupResizeListener = createResizeListener(visualizerCanvas!);
+
+    return () => {
+      audioSession.kill();
+      cleanupResizeListener();
+    };
   });
 </script>
 
@@ -457,25 +455,25 @@
         </button>
         <button
           onclick={handleActionClick("skipBack")}
-          class="transition-opacity hover:opacity-80"
+          class="flex items-center transition-opacity hover:opacity-80"
         >
-          <SkipBack size="22" />
+          <SkipBack size={22} />
         </button>
         <button
           onclick={handleActionClick("play")}
-          class="transition-opacity hover:opacity-80"
+          class="flex items-center transition-opacity hover:opacity-80"
         >
           {#if $isPaused}
             <Play size="26" />
           {:else}
-            <Pause size="26" />
+            <Pause size={26} />
           {/if}
         </button>
         <button
           onclick={handleActionClick("skipForward")}
-          class="transition-opacity hover:opacity-80"
+          class="flex items-center transition-opacity hover:opacity-80"
         >
-          <SkipForward size="22" />
+          <SkipForward size={22} />
         </button>
         <button
           onclick={handleActionClick("repeat")}
@@ -502,6 +500,7 @@
           max={song.duration}
           buffer={$currentBuffer}
           onValueChanged={(value) => audioSession.seekToMilliseconds(value)}
+          class="w-full"
         />
         <span class="tabular-nums"
           >{millisecondsToHumanReadable(song.duration)}</span
@@ -557,6 +556,7 @@
         thumb={false}
         class="w-24"
         value={$currentVolume}
+        scrollAction
         onValueChanged={(value) => mediaSession.volume.set(value)}
       />
     </div>

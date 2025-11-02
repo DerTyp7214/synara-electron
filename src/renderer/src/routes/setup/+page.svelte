@@ -76,29 +76,29 @@
         <span class="h5 mt-2">Servers</span>
       {/if}
       {#each services as service, i (i)}
-        <button
-          class={cn(
-            "rounded-base flex flex-col",
-            "px-3 py-2 text-start",
-            "hover:bg-secondary-800-200/30",
-            "transition-colors",
-            {
-              "bg-tertiary-800-200/30":
-                apiAddress === `${service.addresses}:${service.port}`,
-              "bg-surface-800-200/20":
-                apiAddress !== `${service.addresses}:${service.port}`,
-            },
-          )}
-          onclick={() => {
-            errorMessage = "";
-            apiAddress = `${service.addresses}:${service.port}`;
-          }}
-        >
-          <span>{service.name}</span>
-          <span class="text-xs opacity-30"
-            >{service.addresses}:{service.port}</span
+        {#each service.addresses ?? ["localhost"] as address, i (i)}
+          <button
+            class={cn(
+              "rounded-base flex flex-col",
+              "px-3 py-2 text-start",
+              "hover:bg-secondary-800-200/30",
+              "transition-colors",
+              {
+                "bg-tertiary-800-200/30":
+                  apiAddress === `${address}:${service.port}`,
+                "bg-surface-800-200/20":
+                  apiAddress !== `${address}:${service.port}`,
+              },
+            )}
+            onclick={() => {
+              errorMessage = "";
+              apiAddress = `${address}:${service.port}`;
+            }}
           >
-        </button>
+            <span>{service.name}</span>
+            <span class="text-xs opacity-30">{address}:{service.port}</span>
+          </button>
+        {/each}
       {/each}
     </div>
 

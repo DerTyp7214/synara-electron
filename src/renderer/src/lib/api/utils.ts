@@ -162,7 +162,7 @@ export async function apiCall<T>(options: {
 }
 
 export function getApiUrl(host?: string | null) {
-  const base = host ?? get(apiBaseStore) ?? "http://localhost:8080/";
+  const base = host ?? get(apiBaseStore) ?? "http://localhost/";
   // noinspection HttpUrlsUsage
   return base.startsWith("http") ? base : `http://${base}`;
 }

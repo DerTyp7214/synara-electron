@@ -9,6 +9,7 @@ import { PlaybackStatus } from "$shared/models/playbackStatus";
 import type { UUID } from "node:crypto";
 import type { PagedResponse } from "$lib/api/apiTypes";
 import { loggedIn } from "$lib/api/auth";
+import { debugLog } from "$lib/logger";
 
 export enum PlayingSourceType {
   Playlist = "playlist",
@@ -122,6 +123,10 @@ export class MediaSession {
       await this.updatePlaybackVolume(volume);
     });
 
+    this.repeatMode.subscribe(() => {
+      this.writeToStorage();
+    });
+
     this.shuffled.subscribe(async (shuffled) => {
       if (this.initialLoad) return;
       this.writeToStorage();
@@ -131,23 +136,13 @@ export class MediaSession {
           (s) => s.id === currentSong?.id,
         );
         this.continuePlay = true;
-        this.currentIndex.set(index);
+        await this.playIndex(index);
       } else this.shuffleQueue();
     });
 
     this.currentIndex.subscribe(async (index) => {
       if (index === -1) return;
-      const song = this.songByIndex(index);
-
-      const streamUrl = getStreamUrl(song?.id);
-      if (!streamUrl) return;
-
-      if (!this.continuePlay || this.initialLoad)
-        await this.playUrl(streamUrl, !get(this.paused));
-      else this.continuePlay = false;
-      const currentSong = await songById(song.id);
-      this.currentSong.set(currentSong);
-
+      await this.playIndex(index, true);
       this.writeToStorage();
     });
 
@@ -173,21 +168,36 @@ export class MediaSession {
     return this.currentQueue()[index];
   }
 
-  private shuffleQueue(songId?: Song["id"]) {
-    const currentSongId = songId ?? get(this.currentSong)?.id;
-    const currentQueue = get(this.queue);
-    if (!currentSongId) return;
+  private async playIndex(index: number, fromSub: boolean = false) {
+    if (get(this.currentIndex) !== index) this.currentIndex.set(index);
+    else if (fromSub) return;
+    const song = this.songByIndex(index);
+
+    const streamUrl = getStreamUrl(song?.id);
+    if (!streamUrl) return;
+
+    if (!this.continuePlay || this.initialLoad)
+      await this.playUrl(streamUrl, !get(this.paused));
+    else this.continuePlay = false;
+    const currentSong = await songById(song.id);
+    this.currentSong.set(currentSong);
+  }
+
+  private shuffleQueue(songId?: Song["id"], queue?: Array<Song>): Array<Song> {
+    const currentQueue = queue ?? get(this.queue);
+    const currentSongId =
+      songId ?? get(this.currentSong)?.id ?? currentQueue[0]?.id;
+    if (!currentSongId) return currentQueue;
 
     const currentSong = currentQueue.find((s) => s.id === currentSongId);
-    if (!currentSong) return;
+    if (!currentSong) return currentQueue;
 
-    this.shuffledQueue.set([
+    const newQueue = [
       currentSong,
       ...toShuffledArray(currentQueue.filter((s) => s.id !== currentSongId)),
-    ]);
-    this.continuePlay = true;
-    this.currentIndex.set(-1);
-    this.currentIndex.set(0);
+    ];
+    this.shuffledQueue.set(newQueue);
+    return newQueue;
   }
 
   private async updateMetadata(song: Song) {
@@ -379,13 +389,11 @@ export class MediaSession {
     else this.currentIndex.set(get(this.currentIndex));
   }
 
-  async playSong(songId: Song["id"], shuffle: boolean = false) {
-    this.currentIndex.set(-1);
-    if (shuffle) this.shuffleQueue(songId);
-    const queue = this.currentQueue();
+  async playSong(songId: Song["id"], shuffled: boolean = false) {
+    const queue = shuffled ? this.shuffleQueue(songId) : this.currentQueue();
     const index = queue.findIndex((song) => song.id === songId);
     this.paused.set(false);
-    this.currentIndex.set(index);
+    await this.playIndex(index);
     await audioSession.play();
   }
 
@@ -477,7 +485,7 @@ export class MediaSession {
 
   setQueue(queue: Array<Song>) {
     this.queue.set(queue);
-    this.shuffleQueue();
+    this.shuffleQueue(undefined, queue);
     this.writeToStorage();
   }
 

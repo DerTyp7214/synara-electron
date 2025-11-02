@@ -5,7 +5,6 @@ import {
   PlayingSourceType,
 } from "$lib/audio/mediaSession";
 import { listSongsByPlaylist, type Playlist } from "$lib/api/playlists";
-import { tick } from "svelte";
 import { type Album, listSongsByAlbum } from "$lib/api/albums";
 
 export async function playSongById(id: Song["id"]) {
@@ -43,8 +42,8 @@ export async function playSong(
   mediaSession.setQueue(Array.from(playlist));
   mediaSession.playingSourceType.set(source.type);
   mediaSession.playingSourceId.set(source.id);
-  await tick();
   await mediaSession.playSong(song.id, shuffle);
+  mediaSession.shuffled.set(shuffle);
 }
 
 export async function playPlaylist(

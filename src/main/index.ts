@@ -79,6 +79,7 @@ function createWindow(): void {
 
   mainWindow.on("close", (event) => {
     if (!isQuitting) {
+      // TODO: read from settings if close should hide or quit
       event.preventDefault();
       mainWindow.hide();
     }
