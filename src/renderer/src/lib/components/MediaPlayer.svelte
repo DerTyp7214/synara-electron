@@ -189,12 +189,12 @@
   data-mode={isOpen ? "dark" : undefined}
   class={cn(
     "flex flex-shrink-0",
-    "fixed mt-0",
+    "app-card fixed mt-0",
     "flex-col transition-all",
     "text-surface-950-50",
     {
-      "bg-surface-50-950/70": !isOpen,
-      "bg-surface-50-950/40": isOpen,
+      "bg-surface-50-950/40": !isOpen,
+      "bg-surface-50-950/70": isOpen,
       "rounded-container shadow-md": !isOpen,
       "rounded-none shadow-none": isOpen,
       "right-0 bottom-0 left-0 m-2 h-24 max-h-24": !isOpen,
@@ -381,7 +381,7 @@
       <div class="rounded-base relative min-h-16 min-w-16 overflow-hidden">
         <Avatar class="rounded-base h-16 w-16">
           <Avatar.Image src={getImageUrl(song?.coverId, 64)} />
-          <Avatar.Fallback
+          <Avatar.Fallback class="bg-tertiary-100-900"
             >{song.title
               .split(" ")
               .slice(0, 2)

@@ -8,7 +8,8 @@
   import { health } from "$lib/api/main.js";
   import { settings, settingsService } from "$lib/settings";
   import Spinner from "$lib/components/Spinner.svelte";
-  import { isWindows } from "$src/lib/utils";
+  import { isMac, isWindows } from "$src/lib/utils";
+  import cn from "classnames";
 
   const { children } = $props();
 
@@ -39,6 +40,8 @@
   $effect(() => {
     document.documentElement.setAttribute("data-mode", $appTheme);
   });
+
+  document.documentElement.setAttribute("data-os", isMac() ? "mac" : "");
 </script>
 
 <svelte:head>
@@ -46,7 +49,13 @@
 </svelte:head>
 
 <main
-  class="bg-surface-50-950/40 flex h-screen min-h-screen w-screen flex-col transition-colors"
+  class={cn(
+    "bg-secondary-50/80",
+    "flex flex-col",
+    "h-screen min-h-screen w-screen",
+    "transition-colors",
+    "dark:bg-secondary-50/50",
+  )}
 >
   {#if isWindows()}
     <header class="bg-surface-50-950/60 draggable h-8 w-full"></header>

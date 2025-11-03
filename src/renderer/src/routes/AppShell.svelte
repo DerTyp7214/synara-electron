@@ -9,7 +9,7 @@
   import LikedSongsBg from "$lib/assets/LikedSongsBg.svelte";
   import { goto } from "$app/navigation";
   import { resolve } from "$app/paths";
-  import { isMac } from "$lib/utils";
+  import { isMac, nativeFullscreen } from "$lib/utils";
 
   const { children } = $props();
 
@@ -42,8 +42,12 @@
           class={cn(
             "bg-surface-50-950/40",
             "rounded-container shadow-md",
-            "mb-2 min-h-10 w-full",
-            "draggable",
+            "app-card w-full",
+            "draggable transition-all",
+            {
+              "mb-2 min-h-10": !$nativeFullscreen,
+              "m-0 min-h-0": $nativeFullscreen,
+            },
           )}
         ></div>
       {/if}
@@ -51,7 +55,7 @@
         class={cn(
           "bg-surface-50-950/40 flex-col",
           "flex-shrink-0 overflow-y-auto",
-          "flex h-full w-full",
+          "app-card flex w-full flex-1",
           "rounded-container shadow-md",
           "transition-colors",
         )}
@@ -88,10 +92,10 @@
     <div class="flex w-full max-w-full flex-col gap-2 overflow-hidden">
       <div
         class={cn(
-          "bg-surface-50-950/70",
+          "bg-surface-50-950/40",
           "flex-shrink-0 overflow-y-auto p-8",
           "rounded-container shadow-md",
-          "transition-colors",
+          "app-card transition-colors",
         )}
       >
         Top Bar
@@ -100,9 +104,9 @@
 
       <main
         class={cn(
-          "bg-surface-50-950/60 overflow-hidden",
+          "bg-surface-50-950/40 overflow-hidden",
           "rounded-container shadow-md",
-          "flex-1 transition-colors",
+          "app-card flex-1 transition-colors",
         )}
       >
         {@render children()}

@@ -18,6 +18,7 @@ import { MediaInfo } from "../shared/models/mediaInfo";
 import { MprisEventData, MprisEventName } from "../shared/types/api";
 import { Bonjour } from "bonjour-service";
 import { setupSettings, store } from "./settings";
+import liquidGlass from "electron-liquid-glass";
 
 const serveURL = serve({ directory: join(__dirname, "..", "renderer") });
 
@@ -41,6 +42,12 @@ ipcMain.handle("bonjour-start", () => {
   });
 });
 
+ipcMain.handle("get-is-fullscreen", (event) => {
+  const window = BrowserWindow.fromWebContents(event.sender);
+
+  return window?.isFullScreen() ?? false;
+});
+
 function createWindow(): void {
   // Create the browser window.
   mainWindow = new BrowserWindow({
@@ -50,7 +57,7 @@ function createWindow(): void {
     ...(platform.isLinux ? { icon, transparent: true } : {}),
     ...(platform.isMacOS
       ? {
-          vibrancy: "fullscreen-ui",
+          transparent: true,
           trafficLightPosition: {
             x: 20,
             y: 20,
@@ -88,9 +95,27 @@ function createWindow(): void {
     }
   });
 
+  mainWindow.on("enter-full-screen", () => {
+    mainWindow.webContents.send("fullscreen-status-changed", true);
+  });
+
+  mainWindow.on("leave-full-screen", () => {
+    mainWindow.webContents.send("fullscreen-status-changed", false);
+  });
+
   mainWindow.webContents.setWindowOpenHandler((details) => {
     void shell.openExternal(details.url);
     return { action: "deny" };
+  });
+
+  mainWindow.webContents.once("did-finish-load", () => {
+    const glassId = liquidGlass.addView(mainWindow.getNativeWindowHandle(), {
+      cornerRadius: 16,
+      tintColor: "#00000000",
+      opaque: false,
+    });
+
+    liquidGlass.unstable_setVariant(glassId, 2);
   });
 
   // HMR for renderer base on electron-vite cli.

@@ -10,6 +10,7 @@
 @plugin '@tailwindcss/typography';
 
 @custom-variant dark (&:where([data-mode=dark], [data-mode=dark] *));
+@custom-variant mac (&:where([data-os=mac], [data-os=mac] *));
 
 @source inline('{w,max-w}-{1..96}');
 
@@ -55,12 +56,20 @@
   *:focus-visible {
     outline: none;
   }
+
+  .app-card {
+    border: 1px solid color-mix(in oklab, light-dark(var(--color-surface-700), var(--color-surface-100)), 40% transparent);
+  }
+
+  body {
+    @apply mac:bg-secondary-50-950/50;
+  }
 }
 
 [data-mode="dark"] {
   color-scheme: dark;
 }
 
-html, body {
+html {
     background: transparent;
 }

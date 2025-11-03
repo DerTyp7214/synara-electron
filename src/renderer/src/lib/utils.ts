@@ -191,6 +191,16 @@ export const fullscreen = readable(false, (set) => {
   };
 });
 
+export const nativeFullscreen = readable(false, (set) => {
+  window.api.getIsFullScreen().then(set);
+
+  const handler = (fullscreen: boolean) => {
+    set(fullscreen);
+  };
+
+  return window.api?.onFullScreenChange(handler);
+});
+
 export function invertObject<
   T extends Record<E, B>,
   E extends PropertyKey,

@@ -86,7 +86,7 @@
     "transition-colors",
     clazz,
     {
-      "bg-surface-300-700/40": $currentSong?.id !== id,
+      "bg-surface-contrast-800-200/40": $currentSong?.id !== id,
       "bg-secondary-300-700/40": $currentSong?.id === id,
     },
   )}
@@ -103,7 +103,7 @@
   >
     <Avatar class="h-full w-full rounded-none">
       <Avatar.Image src={getImageUrl(coverId, size)} />
-      <Avatar.Fallback
+      <Avatar.Fallback class="bg-tertiary-100-900"
         >{title
           .split(" ")
           .slice(0, 2)

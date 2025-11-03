@@ -50,6 +50,8 @@ export interface CustomApi {
   isMac(): boolean;
   isLinux(): boolean;
   isWindows(): boolean;
+  getIsFullScreen(): Promise<boolean>;
+  onFullScreenChange(callback: (isFullscreen: boolean) => void): () => void;
   registerListener(listener: MprisEventListener<MprisEventName>): void;
   registerBonjourListener(listener: BonjourEventListener): () => void;
 }

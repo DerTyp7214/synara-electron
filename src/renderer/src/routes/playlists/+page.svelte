@@ -56,7 +56,7 @@
                 style="min-width: 128px; min-height: 128px; max-width: 128px; max-height: 128px;"
               >
                 <Avatar.Image src={getImageUrl(playlist.imageId, 128)} />
-                <Avatar.Fallback
+                <Avatar.Fallback class="bg-tertiary-100-900"
                   >{playlist.name
                     .split(" ")
                     .slice(0, 2)

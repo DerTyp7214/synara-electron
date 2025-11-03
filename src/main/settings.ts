@@ -94,6 +94,7 @@ export function setupSettings() {
   });
 
   ipcMain.handle("settings:set", (_, key, value) => {
+    if (value === undefined) return;
     if (APP_SETTINGS_KEYS.includes(key)) return store.set(key, value);
     else if (QUEUE_SETTINGS_KEYS.includes(key)) return queue.set(key, value);
     else if (TOKEN_SETTINGS_KEYS.includes(key)) return token.set(key, value);

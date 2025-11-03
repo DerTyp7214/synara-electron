@@ -45,7 +45,7 @@
     "gap-2 p-3 shadow-md",
     "text-start transition-colors",
     {
-      "bg-surface-300-700/40": !isSameSource,
+      "bg-surface-contrast-800-200/40": !isSameSource,
       "bg-secondary-300-700/40": isSameSource,
     },
   )}
@@ -56,7 +56,7 @@
     style="min-width: {size}px; min-height: {size}px; max-width: {size}px; max-height: {size}px;"
   >
     <Avatar.Image src={imageUrl} />
-    <Avatar.Fallback
+    <Avatar.Fallback class="bg-tertiary-100-900"
       >{name
         .split(" ")
         .slice(0, 2)

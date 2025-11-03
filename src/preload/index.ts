@@ -25,6 +25,14 @@ const api: CustomApi & SettingsAPI = {
   isWindows() {
     return process.platform === "win32";
   },
+  getIsFullScreen: () => ipcRenderer.invoke("get-is-fullscreen"),
+  onFullScreenChange: (callback: (isFullscreen: boolean) => void) => {
+    const handler = (_: IpcRendererEvent, isFullScreen: boolean) =>
+      callback(isFullScreen);
+    ipcRenderer.on("fullscreen-status-changed", handler);
+    return () =>
+      ipcRenderer.removeListener("fullscreen-status-changed", handler);
+  },
   registerListener(listener: MprisEventListener<MprisEventName>) {
     ipcRenderer.on(
       "mpris-event",
