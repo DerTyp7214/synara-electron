@@ -12,10 +12,6 @@
   };
 
   const { class: clazz = "" } = $props();
-
-  $effect(() => {
-    document.documentElement.setAttribute("data-mode", $theme);
-  });
 </script>
 
 <Switch {checked} {onCheckedChange} class={clazz}>

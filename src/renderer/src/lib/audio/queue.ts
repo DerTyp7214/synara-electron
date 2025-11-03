@@ -237,7 +237,9 @@ export class Queue implements Readable<QueueCallbackData> {
   }
 
   public getPage(pageSize: number) {
-    return Math.max(0, Math.ceil(get(this.currentIndex) / pageSize) - 1);
+    let index = get(this.currentIndex);
+    if (get(settings.shuffle)) index = get(this.shuffledMapStore)[index];
+    return Math.max(0, Math.ceil(index / pageSize) - 1);
   }
 
   public getCurrentSong() {
@@ -250,6 +252,10 @@ export class Queue implements Readable<QueueCallbackData> {
 
   public getSongById(songId: Song["id"]) {
     return get(this.queueStore).find((s) => s.id === songId);
+  }
+
+  public getIndexById(songId: Song["id"]) {
+    return get(this.queueStore).findIndex((s) => s.id === songId);
   }
 
   public setWriteToSettings(writeToSettings: boolean) {

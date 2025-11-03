@@ -12,6 +12,8 @@ import {
 } from "$lib/api/albums";
 import { type PlayingSource, PlayingSourceType } from "$shared/types/settings";
 import { Queue } from "$lib/audio/queue";
+import { get } from "svelte/store";
+import { settings } from "$lib/settings";
 
 export async function playSongById(id: Song["id"]) {
   if (!mediaSession.getQueue().find((s) => s.id === id)) {
@@ -56,16 +58,19 @@ export async function playSong(
   song: Song,
   playlist: Array<Song> = [song],
   source: PlayingSource,
-  shuffle: boolean = false,
+  shuffle: boolean = get(settings.shuffle),
 ): Promise<void> {
-  mediaSession.setQueue(
-    new Queue({
-      id: source.id,
-      name: source.type,
-      initialQueue: playlist,
-    }),
-  );
-  mediaSession.playingSourceType.set(source.type);
+  const currentQueue = get(mediaSession.getDerivedQueue());
+  if (currentQueue.id !== source.id) {
+    mediaSession.setQueue(
+      new Queue({
+        id: source.id,
+        name: source.type,
+        initialQueue: playlist,
+      }),
+    );
+    mediaSession.playingSourceType.set(source.type);
+  }
   await mediaSession.playSong(song.id, shuffle);
 }
 

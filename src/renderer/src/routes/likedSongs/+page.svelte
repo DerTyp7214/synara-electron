@@ -11,7 +11,7 @@
 
   const playingSource: PlayingSource = {
     type: PlayingSourceType.LikedSongs,
-    id: "----",
+    id: "--LikedSongs--",
   };
 
   let items: Array<Song> = $state([]);

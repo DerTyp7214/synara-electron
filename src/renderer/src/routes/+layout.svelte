@@ -27,12 +27,17 @@
   const apiBase = $derived(settings.apiBase);
   const token = $derived(settings.token);
   const settingsLoaded = $derived(settingsService.isLoaded());
+  const appTheme = $derived(settings.theme);
 
   $effect(() => {
     if (!$settingsLoaded) return;
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     $token;
     checkApiUrl($apiBase);
+  });
+
+  $effect(() => {
+    document.documentElement.setAttribute("data-mode", $appTheme);
   });
 </script>
 
