@@ -10,6 +10,8 @@ import { RepeatMode } from "$shared/models/repeatMode";
 import { nullSong } from "$shared/types/settings";
 import { settings } from "$lib/settings";
 import type { UUID } from "node:crypto";
+import { audioSession } from "$lib/audio/audioSession";
+import { mediaSession } from "$lib/audio/mediaSession";
 
 export type QueueCallbackData = {
   queue: Array<Song>;
@@ -24,8 +26,8 @@ export class Queue implements Readable<QueueCallbackData> {
 
   private readonly queueStore: Writable<Array<Song>>;
   private readonly shuffledMapStore: Writable<ShuffleMap>;
-  private readonly currentIndexStore: Writable<number>;
 
+  public readonly currentIndexStore: Writable<number>;
   public readonly queue: Readable<Array<Song>>;
   public readonly duration: Readable<number>;
   public readonly durationLeft: Readable<number>;
@@ -71,6 +73,10 @@ export class Queue implements Readable<QueueCallbackData> {
 
     this.shuffledMapStore.subscribe((map) => {
       if (this.writeToSettings) settings.shuffleMap.set(map);
+    });
+
+    this.currentIndexStore.subscribe((index) => {
+      if (this.writeToSettings) settings.currentIndex.set(index);
     });
 
     this.setShuffled(shuffled);
@@ -163,11 +169,19 @@ export class Queue implements Readable<QueueCallbackData> {
     } else {
       this.shuffledMapStore.set({});
     }
+    const currentSong = get(settings.currentSong);
+    const index =
+      get(this.queue)?.findIndex((s) => s.id === currentSong?.id) ?? -1;
+    if (index > -1) this.setIndex(index);
   }
 
   public setIndex(index: number) {
+    const sameIndex = index === get(this.currentIndexStore);
     const maxIndex = get(this.queueStore).length - 1;
-    this.currentIndexStore.set(Math.max(0, Math.min(index, maxIndex)));
+    if (!sameIndex)
+      this.currentIndexStore.set(Math.max(0, Math.min(index, maxIndex)));
+
+    return sameIndex;
   }
 
   public nextSong() {
@@ -175,7 +189,12 @@ export class Queue implements Readable<QueueCallbackData> {
     const index = get(this.currentIndexStore) + 1;
     if (index > maxIndex && get(settings.repeatMode) === RepeatMode.List)
       this.currentIndexStore.set(0);
-    else this.currentIndexStore.set(Math.max(0, Math.min(index, maxIndex)));
+    else if (index > maxIndex) {
+      audioSession.seekToSeconds(audioSession.getDurationInSeconds());
+      mediaSession.pause();
+      mediaSession.paused.set(true);
+    } else this.currentIndexStore.set(Math.max(0, Math.min(index, maxIndex)));
+    return get(this.currentIndexStore);
   }
 
   public previousSong() {
@@ -184,6 +203,7 @@ export class Queue implements Readable<QueueCallbackData> {
     if (index < 0 && get(settings.repeatMode) === RepeatMode.List)
       this.currentIndexStore.set(maxIndex);
     else this.currentIndexStore.set(Math.max(0, Math.min(index, maxIndex)));
+    return get(this.currentIndexStore);
   }
 
   public length(): number {

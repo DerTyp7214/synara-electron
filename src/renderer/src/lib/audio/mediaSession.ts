@@ -11,6 +11,7 @@ import { loggedIn } from "$lib/api/auth";
 import { settings, settingsService } from "$lib/settings";
 import { Queue } from "$lib/audio/queue";
 import type { UUID } from "node:crypto";
+import { debugLog } from "$lib/logger";
 
 // noinspection JSUnusedGlobalSymbols
 export class MediaSession {
@@ -34,8 +35,6 @@ export class MediaSession {
   volume = settings.volume;
   shuffled = settings.shuffle;
   repeatMode = settings.repeatMode;
-
-  currentIndex = writable<number>(-2);
 
   currentPosition = writable<number>(0);
   currentBuffer = writable<number>(0);
@@ -82,8 +81,14 @@ export class MediaSession {
     );
 
     this.queue.subscribe((queue) => {
-      this.playingSourceId.set(queue.id as UUID);
       queue.setWriteToSettings(true);
+      this.playingSourceId.set(queue.id as UUID);
+
+      queue.currentIndexStore.subscribe(async (index) => {
+        debugLog("debug", "currentIndex", index);
+        if (index === -1) return;
+        await this.playIndex(index, true);
+      });
     });
 
     const currentId = get(settings.currentSong)?.id;
@@ -134,11 +139,6 @@ export class MediaSession {
       await this.updatePlaybackVolume(volume);
     });
 
-    this.currentIndex.subscribe(async (index) => {
-      if (index === -1) return;
-      await this.playIndex(index, true);
-    });
-
     this.currentSong.subscribe(async (song) => {
       if (!song) return;
       await this.updateMetadata(song);
@@ -163,8 +163,7 @@ export class MediaSession {
   }
 
   private async playIndex(index: number, fromSub: boolean = false) {
-    if (get(this.currentIndex) !== index) this.currentIndex.set(index);
-    else if (fromSub) return;
+    if (this.currentQueue().setIndex(index) && fromSub) return;
     const song = this.songByIndex(index);
 
     const streamUrl = getStreamUrl(song?.id);
@@ -358,7 +357,6 @@ export class MediaSession {
   async play() {
     if (!this.hasPlayed) return await this.playSong(get(this.currentSong)!.id);
     if (audioSession.hasSource()) await audioSession.play();
-    else this.currentIndex.set(get(this.currentIndex));
   }
 
   async playSong(songId: Song["id"], shuffled: boolean = false) {
@@ -372,36 +370,13 @@ export class MediaSession {
   }
 
   async playNext() {
-    const index = get(this.currentIndex);
-    const newIndex = index + 1;
-    if (newIndex > this.currentQueue().length() - 1) {
-      if (get(this.repeatMode) === RepeatMode.List) {
-        await this.playIndex(0);
-        this.currentIndex.set(0);
-        return;
-      }
-      audioSession.seekToSeconds(audioSession.getDurationInSeconds());
-      this.pause();
-      this.paused.set(true);
-      await this.playIndex(index);
-      this.currentIndex.set(index);
-    } else {
-      await this.playIndex(newIndex);
-      this.currentIndex.set(newIndex);
-    }
+    const index = this.currentQueue().nextSong();
+    await this.playIndex(index);
   }
 
   async playPrev() {
-    const index = get(this.currentIndex);
-    const newIndex = index - 1;
-    if (newIndex < 0) {
-      const startIndex = this.currentQueue().length() - 1;
-      await this.playIndex(startIndex);
-      this.currentIndex.set(startIndex);
-    } else {
-      await this.playIndex(newIndex);
-      this.currentIndex.set(newIndex);
-    }
+    const index = this.currentQueue().previousSong();
+    await this.playIndex(index);
   }
 
   pause() {
@@ -449,7 +424,10 @@ export class MediaSession {
   }
 
   getPage(pageSize: number) {
-    return Math.max(0, Math.ceil(get(this.currentIndex) / pageSize) - 1);
+    return Math.max(
+      0,
+      Math.ceil(get(this.currentQueue().currentIndexStore) / pageSize) - 1,
+    );
   }
 
   setQueue(queue: Queue) {
