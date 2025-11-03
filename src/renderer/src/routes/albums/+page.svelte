@@ -3,7 +3,6 @@
   import { page } from "$app/state";
   import type { PagedResponse } from "$lib/api/apiTypes";
   import type { Song } from "$lib/api/songs";
-  import { PlayingSourceType } from "$lib/audio/mediaSession";
   import { listSongsByAlbum, type Album, byId } from "$lib/api/albums";
   import { getImageUrl } from "$lib/utils";
   import { t } from "$lib/i18n/i18n";
@@ -15,6 +14,7 @@
   import Spinner from "$lib/components/Spinner.svelte";
   import cn from "classnames";
   import { resolve } from "$app/paths";
+  import { PlayingSourceType } from "$shared/types/settings";
 
   let albumId = $derived(page.url.searchParams.get("albumId")) as
     | Album["id"]
