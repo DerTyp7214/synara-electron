@@ -36,7 +36,6 @@ export interface TokenSettings {
 
 export interface MediaSettings {
   currentIndex: number;
-  currentSong: Song | undefined;
   playingSourceType: PlayingSourceType;
   playingSourceId: PlayingSource["id"];
   shuffle: boolean;
@@ -77,7 +76,6 @@ export const TOKEN_SETTINGS_KEYS: Array<keyof TokenSettings> = ["token"];
 
 export const MEDIA_SETTINGS_KEYS: Array<keyof MediaSettings> = [
   "currentIndex",
-  "currentSong",
   "playingSourceType",
   "playingSourceId",
   "shuffle",

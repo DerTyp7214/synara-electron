@@ -1,5 +1,5 @@
 import { audioSession } from "$lib/audio/audioSession";
-import { getContentLength, type Song, songById } from "$lib/api/songs";
+import { getContentLength, type Song } from "$lib/api/songs";
 import { getStreamUrl, roundRect } from "$lib/utils";
 import { derived, get, type Unsubscriber, writable } from "svelte/store";
 import { createCurve } from "$lib/audio/utils";
@@ -11,7 +11,7 @@ import { loggedIn } from "$lib/api/auth";
 import { settings, settingsService } from "$lib/settings";
 import { Queue } from "$lib/audio/queue";
 import type { UUID } from "node:crypto";
-import { debugLog } from "$lib/logger";
+import { nullSong } from "$shared/types/settings";
 
 // noinspection JSUnusedGlobalSymbols
 export class MediaSession {
@@ -31,7 +31,6 @@ export class MediaSession {
   bitrate = writable<number>(0);
   muted = writable<boolean>(false);
 
-  currentSong = settings.currentSong;
   volume = settings.volume;
   shuffled = settings.shuffle;
   repeatMode = settings.repeatMode;
@@ -73,6 +72,7 @@ export class MediaSession {
     this.queue.set(
       new Queue({
         id: get(settings.playingSourceId),
+        shuffled: get(settings.shuffle),
         initialIndex: get(settings.currentIndex),
         initialQueue: get(settings.queue),
         initialShuffledMap: get(settings.shuffleMap),
@@ -84,14 +84,13 @@ export class MediaSession {
       queue.setWriteToSettings(true);
       this.playingSourceId.set(queue.id as UUID);
 
-      queue.currentIndexStore.subscribe(async (index) => {
-        debugLog("debug", "currentIndex", index);
-        if (index === -1) return;
-        await this.playIndex(index, true);
+      queue.currentSong.subscribe(async (song) => {
+        if (!song) return;
+        await this.updateMetadata(song);
       });
     });
 
-    const currentId = get(settings.currentSong)?.id;
+    const currentId = get(this.currentQueue().currentSong)?.id;
     if (currentId) audioSession.setSrc(getStreamUrl(currentId));
 
     audioSession.onPlay(() => this.paused.set(false));
@@ -123,7 +122,7 @@ export class MediaSession {
     audioSession.onTimeUpdated(async (position) => {
       this.currentPosition.set(position);
 
-      const song = get(this.currentSong);
+      const song = this.currentQueue().getCurrentSong();
       if (!song) return;
 
       if (audioSession.getBuffers().length > 0) {
@@ -137,11 +136,6 @@ export class MediaSession {
 
     this.volume.subscribe(async (volume) => {
       await this.updatePlaybackVolume(volume);
-    });
-
-    this.currentSong.subscribe(async (song) => {
-      if (!song) return;
-      await this.updateMetadata(song);
     });
 
     this.paused.subscribe(async (paused) => {
@@ -158,13 +152,8 @@ export class MediaSession {
     return get(this.queue);
   }
 
-  private songByIndex(index: number) {
-    return this.currentQueue().get().queue[index];
-  }
-
-  private async playIndex(index: number, fromSub: boolean = false) {
-    if (this.currentQueue().setIndex(index) && fromSub) return;
-    const song = this.songByIndex(index);
+  private async _playSong(song?: Song) {
+    if (!song || song === nullSong) return;
 
     const streamUrl = getStreamUrl(song?.id);
     if (!streamUrl) return;
@@ -172,8 +161,6 @@ export class MediaSession {
     if (!this.continuePlay || this.initialLoad)
       await this.playUrl(streamUrl, !get(this.paused));
     else this.continuePlay = false;
-    const currentSong = await songById(song.id);
-    this.currentSong.set(currentSong);
   }
 
   private async updateMetadata(song: Song) {
@@ -189,7 +176,7 @@ export class MediaSession {
 
   private async updatePlaybackStatus(status: PlaybackStatus) {
     await electronController.updateMediaControls(
-      get(this.currentSong),
+      this.currentQueue().getCurrentSong(),
       status,
       get(this.shuffled),
       get(this.repeatMode),
@@ -200,7 +187,7 @@ export class MediaSession {
 
   private async updatePlaybackPosition(position: number) {
     await electronController.updateMediaControls(
-      get(this.currentSong),
+      this.currentQueue().getCurrentSong(),
       get(this.paused) ? PlaybackStatus.Paused : PlaybackStatus.Playing,
       get(this.shuffled),
       get(this.repeatMode),
@@ -211,7 +198,7 @@ export class MediaSession {
 
   private async updatePlaybackVolume(volume: number) {
     await electronController.updateMediaControls(
-      get(this.currentSong),
+      this.currentQueue().getCurrentSong(),
       get(this.paused) ? PlaybackStatus.Paused : PlaybackStatus.Playing,
       get(this.shuffled),
       get(this.repeatMode),
@@ -355,28 +342,32 @@ export class MediaSession {
   }
 
   async play() {
-    if (!this.hasPlayed) return await this.playSong(get(this.currentSong)!.id);
+    if (!this.hasPlayed)
+      return await this.playSong(this.currentQueue().getCurrentSong().id);
     if (audioSession.hasSource()) await audioSession.play();
   }
 
-  async playSong(songId: Song["id"], shuffled: boolean = false) {
+  async playSong(
+    songId: Song["id"],
+    shuffled: boolean = get(settings.shuffle),
+  ) {
     this.currentQueue().setShuffled(shuffled);
 
-    const queue = this.currentQueue().get().queue;
-    const index = queue.findIndex((song) => song.id === songId);
+    const song = this.currentQueue().getSongById(songId);
+    if (!song) return;
     this.paused.set(false);
-    await this.playIndex(index);
+    await this._playSong(song);
     await audioSession.play();
   }
 
   async playNext() {
     const index = this.currentQueue().nextSong();
-    await this.playIndex(index);
+    await this._playSong(this.currentQueue().getSongByIndex(index));
   }
 
   async playPrev() {
     const index = this.currentQueue().previousSong();
-    await this.playIndex(index);
+    await this._playSong(this.currentQueue().getSongByIndex(index));
   }
 
   pause() {
@@ -400,7 +391,7 @@ export class MediaSession {
   }
 
   getDerivedQueue() {
-    return get(this.queue).queue;
+    return this.queue;
   }
 
   async loadSongsFromQueue(
@@ -421,13 +412,6 @@ export class MediaSession {
       data,
       hasNextPage: data.length === pageSize,
     };
-  }
-
-  getPage(pageSize: number) {
-    return Math.max(
-      0,
-      Math.ceil(get(this.currentQueue().currentIndexStore) / pageSize) - 1,
-    );
   }
 
   setQueue(queue: Queue) {

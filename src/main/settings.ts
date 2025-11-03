@@ -4,7 +4,6 @@ import {
   APP_SETTINGS_KEYS,
   AppSettings,
   MediaSettings,
-  nullSong,
   PlayingSourceType,
   QUEUE_SETTINGS_KEYS,
   QueueSettings,
@@ -51,10 +50,6 @@ const mediaSchema: Schema<MediaSettings> = {
   currentIndex: {
     type: "number",
     default: -1,
-  },
-  currentSong: {
-    type: "object",
-    default: nullSong,
   },
   playingSourceType: {
     type: "string",

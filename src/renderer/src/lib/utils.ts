@@ -191,4 +191,18 @@ export const fullscreen = readable(false, (set) => {
   };
 });
 
+export function invertObject<
+  T extends Record<E, B>,
+  E extends PropertyKey,
+  B extends PropertyKey,
+>(sourceObject: T): Record<B, E> {
+  return Object.entries(sourceObject).reduce(
+    (acc, [key, value]) => {
+      acc[value as B] = key as E;
+      return acc;
+    },
+    {} as Record<B, E>,
+  );
+}
+
 export const { isMac, isLinux, isWindows } = window.api;

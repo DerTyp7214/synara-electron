@@ -8,6 +8,7 @@
   import { login } from "$lib/api/auth";
   import { goto } from "$app/navigation";
   import { resolve } from "$app/paths";
+  import { isMac } from "$lib/utils";
 
   let username = $state("");
   let password = $state("");
@@ -37,7 +38,15 @@
 
 <main class="draggable flex h-full w-full items-center justify-center">
   <div
-    class="interactive absolute top-2 left-2 opacity-0 transition-opacity hover:opacity-100"
+    class={cn(
+      "interactive absolute",
+      "left-2 opacity-0",
+      "transition-opacity hover:opacity-100",
+      {
+        "top-2": !isMac(),
+        "top-16": isMac(),
+      },
+    )}
   >
     <LightSwitch />
   </div>

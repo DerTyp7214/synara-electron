@@ -37,7 +37,7 @@
   import InfiniteScroll from "$lib/components/InfiniteScroll.svelte";
   import Spinner from "$lib/components/Spinner.svelte";
   import type { Song } from "$lib/api/songs";
-  import LiquidGlassContainer from "$lib/components/LiquidGlassContainer.svelte";
+  import { nullSong } from "$shared/types/settings";
 
   let {
     isOpen = $bindable(false),
@@ -56,7 +56,8 @@
   const currentBuffer = $derived(mediaSession.currentBuffer);
   const currentVolume = $derived(mediaSession.volume);
   const currentQueue = $derived(mediaSession.getDerivedQueue());
-  const currentSong = $derived(mediaSession.currentSong);
+  const currentSongQueue = $derived.by(() => $currentQueue.queue);
+  const currentSong = $derived.by(() => $currentQueue.currentSong);
   const repeatMode = $derived(mediaSession.repeatMode);
   const shuffled = $derived(mediaSession.shuffled);
   const isPaused = $derived(mediaSession.paused);
@@ -73,7 +74,7 @@
 
       switch (action) {
         case "shuffle": {
-          $shuffled = !$shuffled;
+          $currentQueue.setShuffled(!$shuffled);
           break;
         }
         case "play": {
@@ -121,10 +122,7 @@
   }
 
   const song = $derived.by(() => ({
-    title: "No Song",
-    bitRate: 0,
-    duration: 0,
-    artists: [],
+    ...nullSong,
     ...$currentSong,
   }));
 
@@ -151,8 +149,8 @@
   const pageSize = 30;
 
   let queue: Array<Song> = $state([]);
-  let nextUpPage: number = $state(mediaSession.getPage(pageSize) - 1);
-  let nextDownPage: number = $state(mediaSession.getPage(pageSize));
+  let nextUpPage: number = $state($currentQueue.getPage(pageSize) - 1);
+  let nextDownPage: number = $state($currentQueue.getPage(pageSize));
   let hasMoreUp: boolean = $state(true);
   let hasMoreDown: boolean = $state(true);
 
@@ -161,8 +159,8 @@
     $shuffled;
     $playingSourceId;
 
-    nextUpPage = mediaSession.getPage(pageSize) - 1;
-    nextDownPage = mediaSession.getPage(pageSize);
+    nextUpPage = $currentQueue.getPage(pageSize) - 1;
+    nextDownPage = $currentQueue.getPage(pageSize);
 
     hasMoreUp = true;
     hasMoreDown = true;
@@ -241,11 +239,11 @@
       )}
     >
       {#if showQueue}
-        {#key [$shuffled, $playingSourceId]}
+        {#key [$shuffled, $playingSourceId, $currentSongQueue]}
           <InfiniteScroll
             class="flex w-full flex-1 flex-col gap-2 overflow-y-auto p-8"
-            initialPageUp={mediaSession.getPage(pageSize) - 1}
-            initialPageDown={mediaSession.getPage(pageSize)}
+            initialPageUp={$currentQueue.getPage(pageSize) - 1}
+            initialPageDown={$currentQueue.getPage(pageSize)}
             bind:nextUpPage
             bind:nextDownPage
             bind:hasMoreUp
@@ -263,7 +261,7 @@
                   id: $playingSourceId,
                 }}
                 songRef={item}
-                playlistRef={$currentQueue}
+                playlistRef={$currentSongQueue}
                 showNumber={index + 1}
               />
             {/snippet}

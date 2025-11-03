@@ -10,7 +10,8 @@
   import ToolTip from "$lib/components/ToolTip.svelte";
   import { playSong } from "$lib/mediaPlayer";
   import Explicit from "$lib/assets/Explicit.svelte";
-  import { mediaSession, type PlayingSource } from "$lib/audio/mediaSession";
+  import { mediaSession } from "$lib/audio/mediaSession";
+  import type { PlayingSource } from "$shared/types/settings";
 
   type SongOrigin = "tidal" | "spotify";
 
@@ -61,7 +62,8 @@
 
   const textClasses = ["line-clamp-1", "overflow-ellipsis", ...baseTextClasses];
 
-  const currentSong = $derived(mediaSession.currentSong);
+  const currentQueue = mediaSession.getDerivedQueue();
+  const currentSong = $derived($currentQueue.currentSong);
 
   $effect(() => {
     if (scrollIntoActive && $currentSong?.id === id) {

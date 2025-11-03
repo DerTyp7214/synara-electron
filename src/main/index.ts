@@ -59,22 +59,21 @@ function createWindow(): void {
       : {}),
     ...(platform.isWindows
       ? {
-          backgroundMaterial: "mica",
-          titleBarStyle: "default",
-          frame: true,
-          autoHideMenuBar: false,
+          frame: false,
+          backgroundMaterial: "acrylic",
+          backgroundColor: "#00000000",
+          transparent: true,
           titleBarOverlay: true,
         }
       : {
-          titleBarStyle: "hidden",
           frame: false,
+          titleBarStyle: "hidden",
           autoHideMenuBar: true,
           titleBarOverlay: false,
         }),
     webPreferences: {
       preload: join(__dirname, "../preload/index.js"),
       sandbox: false,
-      devTools: true,
     },
   });
 

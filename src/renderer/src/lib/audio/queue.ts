@@ -12,6 +12,7 @@ import { settings } from "$lib/settings";
 import type { UUID } from "node:crypto";
 import { audioSession } from "$lib/audio/audioSession";
 import { mediaSession } from "$lib/audio/mediaSession";
+import { invertObject } from "$lib/utils";
 
 export type QueueCallbackData = {
   queue: Array<Song>;
@@ -26,12 +27,13 @@ export class Queue implements Readable<QueueCallbackData> {
 
   private readonly queueStore: Writable<Array<Song>>;
   private readonly shuffledMapStore: Writable<ShuffleMap>;
+  private readonly currentIndexStore: Writable<number>;
 
-  public readonly currentIndexStore: Writable<number>;
   public readonly queue: Readable<Array<Song>>;
   public readonly duration: Readable<number>;
   public readonly durationLeft: Readable<number>;
   public readonly currentSong: Readable<Song>;
+  public readonly currentIndex: Readable<number>;
 
   private writeToSettings = false;
 
@@ -65,7 +67,9 @@ export class Queue implements Readable<QueueCallbackData> {
 
     this.queueStore = writable(JSON.parse(JSON.stringify(initialQueue)));
     this.currentIndexStore = writable(initialIndex);
-    this.shuffledMapStore = writable(structuredClone(initialShuffledMap));
+    this.shuffledMapStore = writable(
+      JSON.parse(JSON.stringify(initialShuffledMap)),
+    );
 
     this.queueStore.subscribe((queue) => {
       if (this.writeToSettings) settings.queue.set(queue);
@@ -79,28 +83,27 @@ export class Queue implements Readable<QueueCallbackData> {
       if (this.writeToSettings) settings.currentIndex.set(index);
     });
 
-    this.setShuffled(shuffled);
+    if (this.writeToSettings) this.setShuffled(shuffled);
 
     settings.shuffle.subscribe((shuffled) => {
       this.setShuffled(shuffled);
     });
 
     this.queue = derived(
-      [this.queueStore, settings.shuffle, this.shuffledMapStore],
-      ([$queue, $shuffled, $shuffledMap]) => {
-        if (!$shuffled) return Array.from($queue);
-
+      [this.queueStore, this.shuffledMapStore],
+      ([$queue, $shuffledMap]) => {
         return (
           $queue
             .map((s, i) => ({
               ...s,
-              sortKey: $shuffledMap[i],
+              sortKey: $shuffledMap[i] ?? i,
             }))
             .toSorted((a, b) => a.sortKey - b.sortKey)
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             .map(({ sortKey, ...item }) => item)
         );
       },
+      [],
     ) as Readable<Array<Song>>;
 
     this.duration = derived(this.queueStore, ($queue) =>
@@ -118,17 +121,25 @@ export class Queue implements Readable<QueueCallbackData> {
       },
     );
 
+    this.currentIndex = derived(
+      [this.currentIndexStore],
+      ([$index]) => {
+        return $index;
+      },
+      -1,
+    );
+
     this.currentSong = derived(
-      [this.queue, this.currentIndexStore],
+      [this.queueStore, this.currentIndexStore],
       ([$queue, $currentIndex], set) => {
         const song = $queue[$currentIndex];
-        if (!song) set(nullSong);
+        if (!song) return;
         else
           songById(song.id)
             .then((song) => set(song))
             .catch(() => set(nullSong));
       },
-      get(this.queue)?.[get(this.currentIndexStore)] ?? nullSong,
+      get(this.queue)?.[get(this.currentIndex)] ?? nullSong,
     );
 
     const mainStore = derived(
@@ -161,18 +172,16 @@ export class Queue implements Readable<QueueCallbackData> {
   }
 
   public setShuffled(shuffled: boolean) {
-    settings.shuffle.set(shuffled);
+    const currentShuffle = get(settings.shuffle);
+    if (currentShuffle === shuffled) return;
+
     if (shuffled) {
-      this.shuffledMapStore.set(
-        this.generateShuffleMap(get(this.queueStore).length),
-      );
+      const shuffleMap = this.generateShuffleMap(get(this.queueStore).length);
+      this.shuffledMapStore.set(shuffleMap);
     } else {
       this.shuffledMapStore.set({});
     }
-    const currentSong = get(settings.currentSong);
-    const index =
-      get(this.queue)?.findIndex((s) => s.id === currentSong?.id) ?? -1;
-    if (index > -1) this.setIndex(index);
+    settings.shuffle.set(shuffled);
   }
 
   public setIndex(index: number) {
@@ -186,24 +195,34 @@ export class Queue implements Readable<QueueCallbackData> {
 
   public nextSong() {
     const maxIndex = get(this.queueStore).length - 1;
-    const index = get(this.currentIndexStore) + 1;
+    let index = get(this.currentIndex);
+    if (get(settings.shuffle)) {
+      const map = get(this.shuffledMapStore);
+      index = map[index] + 1;
+      index = Number(invertObject(map)[index] ?? NaN);
+    } else index += 1;
     if (index > maxIndex && get(settings.repeatMode) === RepeatMode.List)
-      this.currentIndexStore.set(0);
+      this.setIndex(0);
     else if (index > maxIndex) {
       audioSession.seekToSeconds(audioSession.getDurationInSeconds());
       mediaSession.pause();
       mediaSession.paused.set(true);
-    } else this.currentIndexStore.set(Math.max(0, Math.min(index, maxIndex)));
-    return get(this.currentIndexStore);
+    } else this.setIndex(index);
+    return get(this.currentIndex);
   }
 
   public previousSong() {
     const maxIndex = get(this.queueStore).length - 1;
-    const index = get(this.currentIndexStore) - 1;
+    let index = get(this.currentIndex);
+    if (get(settings.shuffle)) {
+      const map = get(this.shuffledMapStore);
+      index = map[index] - 1;
+      index = Number(invertObject(map)[index] ?? NaN);
+    } else index -= 1;
     if (index < 0 && get(settings.repeatMode) === RepeatMode.List)
-      this.currentIndexStore.set(maxIndex);
-    else this.currentIndexStore.set(Math.max(0, Math.min(index, maxIndex)));
-    return get(this.currentIndexStore);
+      this.setIndex(maxIndex);
+    else this.setIndex(index);
+    return get(this.currentIndex);
   }
 
   public length(): number {
@@ -213,8 +232,24 @@ export class Queue implements Readable<QueueCallbackData> {
   public get(): QueueCallbackData {
     return {
       queue: get(this.queue),
-      index: get(this.currentIndexStore),
+      index: get(this.currentIndex),
     };
+  }
+
+  public getPage(pageSize: number) {
+    return Math.max(0, Math.ceil(get(this.currentIndex) / pageSize) - 1);
+  }
+
+  public getCurrentSong() {
+    return get(this.currentSong);
+  }
+
+  public getSongByIndex(index: number) {
+    return get(this.queueStore)[index];
+  }
+
+  public getSongById(songId: Song["id"]) {
+    return get(this.queueStore).find((s) => s.id === songId);
   }
 
   public setWriteToSettings(writeToSettings: boolean) {
@@ -240,15 +275,19 @@ export class Queue implements Readable<QueueCallbackData> {
 
   private generateShuffleMap(listLength: number): ShuffleMap {
     const indices = Array.from({ length: listLength }, (_, i) => i);
-    const targetIndex = get(this.currentIndexStore);
 
-    [indices[0], indices[targetIndex]] = [indices[targetIndex], indices[0]];
-
-    for (let i = listLength - 1; i > 1; i--) {
+    for (let i = listLength - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * i) + 1;
 
       [indices[i], indices[j]] = [indices[j], indices[i]];
     }
+
+    const indexWhereStartIndexIs = indices.indexOf(get(this.currentIndex));
+
+    [indices[0], indices[indexWhereStartIndexIs]] = [
+      indices[indexWhereStartIndexIs],
+      indices[0],
+    ];
 
     const shuffleMap: ShuffleMap = {};
     for (let i = 0; i < listLength; i++) {

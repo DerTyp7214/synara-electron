@@ -8,6 +8,7 @@
   import { health } from "$lib/api/main.js";
   import { settings, settingsService } from "$lib/settings";
   import Spinner from "$lib/components/Spinner.svelte";
+  import { isWindows } from "$src/lib/utils";
 
   const { children } = $props();
 
@@ -26,7 +27,6 @@
   const apiBase = $derived(settings.apiBase);
   const token = $derived(settings.token);
   const settingsLoaded = $derived(settingsService.isLoaded());
-  const appTheme = $derived(settings.theme);
 
   $effect(() => {
     if (!$settingsLoaded) return;
@@ -41,8 +41,11 @@
 </svelte:head>
 
 <main
-  class="bg-surface-50-950/40 h-screen min-h-screen w-screen transition-colors"
+  class="bg-surface-50-950/40 flex h-screen min-h-screen w-screen flex-col transition-colors"
 >
+  {#if isWindows()}
+    <header class="bg-surface-50-950/60 draggable h-8 w-full"></header>
+  {/if}
   {#if !$settingsLoaded}
     <div class="flex h-full w-full items-center justify-center">
       <Spinner size={56} />
