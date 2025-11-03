@@ -11,9 +11,10 @@
   import { onMount } from "svelte";
   import type { Service } from "bonjour-service";
   import { health } from "$lib/api/main";
-  import { apiBaseStore } from "$lib/api/utils";
+  import { settings } from "$lib/settings";
+  import { get } from "svelte/store";
 
-  let apiAddress: string = $state($apiBaseStore ?? "");
+  let apiAddress: string = $state(get(settings.apiBase) ?? "");
   let errorMessage = $state("");
 
   let loading = $state<boolean>(false);
@@ -28,7 +29,7 @@
     const response = await health(apiAddress);
 
     if (response.available) {
-      apiBaseStore.set(apiAddress);
+      settings.apiBase.set(apiAddress);
       await goto(resolve("/"), { replaceState: true });
     } else errorMessage = "Address is invalid or server not reachable.";
 
@@ -36,13 +37,21 @@
   }
 
   onMount(() => {
-    const unsubscriber = window.api?.registerBonjourListener((service) => {
-      services = [...services, service];
+    const apiBaseUnsubscriber = settings.apiBase.subscribe((apiBase) => {
+      if (apiBase) apiAddress = apiBase;
     });
+    const bonjourUnsubscriber = window.api?.registerBonjourListener(
+      (service) => {
+        services = [...services, service];
+      },
+    );
 
     if (apiAddress.length > 0) handleSubmit(new CustomEvent(""));
 
-    return () => unsubscriber?.();
+    return () => {
+      apiBaseUnsubscriber?.();
+      bonjourUnsubscriber?.();
+    };
   });
 </script>
 

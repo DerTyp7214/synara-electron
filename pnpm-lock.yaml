@@ -44,6 +44,9 @@ importers:
       '@fontsource/major-mono-display':
         specifier: ^5.2.8
         version: 5.2.8
+      '@humanspeak/svelte-virtual-list':
+        specifier: ^0.3.5
+        version: 0.3.5(svelte@5.43.0)
       '@jis3r/icons':
         specifier: ^1.2.0
         version: 1.2.0
@@ -529,6 +532,11 @@ packages:
   '@humanfs/node@0.16.7':
     resolution: {integrity: sha512-/zUx+yOsIrG4Y43Eh2peDeKCxlRt/gET6aHfaKpuq267qXdYDFViVHfMaLyygZOnl0kGWxFIgsBy8QFuTLUXEQ==}
     engines: {node: '>=18.18.0'}
+
+  '@humanspeak/svelte-virtual-list@0.3.5':
+    resolution: {integrity: sha512-oAHlTnYmMxu59Vz8zVjmGK/P3RmWBz5qQFGPqVhfxwu+I0BuTjULks6p1L0baTu0zcPuI2GHq/XS4FdT6P95MQ==}
+    peerDependencies:
+      svelte: ^5.0.0
 
   '@humanwhocodes/module-importer@1.0.1':
     resolution: {integrity: sha512-bxveV4V8v5Yb4ncFTT3rPSgZBOpCkjfK0y4oVVVJwIuDVBRMDXrPyXRL988i5ap9m9bnyEEjWfm5WkBmtffLfA==}
@@ -3872,6 +3880,11 @@ snapshots:
     dependencies:
       '@humanfs/core': 0.19.1
       '@humanwhocodes/retry': 0.4.3
+
+  '@humanspeak/svelte-virtual-list@0.3.5(svelte@5.43.0)':
+    dependencies:
+      esm-env: 1.2.2
+      svelte: 5.43.0
 
   '@humanwhocodes/module-importer@1.0.1': {}
 

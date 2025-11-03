@@ -17,6 +17,7 @@ import { addMPRIS, updateMpris } from "./mpris";
 import { MediaInfo } from "../shared/models/mediaInfo";
 import { MprisEventData, MprisEventName } from "../shared/types/api";
 import { Bonjour } from "bonjour-service";
+import { setupSettings, store } from "./settings";
 
 const serveURL = serve({ directory: join(__dirname, "..", "renderer") });
 
@@ -29,6 +30,8 @@ let isQuitting = false;
 addMPRIS((eventName: MprisEventName, data: MprisEventData<MprisEventName>) => {
   mainWindow?.webContents.send("mpris-event", { eventName, data });
 });
+
+setupSettings();
 
 const bonjour = new Bonjour();
 
@@ -71,15 +74,16 @@ function createWindow(): void {
     webPreferences: {
       preload: join(__dirname, "../preload/index.js"),
       sandbox: false,
+      devTools: true,
     },
   });
+
   mainWindow.on("ready-to-show", () => {
     mainWindow.show();
   });
 
   mainWindow.on("close", (event) => {
-    if (!isQuitting) {
-      // TODO: read from settings if close should hide or quit
+    if (!isQuitting && store.get("hideOnClose")) {
       event.preventDefault();
       mainWindow.hide();
     }

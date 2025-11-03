@@ -1,35 +1,54 @@
 import { type Song, songById } from "$lib/api/songs";
+import { mediaSession } from "$lib/audio/mediaSession";
 import {
-  mediaSession,
-  type PlayingSource,
-  PlayingSourceType,
-} from "$lib/audio/mediaSession";
-import { listSongsByPlaylist, type Playlist } from "$lib/api/playlists";
-import { type Album, listSongsByAlbum } from "$lib/api/albums";
+  listSongsByPlaylist,
+  type Playlist,
+  byId as playlistById,
+} from "$lib/api/playlists";
+import {
+  type Album,
+  listSongsByAlbum,
+  byId as albumById,
+} from "$lib/api/albums";
+import { type PlayingSource, PlayingSourceType } from "$shared/types/settings";
+import { Queue } from "$lib/audio/queue";
 
 export async function playSongById(id: Song["id"]) {
   if (!mediaSession.getQueue().find((s) => s.id === id)) {
     const song = await songById(id as Song["id"]);
-    mediaSession.setQueue([song]);
+    mediaSession.setQueue(
+      new Queue({ id: song.id, name: song.title, initialQueue: [song] }),
+    );
   }
   mediaSession.playingSourceType.set(PlayingSourceType.Playlist);
-  mediaSession.playingSourceId.set(id);
   await mediaSession.playSong(id);
 }
 
 export async function playAlbumById(id: Album["id"]) {
+  const album = await albumById(id);
   const songs = await listSongsByAlbum(id, 0, Number.MAX_SAFE_INTEGER);
-  mediaSession.setQueue(songs.data);
+  mediaSession.setQueue(
+    new Queue({
+      id: id,
+      name: album.name,
+      initialQueue: songs.data,
+    }),
+  );
   mediaSession.playingSourceType.set(PlayingSourceType.Album);
-  mediaSession.playingSourceId.set(id);
   await mediaSession.playSong(songs.data[0].id);
 }
 
 export async function playPlaylistById(id: Playlist["id"]) {
+  const playlist = await playlistById(id);
   const songs = await listSongsByPlaylist(id, 0, Number.MAX_SAFE_INTEGER);
-  mediaSession.setQueue(songs.data);
+  mediaSession.setQueue(
+    new Queue({
+      id: id,
+      name: playlist.name,
+      initialQueue: songs.data,
+    }),
+  );
   mediaSession.playingSourceType.set(PlayingSourceType.Playlist);
-  mediaSession.playingSourceId.set(id);
   await mediaSession.playSong(songs.data[0].id);
 }
 
@@ -39,11 +58,15 @@ export async function playSong(
   source: PlayingSource,
   shuffle: boolean = false,
 ): Promise<void> {
-  mediaSession.setQueue(Array.from(playlist));
+  mediaSession.setQueue(
+    new Queue({
+      id: source.id,
+      name: source.type,
+      initialQueue: playlist,
+    }),
+  );
   mediaSession.playingSourceType.set(source.type);
-  mediaSession.playingSourceId.set(source.id);
   await mediaSession.playSong(song.id, shuffle);
-  mediaSession.shuffled.set(shuffle);
 }
 
 export async function playPlaylist(

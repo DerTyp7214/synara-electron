@@ -65,7 +65,7 @@ export class AudioSession {
     return context.createMediaElementSource(this.audio);
   }
 
-  playUrl(url: string) {
+  setSrc(url: string) {
     this.audio.src = url;
     this.audio.load();
   }

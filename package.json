@@ -36,6 +36,7 @@
     "@eslint/compat": "^1.4.0",
     "@eslint/js": "^9.38.0",
     "@fontsource/major-mono-display": "^5.2.8",
+    "@humanspeak/svelte-virtual-list": "^0.3.5",
     "@jis3r/icons": "^1.2.0",
     "@lucide/svelte": "^0.548.0",
     "@skeletonlabs/skeleton": "^4.2.0",

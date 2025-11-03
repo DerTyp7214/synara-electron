@@ -1,15 +1,9 @@
 import { apiCall } from "$lib/api/utils";
 import type { PagedResponse } from "$lib/api/apiTypes";
-import type { UUID } from "node:crypto";
 import type { Song } from "$lib/api/songs";
+import type { Playlist } from "$shared/types/beApi";
 
-export interface Playlist {
-  id: UUID;
-  imageId: UUID;
-  name: string;
-  songs: Array<string>;
-  totalDuration: number;
-}
+export { type Playlist };
 
 export async function listPlaylists(
   page?: number,

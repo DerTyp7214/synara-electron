@@ -107,7 +107,6 @@
 
       hasMoreDown = response.hasNextPage;
       nextDownPage = response.page + 1;
-      console.log(response);
     } catch (error) {
       debugLog("error", "Error loading content down:", error);
     } finally {

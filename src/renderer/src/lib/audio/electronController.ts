@@ -16,11 +16,12 @@ import {
 } from "$lib/mediaPlayer";
 import { mediaSession } from "$lib/audio/mediaSession";
 import { playBackStateToMediaSessionState } from "$lib/audio/utils";
+import type { SettingsAPI } from "$shared/types/settings";
 
 declare global {
   interface Window {
     electron: ElectronAPI;
-    api: CustomApi;
+    api: CustomApi & SettingsAPI;
   }
 }
 
@@ -195,7 +196,7 @@ class ElectronController {
       },
     };
 
-    window.api.updateMpris(metadata);
+    if (metadata.trackId.length > 0) window.api.updateMpris(metadata);
   }
 
   cleanup() {

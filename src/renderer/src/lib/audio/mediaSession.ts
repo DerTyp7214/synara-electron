@@ -1,25 +1,16 @@
 import { audioSession } from "$lib/audio/audioSession";
 import { getContentLength, type Song, songById } from "$lib/api/songs";
-import { getStreamUrl, roundRect, toShuffledArray } from "$lib/utils";
+import { getStreamUrl, roundRect } from "$lib/utils";
 import { derived, get, type Unsubscriber, writable } from "svelte/store";
 import { createCurve } from "$lib/audio/utils";
 import { electronController } from "$lib/audio/electronController";
 import { RepeatMode } from "$shared/models/repeatMode";
 import { PlaybackStatus } from "$shared/models/playbackStatus";
-import type { UUID } from "node:crypto";
 import type { PagedResponse } from "$lib/api/apiTypes";
 import { loggedIn } from "$lib/api/auth";
-
-export enum PlayingSourceType {
-  Playlist = "playlist",
-  Album = "album",
-  LikedSongs = "likedSongs",
-}
-
-export type PlayingSource = {
-  type: PlayingSourceType;
-  id: UUID;
-};
+import { settings, settingsService } from "$lib/settings";
+import { Queue } from "$lib/audio/queue";
+import type { UUID } from "node:crypto";
 
 // noinspection JSUnusedGlobalSymbols
 export class MediaSession {
@@ -30,27 +21,26 @@ export class MediaSession {
   private bufferLength: number = 0;
   private dataArray: Uint8Array<ArrayBuffer> | undefined;
 
-  private queue = writable<Array<Song>>([]);
-  private shuffledQueue = writable<Array<Song>>([]);
+  private queue = writable<Queue>();
 
-  playingSourceType = writable<PlayingSourceType>(PlayingSourceType.LikedSongs);
-  playingSourceId = writable<UUID>("----");
+  playingSourceType = settings.playingSourceType;
+  playingSourceId = settings.playingSourceId;
 
-  currentSong = writable<Song | null>(null);
-  volume = writable<number>(50);
   paused = writable<boolean>(true);
-  muted = writable<boolean>(false);
   bitrate = writable<number>(0);
-  shuffled = writable<boolean>(false);
-  repeatMode = writable<RepeatMode>(RepeatMode.None);
+  muted = writable<boolean>(false);
+
+  currentSong = settings.currentSong;
+  volume = settings.volume;
+  shuffled = settings.shuffle;
+  repeatMode = settings.repeatMode;
 
   currentIndex = writable<number>(-2);
+
   currentPosition = writable<number>(0);
   currentBuffer = writable<number>(0);
 
-  private minDecibels = writable<number | undefined>(-90);
-  private maxDecibels = writable<number | undefined>(-20);
-  private smoothingTimeConstant = writable(0.75);
+  private audioVisualizerSettings = settings.audioVisualizer;
 
   // noinspection TypeScriptFieldCanBeMadeReadonly
   private initialLoad = true;
@@ -63,20 +53,41 @@ export class MediaSession {
   constructor() {
     let sub: Unsubscriber;
     // eslint-disable-next-line prefer-const
-    sub = loggedIn.subscribe((loggedIn) => {
-      if (loggedIn) this.setup();
-      sub?.();
+    sub = derived(
+      [loggedIn, settingsService.isLoaded()],
+      ([$loggedIn, $settingsLoaded]) => $loggedIn && $settingsLoaded,
+    ).subscribe((ready) => {
+      if (ready) {
+        this.setup();
+        sub?.();
+      }
     });
   }
 
   private setup() {
-    this.loadFromStorage();
-
     this.audioContext = new (window.AudioContext ||
       // eslint-disable-next-line
       (window as any).webkitAudioContext)();
 
     this.setupAudioConnection();
+
+    this.queue.set(
+      new Queue({
+        id: get(settings.playingSourceId),
+        initialIndex: get(settings.currentIndex),
+        initialQueue: get(settings.queue),
+        initialShuffledMap: get(settings.shuffleMap),
+        writeToSettings: true,
+      }),
+    );
+
+    this.queue.subscribe((queue) => {
+      this.playingSourceId.set(queue.id as UUID);
+      queue.setWriteToSettings(true);
+    });
+
+    const currentId = get(settings.currentSong)?.id;
+    if (currentId) audioSession.setSrc(getStreamUrl(currentId));
 
     audioSession.onPlay(() => this.paused.set(false));
     audioSession.onPause(() => this.paused.set(true));
@@ -120,31 +131,12 @@ export class MediaSession {
     });
 
     this.volume.subscribe(async (volume) => {
-      this.writeToStorage();
       await this.updatePlaybackVolume(volume);
-    });
-
-    this.repeatMode.subscribe(() => {
-      this.writeToStorage();
-    });
-
-    this.shuffled.subscribe(async (shuffled) => {
-      if (this.initialLoad) return;
-      this.writeToStorage();
-      if (!shuffled) {
-        const currentSong = get(this.currentSong);
-        const index = get(this.queue).findIndex(
-          (s) => s.id === currentSong?.id,
-        );
-        this.continuePlay = true;
-        await this.playIndex(index);
-      } else this.shuffleQueue();
     });
 
     this.currentIndex.subscribe(async (index) => {
       if (index === -1) return;
       await this.playIndex(index, true);
-      this.writeToStorage();
     });
 
     this.currentSong.subscribe(async (song) => {
@@ -163,11 +155,11 @@ export class MediaSession {
   }
 
   private currentQueue() {
-    return get(this.shuffled) ? get(this.shuffledQueue) : get(this.queue);
+    return get(this.queue);
   }
 
   private songByIndex(index: number) {
-    return this.currentQueue()[index];
+    return this.currentQueue().get().queue[index];
   }
 
   private async playIndex(index: number, fromSub: boolean = false) {
@@ -183,23 +175,6 @@ export class MediaSession {
     else this.continuePlay = false;
     const currentSong = await songById(song.id);
     this.currentSong.set(currentSong);
-  }
-
-  private shuffleQueue(songId?: Song["id"], queue?: Array<Song>): Array<Song> {
-    const currentQueue = queue ?? get(this.queue);
-    const currentSongId =
-      songId ?? get(this.currentSong)?.id ?? currentQueue[0]?.id;
-    if (!currentSongId) return currentQueue;
-
-    const currentSong = currentQueue.find((s) => s.id === currentSongId);
-    if (!currentSong) return currentQueue;
-
-    const newQueue = [
-      currentSong,
-      ...toShuffledArray(currentQueue.filter((s) => s.id !== currentSongId)),
-    ];
-    this.shuffledQueue.set(newQueue);
-    return newQueue;
   }
 
   private async updateMetadata(song: Song) {
@@ -261,27 +236,21 @@ export class MediaSession {
 
     this.audioAnalyser = this.audioContext.createAnalyser();
 
-    const minDecibels = get(this.minDecibels);
-    const maxDecibels = get(this.maxDecibels);
-    const smoothingTimeConstant = get(this.smoothingTimeConstant);
+    const { minDecibels, maxDecibels, smoothingTimeConstant } = get(
+      this.audioVisualizerSettings,
+    );
 
     this.unsubscribers.push(
-      this.minDecibels.subscribe((minDecibels) => {
-        if (minDecibels !== undefined && this.audioAnalyser)
-          this.audioAnalyser.minDecibels = minDecibels;
-      }),
-    );
-    this.unsubscribers.push(
-      this.maxDecibels.subscribe((maxDecibels) => {
-        if (maxDecibels !== undefined && this.audioAnalyser)
-          this.audioAnalyser.maxDecibels = maxDecibels;
-      }),
-    );
-    this.unsubscribers.push(
-      this.smoothingTimeConstant.subscribe((smoothingTimeConstant) => {
-        if (this.audioAnalyser)
-          this.audioAnalyser.smoothingTimeConstant = smoothingTimeConstant;
-      }),
+      this.audioVisualizerSettings.subscribe(
+        ({ minDecibels, maxDecibels, smoothingTimeConstant }) => {
+          if (minDecibels !== undefined && this.audioAnalyser)
+            this.audioAnalyser.minDecibels = minDecibels;
+          if (this.audioAnalyser)
+            this.audioAnalyser.smoothingTimeConstant = smoothingTimeConstant;
+          if (maxDecibels !== undefined && this.audioAnalyser)
+            this.audioAnalyser.maxDecibels = maxDecibels;
+        },
+      ),
     );
 
     for (const analyser of [this.audioAnalyser]) {
@@ -329,7 +298,7 @@ export class MediaSession {
   }
 
   private async playUrl(url: string, start: boolean = false) {
-    audioSession.playUrl(url);
+    audioSession.setSrc(url);
     if (start) await audioSession.play();
     //this.setupAudioConnection();
   }
@@ -393,7 +362,9 @@ export class MediaSession {
   }
 
   async playSong(songId: Song["id"], shuffled: boolean = false) {
-    const queue = shuffled ? this.shuffleQueue(songId) : this.currentQueue();
+    this.currentQueue().setShuffled(shuffled);
+
+    const queue = this.currentQueue().get().queue;
     const index = queue.findIndex((song) => song.id === songId);
     this.paused.set(false);
     await this.playIndex(index);
@@ -403,7 +374,7 @@ export class MediaSession {
   async playNext() {
     const index = get(this.currentIndex);
     const newIndex = index + 1;
-    if (newIndex > this.currentQueue().length - 1) {
+    if (newIndex > this.currentQueue().length() - 1) {
       if (get(this.repeatMode) === RepeatMode.List) {
         await this.playIndex(0);
         this.currentIndex.set(0);
@@ -424,7 +395,7 @@ export class MediaSession {
     const index = get(this.currentIndex);
     const newIndex = index - 1;
     if (newIndex < 0) {
-      const startIndex = this.currentQueue().length - 1;
+      const startIndex = this.currentQueue().length() - 1;
       await this.playIndex(startIndex);
       this.currentIndex.set(startIndex);
     } else {
@@ -442,36 +413,19 @@ export class MediaSession {
   }
 
   addToQueue(song: Song) {
-    this.queue.update((queue) => [...queue, song]);
-    this.shuffledQueue.update((queue) => [...queue, song]);
-    this.writeToStorage();
+    get(this.queue).addToQueue(song);
   }
 
   removeFromQueue(song: Song) {
-    this.queue.update((queue) => {
-      const index = queue.indexOf(song);
-      if (index >= 0) queue.splice(index, 1);
-      return queue;
-    });
-    this.shuffledQueue.update((queue) => {
-      const index = queue.indexOf(song);
-      if (index >= 0) queue.splice(index, 1);
-      return queue;
-    });
-    this.writeToStorage();
+    get(this.queue).removeFromQueue(song);
   }
 
   getQueue() {
-    return Array.from(this.currentQueue());
+    return this.currentQueue().get().queue;
   }
 
   getDerivedQueue() {
-    return derived(
-      [this.shuffled, this.shuffledQueue, this.queue],
-      ([shuffled, shuffledQueue, queue]) => {
-        return shuffled ? shuffledQueue : queue;
-      },
-    );
+    return get(this.queue).queue;
   }
 
   async loadSongsFromQueue(
@@ -480,7 +434,7 @@ export class MediaSession {
   ): Promise<PagedResponse<Song>> {
     if (page < 0) return { page, pageSize, data: [], hasNextPage: false };
 
-    const queue = this.currentQueue();
+    const queue = this.currentQueue().get().queue;
 
     const startIndex = pageSize * page;
 
@@ -498,45 +452,8 @@ export class MediaSession {
     return Math.max(0, Math.ceil(get(this.currentIndex) / pageSize) - 1);
   }
 
-  setQueue(queue: Array<Song>) {
+  setQueue(queue: Queue) {
     this.queue.set(queue);
-    this.shuffleQueue(undefined, queue);
-    this.writeToStorage();
-  }
-
-  private writeToStorage() {
-    const data = {
-      queue: get(this.queue),
-      shuffledQueue: get(this.shuffledQueue),
-      repeatMode: get(this.repeatMode),
-      currentSong: get(this.currentSong),
-      currentIndex: get(this.currentIndex) === -2 ? 0 : get(this.currentIndex),
-      volume: get(this.volume),
-      shuffled: get(this.shuffled),
-      playingSourceType: get(this.playingSourceType),
-      playingSourceId: get(this.playingSourceId),
-    };
-
-    localStorage.setItem("mediaSession", JSON.stringify(data));
-  }
-
-  private loadFromStorage() {
-    const data = JSON.parse(localStorage.getItem("mediaSession") ?? "{}");
-
-    this.shuffled.set(data.shuffled);
-    this.queue.set(data.queue ?? []);
-    this.shuffledQueue.set(data.shuffledQueue ?? []);
-    this.repeatMode.set(data.repeatMode ?? RepeatMode.None);
-    this.currentSong.set(data.currentSong);
-    this.continuePlay = false;
-    this.volume.set(data.volume ?? 50);
-    this.playingSourceType.set(
-      data.playingSourceType ?? PlayingSourceType.LikedSongs,
-    );
-    this.playingSourceId.set(data.playingSourceId);
-    this.currentIndex.set(
-      (data.queue ?? []).length > 0 ? (data.currentIndex ?? -1) : -1,
-    );
   }
 }
 

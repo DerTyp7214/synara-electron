@@ -1,29 +1,8 @@
 import { apiCall } from "$lib/api/utils";
 import type { PagedResponse } from "$lib/api/apiTypes";
-import type { UUID } from "node:crypto";
-import type { Artist } from "$lib/api/artists";
-import type { Album } from "$lib/api/albums";
+import type { Song } from "$shared/types/beApi";
 
-export interface Song {
-  id: UUID;
-  title: string;
-  album?: Album;
-  artists: Array<Artist>;
-  bitRate: number;
-  bitsPerSample: number;
-  sampleRate: number;
-  copyright: string;
-  coverId?: UUID;
-  discNumber: number;
-  trackNumber: number;
-  duration: number;
-  explicit: boolean;
-  fileSize: number;
-  originalUrl: string;
-  lyrics?: string;
-  path: string;
-  releaseDate?: number;
-}
+export { type Song };
 
 export async function listSongs(
   page?: number,

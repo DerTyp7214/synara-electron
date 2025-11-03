@@ -1,20 +1,16 @@
-import {
-  apiCall,
-  jwtStore,
-  refreshJwt,
-  refreshTokenStore,
-} from "$lib/api/utils";
+import { apiCall, refreshJwt } from "$lib/api/utils";
 import { ApiResponse, type TokenResponse } from "$lib/api/apiTypes";
 import { get, writable } from "svelte/store";
 import { isJwtValid } from "$lib/api/jwt";
 import { resolve } from "$app/paths";
 import { goto } from "$app/navigation";
 import { health } from "$lib/api/main";
+import { settings } from "$lib/settings";
 
 export const loggedIn = writable<boolean>(false);
 
 export async function checkLogin(): Promise<boolean> {
-  const isValid = isJwtValid(get(jwtStore));
+  const isValid = isJwtValid(get(settings.token)?.jwt);
 
   loggedIn.set(isValid);
 
@@ -45,8 +41,10 @@ export async function login(
   if (response.isOk()) {
     const token = await response.getData();
 
-    jwtStore.set(token.token);
-    refreshTokenStore.set(token.refreshToken);
+    settings.token.set({
+      jwt: token.token,
+      refreshToken: token.refreshToken,
+    });
 
     loggedIn.set(true);
   }

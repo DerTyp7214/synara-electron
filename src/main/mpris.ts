@@ -52,34 +52,43 @@ export function addMPRIS(eventListener: MprisEventListener<MprisEventName>) {
 
 export function updateMpris(mediaInfo: MediaInfo) {
   if (player) {
-    const mediaPlayer: MediaPlayerInfo = {
-      ...(mediaInfo.player ?? {}),
-      ...((player.metadata as any)?.player ?? {}),
-    };
-    player.metadata = {
-      ...player.metadata,
-      ...{
-        "xesam:title": mediaInfo.title,
-        "xesam:artist": mediaInfo.artists,
-        "xesam:album": mediaInfo.album,
-        "xesam:url": mediaInfo.url,
-        "mpris:artUrl": mediaInfo.image,
-        "mpris:length": mediaInfo.duration,
-        "mpris:trackid": "/org/mpris/MediaPlayer2/track/" + mediaInfo.trackId,
-      },
-      ...ObjectToDotNotation({ ...mediaInfo, player: mediaPlayer }, "custom:"),
-    };
-    player.getPosition = () => mediaInfo.current * 1000;
-    player.playbackStatus = mediaPlayer?.status ?? PlaybackStatus.Stopped;
-    player.shuffle = mediaPlayer?.shuffle === true;
-    player.loopStatus = mediaPlayer?.repeat ?? RepeatMode.None;
-    player.volume = mediaPlayer?.volume ?? 0;
+    try {
+      const mediaPlayer: MediaPlayerInfo = {
+        ...(mediaInfo.player ?? {}),
+        ...((player.metadata as any)?.player ?? {}),
+      };
+      player.metadata = {
+        ...player.metadata,
+        ...{
+          "xesam:title": mediaInfo.title,
+          "xesam:artist": mediaInfo.artists,
+          "xesam:album": mediaInfo.album,
+          "xesam:url": mediaInfo.url,
+          "mpris:artUrl": mediaInfo.image,
+          "mpris:length": mediaInfo.duration,
+          "mpris:trackid": "/org/mpris/MediaPlayer2/track/" + mediaInfo.trackId,
+        },
+        ...ObjectToDotNotation(
+          { ...mediaInfo, player: mediaPlayer },
+          "custom:",
+        ),
+      };
+      player.getPosition = () => mediaInfo.current * 1000;
+      player.playbackStatus = mediaPlayer?.status ?? PlaybackStatus.Stopped;
+      player.shuffle = mediaPlayer?.shuffle === true;
+      player.loopStatus = mediaPlayer?.repeat ?? RepeatMode.None;
+      player.volume = mediaPlayer?.volume ?? 0;
 
-    player.canPlay = true;
-    player.canPause = true;
-    player.canSeek = true;
-    player.canControl = true;
-    player.canGoNext = true;
-    player.canGoPrevious = true;
+      player.canPlay = true;
+      player.canPause = true;
+      player.canSeek = true;
+      player.canControl = true;
+      player.canGoNext = true;
+      player.canGoPrevious = true;
+    } catch (e) {
+      console.log(mediaInfo);
+      // eslint-disable-next-line no-console
+      console.error(e);
+    }
   }
 }

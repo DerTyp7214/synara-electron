@@ -1,19 +1,9 @@
-import type { UUID } from "node:crypto";
-import type { Artist } from "$lib/api/artists";
 import type { Song } from "$lib/api/songs";
 import type { PagedResponse } from "$lib/api/apiTypes";
 import { apiCall } from "$lib/api/utils";
+import type { Album } from "$shared/types/beApi";
 
-export interface Album {
-  id: UUID;
-  name: string;
-  coverId?: UUID;
-  releaseDate?: number;
-  songCount: number;
-  totalDuration: number;
-  totalSize: number;
-  artists: Array<Artist>;
-}
+export { type Album };
 
 export async function listSongsByAlbum(
   albumId: Album["id"],

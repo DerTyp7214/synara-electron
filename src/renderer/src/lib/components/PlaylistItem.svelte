@@ -7,7 +7,8 @@
   import { resolve } from "$app/paths";
   import { goto } from "$app/navigation";
   import type { Playlist } from "$lib/api/playlists";
-  import { mediaSession, PlayingSourceType } from "$lib/audio/mediaSession";
+  import { mediaSession } from "$lib/audio/mediaSession";
+  import { PlayingSourceType } from "$shared/types/settings";
 
   type PlaylistOrigin = "tidal" | "spotify";
 

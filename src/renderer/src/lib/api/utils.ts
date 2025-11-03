@@ -1,36 +1,8 @@
-import { get, writable } from "svelte/store";
+import { get } from "svelte/store";
 import { isJwtValid } from "$lib/api/jwt";
 import { ApiResponse, type TokenResponse } from "$lib/api/apiTypes";
 import { debugLog } from "$lib/logger";
-
-const { jwt, refreshToken } = JSON.parse(localStorage.getItem("token") ?? "{}");
-const { apiBase } = JSON.parse(localStorage.getItem("settings") ?? "{}");
-
-export const apiBaseStore = writable<string | null>(apiBase);
-export const jwtStore = writable<string | null>(jwt);
-export const refreshTokenStore = writable<string | null>(refreshToken);
-
-function updateLocalStorage(key: string, value: Record<string, unknown>) {
-  localStorage.setItem(
-    key,
-    JSON.stringify({
-      ...JSON.parse(localStorage.getItem(key) ?? "{}"),
-      ...value,
-    }),
-  );
-}
-
-apiBaseStore.subscribe((apiBase) => {
-  updateLocalStorage("settings", { apiBase });
-});
-
-jwtStore.subscribe((jwt) => {
-  updateLocalStorage("token", { jwt });
-});
-
-refreshTokenStore.subscribe((refreshToken) => {
-  updateLocalStorage("token", { refreshToken });
-});
+import { settings } from "$lib/settings";
 
 async function getHeaders(
   auth?: boolean,
@@ -47,11 +19,11 @@ async function getHeaders(
     });
   }
 
-  const jwt = get(jwtStore);
+  const jwt = get(settings.token!)?.jwt;
 
   if (auth && jwt) {
     if (!isJwtValid(jwt)) await refreshJwt();
-    result["Authorization"] = "Bearer " + get(jwtStore);
+    result["Authorization"] = "Bearer " + get(settings.token!)?.jwt;
   }
 
   return result;
@@ -59,7 +31,7 @@ async function getHeaders(
 
 export async function refreshJwt() {
   try {
-    const token = get(refreshTokenStore);
+    const token = get(settings.token!)?.refreshToken;
     if (!token) return false;
 
     const response = await apiCall<TokenResponse>({
@@ -71,17 +43,23 @@ export async function refreshJwt() {
     if (response.isOk()) {
       const token = await response.getData();
 
-      jwtStore.set(token.token);
-      refreshTokenStore.set(token.refreshToken);
+      settings.token.set({
+        jwt: token.token,
+        refreshToken: token.refreshToken,
+      });
     } else {
-      jwtStore.set(null);
-      refreshTokenStore.set(null);
+      settings.token.set({
+        jwt: undefined,
+        refreshToken: undefined,
+      });
     }
 
     return response.isOk();
   } catch (error) {
-    jwtStore.set(null);
-    refreshTokenStore.set(null);
+    settings.token.set({
+      jwt: undefined,
+      refreshToken: undefined,
+    });
     debugLog("error", "refreshJwt", error);
     return false;
   }
@@ -162,7 +140,7 @@ export async function apiCall<T>(options: {
 }
 
 export function getApiUrl(host?: string | null) {
-  const base = host ?? get(apiBaseStore) ?? "http://localhost/";
+  const base = host ?? get(settings.apiBase) ?? "http://localhost/";
   // noinspection HttpUrlsUsage
   return base.startsWith("http") ? base : `http://${base}`;
 }

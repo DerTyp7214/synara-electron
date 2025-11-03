@@ -22,3 +22,4 @@ export const isElectron = () => {
 };
 
 export const SERVER_SERVICE_TYPE = "_synara-api._tcp.local.";
+export const MAX_INT = 2147483647;

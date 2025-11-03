@@ -1,0 +1,102 @@
+import type { Song } from "./beApi";
+import type { RepeatMode } from "../models/repeatMode";
+import { UUID } from "node:crypto";
+
+export enum PlayingSourceType {
+  Playlist = "playlist",
+  Album = "album",
+  LikedSongs = "likedSongs",
+}
+
+export type PlayingSource = {
+  type: PlayingSourceType;
+  id: UUID;
+};
+
+export type Settings = AppSettings &
+  TokenSettings &
+  MediaSettings &
+  QueueSettings;
+
+export interface AppSettings {
+  theme: "dark" | "light";
+  apiBase: string | undefined;
+  volume: number;
+  hideOnClose: boolean;
+  audioVisualizer: {
+    minDecibels: number;
+    maxDecibels: number;
+    smoothingTimeConstant: number;
+  };
+}
+
+export interface TokenSettings {
+  token: { jwt?: string; refreshToken?: string };
+}
+
+export interface MediaSettings {
+  currentIndex: number;
+  currentSong: Song | undefined;
+  playingSourceType: PlayingSourceType;
+  playingSourceId: PlayingSource["id"];
+  shuffle: boolean;
+  repeatMode: RepeatMode;
+}
+
+export interface QueueSettings {
+  queue: Array<Song>;
+  shuffleMap: Record<number, number>;
+}
+
+export const nullSong: Song = {
+  bitsPerSample: 0,
+  copyright: "",
+  discNumber: 0,
+  explicit: false,
+  fileSize: 0,
+  id: crypto.randomUUID().replaceAll("-", "") as UUID,
+  originalUrl: "",
+  path: "",
+  sampleRate: 0,
+  trackNumber: 0,
+  title: "No Song",
+  bitRate: 0,
+  duration: 0,
+  artists: [],
+};
+
+export const APP_SETTINGS_KEYS: Array<keyof AppSettings> = [
+  "theme",
+  "apiBase",
+  "volume",
+  "hideOnClose",
+  "audioVisualizer",
+];
+
+export const TOKEN_SETTINGS_KEYS: Array<keyof TokenSettings> = ["token"];
+
+export const MEDIA_SETTINGS_KEYS: Array<keyof MediaSettings> = [
+  "currentIndex",
+  "currentSong",
+  "playingSourceType",
+  "playingSourceId",
+  "shuffle",
+  "repeatMode",
+];
+
+export const QUEUE_SETTINGS_KEYS: Array<keyof QueueSettings> = [
+  "queue",
+  "shuffleMap",
+];
+
+export const SETTINGS_KEYS: Array<keyof Settings> = [
+  ...APP_SETTINGS_KEYS,
+  ...TOKEN_SETTINGS_KEYS,
+  ...MEDIA_SETTINGS_KEYS,
+  ...QUEUE_SETTINGS_KEYS,
+];
+
+export interface SettingsAPI {
+  get<K extends keyof Settings>(key: K): Promise<Settings[K]>;
+  set<K extends keyof Settings>(key: K, value: Settings[K]): void;
+}

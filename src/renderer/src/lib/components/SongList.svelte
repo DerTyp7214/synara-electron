@@ -2,8 +2,8 @@
   import SongItem from "$lib/components/SongItem.svelte";
   import type { PagedResponse } from "$lib/api/apiTypes";
   import type { Song } from "$lib/api/songs";
-  import type { PlayingSource } from "$lib/audio/mediaSession";
   import InfiniteScroll from "$lib/components/InfiniteScroll.svelte";
+  import type { PlayingSource } from "$shared/types/settings";
 
   const {
     getSongs,

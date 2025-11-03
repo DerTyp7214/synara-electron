@@ -9,9 +9,10 @@ import {
 } from "../shared/types/api";
 import { MediaInfo } from "../shared/models/mediaInfo";
 import type { Service } from "bonjour-service";
+import { Settings, SettingsAPI } from "../shared/types/settings";
 
 // Custom APIs for renderer
-const api: CustomApi = {
+const api: CustomApi & SettingsAPI = {
   updateMpris(mediaInfo: MediaInfo) {
     void ipcRenderer.invoke("media-info-update", mediaInfo);
   },
@@ -47,6 +48,13 @@ const api: CustomApi = {
 
     return () => ipcRenderer.removeListener("bonjour-event", ipcListener);
   },
+
+  get<K extends keyof Settings>(key: K): Promise<Settings[K]> {
+    return ipcRenderer.invoke("settings:get", key);
+  },
+  async set<K extends keyof Settings>(key: K, value: Settings[K]) {
+    await ipcRenderer.invoke("settings:set", key, value);
+  },
 };
 
 // Use `contextBridge` APIs to expose Electron APIs to
@@ -57,6 +65,7 @@ if (process.contextIsolated) {
     contextBridge.exposeInMainWorld("electron", electronAPI);
     contextBridge.exposeInMainWorld("api", api);
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error(error);
   }
 } else {
