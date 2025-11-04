@@ -215,4 +215,12 @@ export function invertObject<
   );
 }
 
+export function invertArray(originalArray: Array<number>) {
+  const invertedArray: Array<number> = [];
+  for (let i = 0; i < originalArray.length; i++) {
+    invertedArray[originalArray[i]] = i;
+  }
+  return invertedArray;
+}
+
 export const { isMac, isLinux, isWindows } = window.api;

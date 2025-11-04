@@ -157,6 +157,7 @@
   $effect(() => {
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     $shuffled;
+    $currentSongQueue;
     $playingSourceId;
 
     nextUpPage = $currentQueue.getPage(pageSize) - 1;
@@ -415,8 +416,9 @@
         class="ms-2 mb-auto flex flex-grow flex-col justify-center overflow-hidden"
       >
         <div class="flex flex-row items-center gap-2 pe-1">
-          <span class="line-clamp-1 font-medium overflow-ellipsis"
-            >{song.title}</span
+          <span
+            class="line-clamp-1 font-medium break-all overflow-ellipsis"
+            title={song.title}>{song.title}</span
           >
           {#if song.explicit}
             <Explicit />

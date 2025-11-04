@@ -1,3 +1,5 @@
+import type { createToaster } from "@skeletonlabs/skeleton-svelte";
+
 export const pinkNoise = [
   0.76054078751554, 0.61124787706261, 0.52188737442096, 0.47582581340335,
   0.442985940855, 0.39506604448116, 0.38179901474466, 0.3791498265819,
@@ -23,3 +25,6 @@ export const isElectron = () => {
 
 export const SERVER_SERVICE_TYPE = "_synara-api._tcp.local.";
 export const MAX_INT = 2147483647;
+
+export const TOAST_CONTEXT_KEY = Symbol("SYNARA_TOAST_CONTEXT_KEY");
+export type ToasterContext = ReturnType<typeof createToaster>;

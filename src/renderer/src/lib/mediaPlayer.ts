@@ -74,6 +74,11 @@ export async function playSong(
   await mediaSession.playSong(song.id, shuffle);
 }
 
+export async function playNext(...songs: Array<Song>) {
+  const currentQueue = get(mediaSession.getDerivedQueue());
+  await currentQueue.playNext(...songs);
+}
+
 export async function playPlaylist(
   playlist: Playlist,
   shuffle: boolean = false,

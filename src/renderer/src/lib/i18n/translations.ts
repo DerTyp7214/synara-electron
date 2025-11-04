@@ -23,5 +23,11 @@ export default {
     "login.submit": "Login",
     "login.username.placeholder": "Username",
     "login.password.placeholder": "Password",
+
+    "play.next": "Play Next",
+    "play.fetch.title": "Fetching songs",
+    "play.fetch.description": "Fetching songs for <b>{{name}}</b>",
+    "play.next.success": "<b>{{songTitle}}</b> is playing next.",
+    "play.next.error": "Error adding songs: {{message}}",
   },
 } as const;

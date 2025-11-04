@@ -8,10 +8,14 @@
   import cn from "classnames";
   import { resolve } from "$app/paths";
   import ToolTip from "$lib/components/ToolTip.svelte";
-  import { playSong } from "$lib/mediaPlayer";
+  import { playNext, playSong } from "$lib/mediaPlayer";
   import Explicit from "$lib/assets/Explicit.svelte";
   import { mediaSession } from "$lib/audio/mediaSession";
   import type { PlayingSource } from "$shared/types/settings";
+  import { openContextMenu } from "$lib/contextMenu/store.svelte";
+  import { getContext } from "svelte";
+  import { TOAST_CONTEXT_KEY, type ToasterContext } from "$lib/consts";
+  import { t } from "$lib/i18n/i18n";
 
   type SongOrigin = "tidal" | "spotify";
 
@@ -65,6 +69,8 @@
   const currentQueue = mediaSession.getDerivedQueue();
   const currentSong = $derived($currentQueue.currentSong);
 
+  const toastContext = getContext<ToasterContext>(TOAST_CONTEXT_KEY);
+
   $effect(() => {
     if (scrollIntoActive && $currentSong?.id === id) {
       setTimeout(() => {
@@ -75,11 +81,33 @@
       }, 400);
     }
   });
+
+  async function handlePlayNext(song: Song) {
+    await playNext(song);
+
+    toastContext.success({
+      title: $t("play.next"),
+      description: $t("play.next.success", { songTitle: song.title }),
+      duration: 4000,
+    });
+  }
+
+  function handleContextMenu(event: MouseEvent) {
+    openContextMenu(event, [
+      {
+        label: $t("play.next"),
+        action: handlePlayNext,
+        args: songRef,
+      },
+    ]);
+  }
 </script>
 
 <div
   bind:this={songElement}
   data-songId={id}
+  oncontextmenu={handleContextMenu}
+  role="listitem"
   class={cn(
     "rounded-container box-border",
     "flex flex-row gap-2 p-3 shadow-md",

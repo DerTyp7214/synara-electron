@@ -18,7 +18,6 @@ import { MediaInfo } from "../shared/models/mediaInfo";
 import { MprisEventData, MprisEventName } from "../shared/types/api";
 import { Bonjour } from "bonjour-service";
 import { setupSettings, store } from "./settings";
-import liquidGlass from "electron-liquid-glass";
 
 const serveURL = serve({ directory: join(__dirname, "..", "renderer") });
 
@@ -54,10 +53,10 @@ function createWindow(): void {
     width: 900,
     height: 670,
     show: false,
-    ...(platform.isLinux ? { icon, transparent: true } : {}),
+    transparent: true,
+    ...(platform.isLinux ? { icon } : {}),
     ...(platform.isMacOS
       ? {
-          transparent: true,
           trafficLightPosition: {
             x: 20,
             y: 20,
@@ -69,7 +68,6 @@ function createWindow(): void {
           frame: false,
           backgroundMaterial: "acrylic",
           backgroundColor: "#00000000",
-          transparent: true,
           titleBarOverlay: true,
         }
       : {
@@ -108,14 +106,17 @@ function createWindow(): void {
     return { action: "deny" };
   });
 
-  mainWindow.webContents.once("did-finish-load", () => {
-    const glassId = liquidGlass.addView(mainWindow.getNativeWindowHandle(), {
-      cornerRadius: 16,
-      tintColor: "#00000000",
-      opaque: false,
-    });
+  mainWindow.webContents.once("did-finish-load", async () => {
+    if (platform.isMacOS) {
+      const liquidGlass = (await import("electron-liquid-glass")) as any;
+      const glassId = liquidGlass.addView(mainWindow.getNativeWindowHandle(), {
+        cornerRadius: 16,
+        tintColor: "#00000000",
+        opaque: false,
+      });
 
-    liquidGlass.unstable_setVariant(glassId, 2);
+      liquidGlass.unstable_setVariant(glassId, 2);
+    }
   });
 
   // HMR for renderer base on electron-vite cli.

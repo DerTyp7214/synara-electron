@@ -12,13 +12,13 @@ import { settings } from "$lib/settings";
 import type { UUID } from "node:crypto";
 import { audioSession } from "$lib/audio/audioSession";
 import { mediaSession } from "$lib/audio/mediaSession";
-import { invertObject } from "$lib/utils";
+import { invertArray } from "$lib/utils";
 
 export type QueueCallbackData = {
   queue: Array<Song>;
   index: number;
 };
-type ShuffleMap = Record<number, number>;
+type ShuffleMap = Array<number>;
 
 // noinspection JSUnusedGlobalSymbols
 export class Queue implements Readable<QueueCallbackData> {
@@ -48,7 +48,7 @@ export class Queue implements Readable<QueueCallbackData> {
     name,
     initialQueue = [],
     initialIndex = 0,
-    initialShuffledMap = {},
+    initialShuffledMap = [],
     shuffled = false,
     writeToSettings = false,
   }: {
@@ -56,7 +56,7 @@ export class Queue implements Readable<QueueCallbackData> {
     name?: string;
     initialIndex?: number;
     initialQueue?: Array<Song>;
-    initialShuffledMap?: Record<number, number>;
+    initialShuffledMap?: Array<number>;
     shuffled?: boolean;
     writeToSettings?: boolean;
   }) {
@@ -103,7 +103,7 @@ export class Queue implements Readable<QueueCallbackData> {
             .map(({ sortKey, ...item }) => item)
         );
       },
-      [],
+      [] as Array<Song>,
     ) as Readable<Array<Song>>;
 
     this.duration = derived(this.queueStore, ($queue) =>
@@ -165,6 +165,43 @@ export class Queue implements Readable<QueueCallbackData> {
     this.maybeReshuffle();
   }
 
+  public async playNext(...songs: Array<Song>) {
+    this.queueStore.update((q) => {
+      const currentSongIndex = get(this.currentIndex);
+      const newQueue = [...q];
+      newQueue.splice(
+        currentSongIndex + 1,
+        0,
+        ...JSON.parse(JSON.stringify(songs)),
+      );
+      return newQueue;
+    });
+
+    if (get(settings.shuffle)) {
+      this.shuffledMapStore.update((shuffleMap) => {
+        const newShuffleMap = [...shuffleMap];
+        const currentIndex = get(this.currentIndex);
+        const currentShuffleIndex = newShuffleMap[currentIndex];
+        const songsLength = songs.length;
+
+        for (let i = 0; i < newShuffleMap.length; i++) {
+          if (newShuffleMap[i] > currentShuffleIndex) {
+            newShuffleMap[i] += songsLength;
+          }
+        }
+
+        const newIndices = Array.from(
+          { length: songsLength },
+          (_, i) => currentShuffleIndex + 1 + i,
+        );
+
+        newShuffleMap.splice(currentIndex + 1, 0, ...newIndices);
+
+        return newShuffleMap;
+      });
+    }
+  }
+
   public removeIndicesFromQueue(...indices: Array<number>) {
     const indicesToRemove = new Set(indices);
     this.queueStore.update((q) => q.filter((_, i) => !indicesToRemove.has(i)));
@@ -179,7 +216,7 @@ export class Queue implements Readable<QueueCallbackData> {
       const shuffleMap = this.generateShuffleMap(get(this.queueStore).length);
       this.shuffledMapStore.set(shuffleMap);
     } else {
-      this.shuffledMapStore.set({});
+      this.shuffledMapStore.set([]);
     }
     settings.shuffle.set(shuffled);
   }
@@ -199,7 +236,7 @@ export class Queue implements Readable<QueueCallbackData> {
     if (get(settings.shuffle)) {
       const map = get(this.shuffledMapStore);
       index = map[index] + 1;
-      index = Number(invertObject(map)[index] ?? NaN);
+      index = Number(invertArray(map)[index] ?? NaN);
     } else index += 1;
     if (index > maxIndex && get(settings.repeatMode) === RepeatMode.List)
       this.setIndex(0);
@@ -207,7 +244,7 @@ export class Queue implements Readable<QueueCallbackData> {
       audioSession.seekToSeconds(audioSession.getDurationInSeconds());
       mediaSession.pause();
       mediaSession.paused.set(true);
-    } else this.setIndex(index);
+    } else if (!isNaN(index)) this.setIndex(index);
     return get(this.currentIndex);
   }
 
@@ -217,11 +254,11 @@ export class Queue implements Readable<QueueCallbackData> {
     if (get(settings.shuffle)) {
       const map = get(this.shuffledMapStore);
       index = map[index] - 1;
-      index = Number(invertObject(map)[index] ?? NaN);
+      index = Number(invertArray(map)[index] ?? NaN);
     } else index -= 1;
     if (index < 0 && get(settings.repeatMode) === RepeatMode.List)
       this.setIndex(maxIndex);
-    else this.setIndex(index);
+    else if (!isNaN(index)) this.setIndex(index);
     return get(this.currentIndex);
   }
 
@@ -295,7 +332,7 @@ export class Queue implements Readable<QueueCallbackData> {
       indices[0],
     ];
 
-    const shuffleMap: ShuffleMap = {};
+    const shuffleMap: ShuffleMap = [];
     for (let i = 0; i < listLength; i++) {
       shuffleMap[i] = indices[i];
     }

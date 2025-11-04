@@ -6,9 +6,13 @@
   import cn from "classnames";
   import { resolve } from "$app/paths";
   import { goto } from "$app/navigation";
-  import type { Playlist } from "$lib/api/playlists";
+  import { listSongsByPlaylist, type Playlist } from "$lib/api/playlists";
   import { mediaSession } from "$lib/audio/mediaSession";
   import { PlayingSourceType } from "$shared/types/settings";
+  import { openContextMenu } from "$lib/contextMenu/store.svelte";
+  import { playNext } from "$lib/mediaPlayer";
+  import { getContext } from "svelte";
+  import { TOAST_CONTEXT_KEY, type ToasterContext } from "$lib/consts";
 
   type PlaylistOrigin = "tidal" | "spotify";
 
@@ -33,10 +37,56 @@
   const playingSourceType = $derived(mediaSession.playingSourceType);
   const playingSourceId = $derived(mediaSession.playingSourceId);
 
+  const toastContext = getContext<ToasterContext>(TOAST_CONTEXT_KEY);
+
   const isSameSource = $derived(
     $playingSourceType === PlayingSourceType.Playlist &&
       $playingSourceId === playlistRef.id,
   );
+
+  async function handlePlayNext() {
+    const promise = new Promise<
+      Awaited<ReturnType<typeof listSongsByPlaylist>>
+    >((resolve, reject) => {
+      listSongsByPlaylist(playlistRef.id, 0, Number.MAX_SAFE_INTEGER)
+        .then((response) => {
+          playNext(...response.data)
+            .then(() => resolve(response))
+            .catch(reject);
+        })
+        .catch(reject);
+    });
+
+    toastContext.promise(promise, {
+      loading: {
+        title: $t("play.fetch.title"),
+        description: $t("play.fetch.description", { name: playlistRef.name }),
+      },
+      success: (response) => ({
+        title: $t("play.next"),
+        description: $t("play.next.success", {
+          songTitle: response.data[0].title,
+        }),
+        duration: 4000,
+      }),
+      error: (response: unknown) => ({
+        title: $t("play.next"),
+        description: $t("play.next.error", {
+          message: response as never,
+        }),
+        duration: 4000,
+      }),
+    });
+  }
+
+  function handleContextMenu(event: MouseEvent) {
+    openContextMenu(event, [
+      {
+        label: $t("play.next"),
+        action: handlePlayNext,
+      },
+    ]);
+  }
 </script>
 
 <button
@@ -49,6 +99,7 @@
       "bg-secondary-300-700/40": isSameSource,
     },
   )}
+  oncontextmenu={handleContextMenu}
   onclick={() => goto(`${resolve("/playlists")}?playlistId=${playlistRef.id}`)}
 >
   <Avatar

@@ -8,12 +8,22 @@
   import { health } from "$lib/api/main.js";
   import { settings, settingsService } from "$lib/settings";
   import Spinner from "$lib/components/Spinner.svelte";
-  import { isMac, isWindows } from "$src/lib/utils";
+  import ContextMenuManager from "$lib/contextMenu/ContextMenuManager.svelte";
+  import { isLinux, isMac, isWindows } from "$src/lib/utils";
   import cn from "classnames";
+  import { createToaster, Toast } from "@skeletonlabs/skeleton-svelte";
+  import { setContext } from "svelte";
+  import { TOAST_CONTEXT_KEY } from "$lib/consts";
 
   const { children } = $props();
 
   let validApiBase = $state(false);
+
+  const toaster = createToaster({
+    placement: "bottom-end",
+  });
+
+  setContext(TOAST_CONTEXT_KEY, toaster);
 
   async function checkApiUrl(host?: string | null) {
     if ((await health(host)).available) {
@@ -41,20 +51,29 @@
     document.documentElement.setAttribute("data-mode", $appTheme);
   });
 
-  document.documentElement.setAttribute("data-os", isMac() ? "mac" : "");
+  document.documentElement.setAttribute(
+    "data-os",
+    isMac() ? "mac" : isLinux() ? "linux" : "windows",
+  );
 </script>
 
 <svelte:head>
   <title>{$t("title")}</title>
 </svelte:head>
 
+<ContextMenuManager />
+
 <main
   class={cn(
-    "bg-secondary-50/80",
     "flex flex-col",
     "h-screen min-h-screen w-screen",
     "transition-colors",
-    "dark:bg-secondary-50/50",
+    "mac:bg-secondary-50/80",
+    "linux:bg-secondary-50/70",
+    "windows:bg-secondary-50/70",
+    "mac:dark:bg-secondary-50/50",
+    "linux:dark:bg-secondary-50/10",
+    "windows:dark:bg-secondary-50/10",
   )}
 >
   {#if isWindows()}
@@ -72,3 +91,15 @@
     {@render children()}
   {/if}
 </main>
+
+<Toast.Group {toaster} class={cn({ "mb-24": $loggedIn && validApiBase })}>
+  {#snippet children(toast)}
+    <Toast {toast} class="w-max max-w-[50vw] p-2">
+      <Toast.Message>
+        <Toast.Title>{@html toast.title}</Toast.Title>
+        <Toast.Description>{@html toast.description}</Toast.Description>
+      </Toast.Message>
+      <Toast.CloseTrigger />
+    </Toast>
+  {/snippet}
+</Toast.Group>

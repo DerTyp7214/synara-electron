@@ -155,10 +155,6 @@ export class MediaSession {
   private async _playSong(song?: Song) {
     if (!song || song === nullSong) return;
 
-    const index = this.currentQueue().getIndexById(song.id);
-    if (index !== get(this.currentQueue().currentIndex))
-      this.currentQueue().setIndex(index);
-
     const streamUrl = getStreamUrl(song?.id);
     if (!streamUrl) return;
 
@@ -360,6 +356,14 @@ export class MediaSession {
     const song = this.currentQueue().getSongById(songId);
     if (!song) return;
     this.paused.set(false);
+
+    const index = this.currentQueue().getIndexById(song.id);
+    if (
+      index !== get(this.currentQueue().currentIndex) &&
+      song.id !== this.currentQueue().getCurrentSong().id
+    )
+      this.currentQueue().setIndex(index);
+
     await this._playSong(song);
     await audioSession.play();
   }

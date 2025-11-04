@@ -75,8 +75,8 @@ const queueSchema: Schema<QueueSettings> = {
     default: [],
   },
   shuffleMap: {
-    type: "object",
-    default: {},
+    type: "array",
+    default: [],
   },
 };
 

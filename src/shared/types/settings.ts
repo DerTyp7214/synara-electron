@@ -44,7 +44,7 @@ export interface MediaSettings {
 
 export interface QueueSettings {
   queue: Array<Song>;
-  shuffleMap: Record<number, number>;
+  shuffleMap: Array<number>;
 }
 
 export const nullSong: Song = {
