@@ -12,10 +12,11 @@ import { settings } from "$lib/settings";
 import type { UUID } from "node:crypto";
 import { audioSession } from "$lib/audio/audioSession";
 import { mediaSession } from "$lib/audio/mediaSession";
-import { invertArray } from "$lib/utils";
+import { copy, invertArray } from "$lib/utils";
+import type { SongWithPosition } from "$shared/types/beApi";
 
 export type QueueCallbackData = {
-  queue: Array<Song>;
+  queue: Array<SongWithPosition>;
   index: number;
 };
 type ShuffleMap = Array<number>;
@@ -25,14 +26,14 @@ export class Queue implements Readable<QueueCallbackData> {
   public readonly id: UUID | string;
   public readonly name: string;
 
-  private readonly queueStore: Writable<Array<Song>>;
+  private readonly queueStore: Writable<Array<SongWithPosition>>;
   private readonly shuffledMapStore: Writable<ShuffleMap>;
   private readonly currentIndexStore: Writable<number>;
 
-  public readonly queue: Readable<Array<Song>>;
+  public readonly queue: Readable<Array<SongWithPosition>>;
   public readonly duration: Readable<number>;
   public readonly durationLeft: Readable<number>;
-  public readonly currentSong: Readable<Song>;
+  public readonly currentSong: Readable<SongWithPosition>;
   public readonly currentIndex: Readable<number>;
 
   private writeToSettings = false;
@@ -65,11 +66,11 @@ export class Queue implements Readable<QueueCallbackData> {
 
     this.writeToSettings = writeToSettings;
 
-    this.queueStore = writable(JSON.parse(JSON.stringify(initialQueue)));
-    this.currentIndexStore = writable(initialIndex);
-    this.shuffledMapStore = writable(
-      JSON.parse(JSON.stringify(initialShuffledMap)),
+    this.queueStore = writable(
+      copy(initialQueue).map((value, index) => ({ ...value, position: index })),
     );
+    this.currentIndexStore = writable(initialIndex);
+    this.shuffledMapStore = writable(copy(initialShuffledMap));
 
     this.queueStore.subscribe((queue) => {
       if (this.writeToSettings) settings.queue.set(queue);
@@ -104,7 +105,7 @@ export class Queue implements Readable<QueueCallbackData> {
         );
       },
       [] as Array<Song>,
-    ) as Readable<Array<Song>>;
+    ) as Readable<Array<SongWithPosition>>;
 
     this.duration = derived(this.queueStore, ($queue) =>
       $queue.reduce((acc, cur) => acc + cur.duration, 0),
@@ -136,7 +137,7 @@ export class Queue implements Readable<QueueCallbackData> {
         if (!song) return;
         else
           songById(song.id)
-            .then((song) => set(song))
+            .then((s) => set({ ...s, position: song.position }))
             .catch(() => set(nullSong));
       },
       get(this.queue)?.[get(this.currentIndex)] ?? nullSong,
@@ -153,7 +154,13 @@ export class Queue implements Readable<QueueCallbackData> {
   }
 
   public addToQueue(...songs: Array<Song>) {
-    this.queueStore.update((q) => [...q, ...JSON.parse(JSON.stringify(songs))]);
+    this.queueStore.update((q) => [
+      ...q,
+      ...copy(songs).map((s: Song, i) => ({
+        ...s,
+        position: q.length + i,
+      })),
+    ]);
     this.maybeReshuffle();
   }
 
@@ -168,13 +175,9 @@ export class Queue implements Readable<QueueCallbackData> {
   public async playNext(...songs: Array<Song>) {
     this.queueStore.update((q) => {
       const currentSongIndex = get(this.currentIndex);
-      const newQueue = [...q];
-      newQueue.splice(
-        currentSongIndex + 1,
-        0,
-        ...JSON.parse(JSON.stringify(songs)),
-      );
-      return newQueue;
+      const newQueue: Array<Song> = [...q];
+      newQueue.splice(currentSongIndex + 1, 0, ...copy(songs));
+      return newQueue.map((song, index) => ({ ...song, position: index }));
     });
 
     if (get(settings.shuffle)) {
@@ -293,6 +296,12 @@ export class Queue implements Readable<QueueCallbackData> {
 
   public getIndexById(songId: Song["id"]) {
     return get(this.queueStore).findIndex((s) => s.id === songId);
+  }
+
+  public getIndexByIdAndPosition(songId: Song["id"], position: number) {
+    return get(this.queueStore).findIndex(
+      (s) => s.id === songId && s.position === position,
+    );
   }
 
   public setWriteToSettings(writeToSettings: boolean) {

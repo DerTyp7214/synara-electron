@@ -47,6 +47,11 @@ export interface CustomApi {
       Omit<MediaInfo, "player"> & { player: Partial<MediaPlayerInfo> }
     >,
   ): void;
+  updateDiscordRPC(
+    mediaInfo: Partial<
+      Omit<MediaInfo, "player"> & { player: Partial<MediaPlayerInfo> }
+    >,
+  ): void;
   isMac(): boolean;
   isLinux(): boolean;
   isWindows(): boolean;

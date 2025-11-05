@@ -60,6 +60,7 @@
   }
 
   .app-card {
+    /*noinspection CssInvalidFunction*/
     border: 1px solid color-mix(in oklab, light-dark(var(--color-surface-700), var(--color-surface-100)), 40% transparent);
   }
 

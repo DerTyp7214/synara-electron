@@ -18,6 +18,7 @@ import { MediaInfo } from "../shared/models/mediaInfo";
 import { MprisEventData, MprisEventName } from "../shared/types/api";
 import { Bonjour } from "bonjour-service";
 import { setupSettings, store } from "./settings";
+import { initRPC } from "./discord";
 
 const serveURL = serve({ directory: join(__dirname, "..", "renderer") });
 
@@ -32,6 +33,8 @@ addMPRIS((eventName: MprisEventName, data: MprisEventData<MprisEventName>) => {
 });
 
 setupSettings();
+
+initRPC();
 
 const bonjour = new Bonjour();
 

@@ -4,7 +4,13 @@
   import Spotify from "$lib/assets/Spotify.svelte";
   import Tidal from "$lib/assets/Tidal.svelte";
   import type { Song } from "$lib/api/songs";
-  import { getImageUrl, millisecondsToHumanReadable } from "$lib/utils";
+  import {
+    copy,
+    getImageUrl,
+    getOrigin,
+    millisecondsToHumanReadable,
+    SongOrigin,
+  } from "$lib/utils";
   import cn from "classnames";
   import { resolve } from "$app/paths";
   import ToolTip from "$lib/components/ToolTip.svelte";
@@ -16,8 +22,7 @@
   import { getContext } from "svelte";
   import { TOAST_CONTEXT_KEY, type ToasterContext } from "$lib/consts";
   import { t } from "$lib/i18n/i18n";
-
-  type SongOrigin = "tidal" | "spotify";
+  import type { SongWithPosition } from "$shared/types/beApi";
 
   const {
     id,
@@ -45,17 +50,11 @@
     size?: number;
     playingSource: PlayingSource;
     playlistRef: Array<Song>;
-    songRef: Song;
+    songRef: Song | SongWithPosition;
     scrollIntoActive?: boolean;
   } = $props();
 
   let songElement: HTMLDivElement;
-
-  function getOrigin(): SongOrigin | null {
-    if (originalUrl.includes("tidal.com")) return "tidal";
-    else if (originalUrl.includes("spotify.com")) return "spotify";
-    return null;
-  }
 
   const baseTextClasses = [
     "text-surface-contrast-50-950/50",
@@ -72,7 +71,7 @@
   const toastContext = getContext<ToasterContext>(TOAST_CONTEXT_KEY);
 
   $effect(() => {
-    if (scrollIntoActive && $currentSong?.id === id) {
+    if (scrollIntoActive && sameSong) {
       setTimeout(() => {
         songElement?.scrollIntoView({
           behavior: "smooth",
@@ -101,6 +100,14 @@
       },
     ]);
   }
+
+  const sameSong = $derived.by(
+    () =>
+      $currentSong?.id === id &&
+      ("position" in songRef
+        ? $currentSong?.position === songRef.position
+        : true),
+  );
 </script>
 
 <div
@@ -114,8 +121,8 @@
     "transition-colors",
     clazz,
     {
-      "bg-surface-contrast-800-200/40": $currentSong?.id !== id,
-      "bg-secondary-300-700/40": $currentSong?.id === id,
+      "bg-surface-contrast-800-200/40": !sameSong,
+      "bg-secondary-300-700/40": sameSong,
     },
   )}
 >
@@ -140,7 +147,7 @@
       >
     </Avatar>
     <button
-      onclick={() => playSong(songRef, playlistRef, playingSource)}
+      onclick={() => playSong(copy(songRef), playlistRef, playingSource)}
       class={cn(
         "bg-surface-50-950/60",
         "absolute top-0 left-0",
@@ -195,9 +202,9 @@
   <span class={cn(textClasses, "me-2 mt-auto mb-auto font-bold")}>
     {millisecondsToHumanReadable(duration)}
   </span>
-  {#if getOrigin() === "spotify"}
+  {#if getOrigin(originalUrl) === SongOrigin.Spotify}
     <Spotify class="ms-auto mt-auto mb-auto" size={size / 2.5} />
-  {:else if getOrigin() === "tidal"}
+  {:else if getOrigin(originalUrl) === SongOrigin.Tidal}
     <ToolTip text={originalUrl}>
       <Tidal class="ms-auto mt-auto mb-auto" size={size / 3} />
     </ToolTip>

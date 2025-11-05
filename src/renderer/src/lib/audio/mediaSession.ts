@@ -12,6 +12,7 @@ import { settings, settingsService } from "$lib/settings";
 import { Queue } from "$lib/audio/queue";
 import type { UUID } from "node:crypto";
 import { nullSong } from "$shared/types/settings";
+import type { SongWithPosition } from "$shared/types/beApi";
 
 // noinspection JSUnusedGlobalSymbols
 export class MediaSession {
@@ -152,7 +153,7 @@ export class MediaSession {
     return get(this.queue);
   }
 
-  private async _playSong(song?: Song) {
+  private async _playSong(song?: SongWithPosition) {
     if (!song || song === nullSong) return;
 
     const streamUrl = getStreamUrl(song?.id);
@@ -351,16 +352,31 @@ export class MediaSession {
     songId: Song["id"],
     shuffled: boolean = get(settings.shuffle),
   ) {
-    this.currentQueue().setShuffled(shuffled);
-
     const song = this.currentQueue().getSongById(songId);
     if (!song) return;
+
+    await this.playSongWithPosition(song, shuffled);
+  }
+
+  async playSongWithPosition(
+    song: SongWithPosition,
+    shuffled: boolean = get(settings.shuffle),
+  ) {
+    this.currentQueue().setShuffled(shuffled);
+
     this.paused.set(false);
 
-    const index = this.currentQueue().getIndexById(song.id);
+    const index = this.currentQueue().getIndexByIdAndPosition(
+      song.id,
+      song.position,
+    );
+
     if (
       index !== get(this.currentQueue().currentIndex) &&
-      song.id !== this.currentQueue().getCurrentSong().id
+      !(
+        song.id === this.currentQueue().getCurrentSong().id &&
+        song.position === this.currentQueue().getCurrentSong().position
+      )
     )
       this.currentQueue().setIndex(index);
 
@@ -405,7 +421,7 @@ export class MediaSession {
   async loadSongsFromQueue(
     page: number,
     pageSize: number,
-  ): Promise<PagedResponse<Song>> {
+  ): Promise<PagedResponse<SongWithPosition>> {
     if (page < 0) return { page, pageSize, data: [], hasNextPage: false };
 
     const queue = this.currentQueue().get().queue;

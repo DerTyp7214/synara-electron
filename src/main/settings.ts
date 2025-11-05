@@ -29,6 +29,10 @@ const schema: Schema<AppSettings> = {
     type: "boolean",
     default: false,
   },
+  discordRpc: {
+    type: "boolean",
+    default: false,
+  },
   audioVisualizer: {
     type: "object",
     default: {

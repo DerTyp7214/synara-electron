@@ -2,6 +2,7 @@ import { getApiUrl } from "$lib/api/utils";
 import { readable } from "svelte/store";
 import { debugLog } from "$lib/logger";
 import type { UUID } from "node:crypto";
+import type { Song } from "$shared/types/beApi";
 
 export function getImageUrl<K extends string | undefined>(
   imageId: K,
@@ -29,6 +30,33 @@ export function getStreamUrl<K extends string | undefined>(
   const url = new URL(`/stream/${songId}`, apiBase);
   if (targetBitrate) url.searchParams.set("bitrate", targetBitrate.toString());
   return url.toString() as K;
+}
+
+export enum SongOrigin {
+  Tidal = "tidal",
+  Spotify = "spotify",
+}
+
+export function getOrigin(originalUrl: Song["originalUrl"]): SongOrigin | null {
+  if (originalUrl.includes("tidal.com")) return SongOrigin.Tidal;
+  else if (originalUrl.includes("spotify.com")) return SongOrigin.Spotify;
+  return null;
+}
+
+export function getOriginalTrackId(originalUrl: Song["originalUrl"]): string {
+  const service = getOrigin(originalUrl);
+
+  let trackId = "";
+  switch (service) {
+    case SongOrigin.Tidal:
+      trackId = originalUrl.split("track/")[1].split("/")[0];
+  }
+
+  return trackId;
+}
+
+export function copy<T>(dataIn: T): T {
+  return JSON.parse(JSON.stringify(dataIn)) as T;
 }
 
 export function millisecondsToHumanReadable(

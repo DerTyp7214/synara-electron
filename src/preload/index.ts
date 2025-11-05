@@ -16,6 +16,9 @@ const api: CustomApi & SettingsAPI = {
   updateMpris(mediaInfo: MediaInfo) {
     void ipcRenderer.invoke("media-info-update", mediaInfo);
   },
+  updateDiscordRPC(mediaInfo: MediaInfo) {
+    ipcRenderer.send("discord-rpc", mediaInfo);
+  },
   isMac() {
     return process.platform === "darwin";
   },

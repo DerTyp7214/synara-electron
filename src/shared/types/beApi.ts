@@ -1,5 +1,7 @@
 import { UUID } from "node:crypto";
 
+export type SongWithPosition = Song & { position: number };
+
 export interface Song {
   id: UUID;
   title: string;

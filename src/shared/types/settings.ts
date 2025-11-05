@@ -23,6 +23,7 @@ export interface AppSettings {
   apiBase: string | undefined;
   volume: number;
   hideOnClose: boolean;
+  discordRpc: boolean;
   audioVisualizer: {
     minDecibels: number;
     maxDecibels: number;
@@ -47,7 +48,7 @@ export interface QueueSettings {
   shuffleMap: Array<number>;
 }
 
-export const nullSong: Song = {
+export const nullSong: Song & { position: number } = {
   bitsPerSample: 0,
   copyright: "",
   discNumber: 0,
@@ -62,6 +63,7 @@ export const nullSong: Song = {
   bitRate: 0,
   duration: 0,
   artists: [],
+  position: 0,
 };
 
 export const APP_SETTINGS_KEYS: Array<keyof AppSettings> = [
@@ -69,6 +71,7 @@ export const APP_SETTINGS_KEYS: Array<keyof AppSettings> = [
   "apiBase",
   "volume",
   "hideOnClose",
+  "discordRpc",
   "audioVisualizer",
 ];
 

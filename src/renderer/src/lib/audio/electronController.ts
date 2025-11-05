@@ -17,6 +17,7 @@ import {
 import { mediaSession } from "$lib/audio/mediaSession";
 import { playBackStateToMediaSessionState } from "$lib/audio/utils";
 import type { SettingsAPI } from "$shared/types/settings";
+import { getImageUrlBySong } from "$lib/api/sync";
 
 declare global {
   interface Window {
@@ -27,6 +28,11 @@ declare global {
 
 class ElectronController {
   private unsubscribers: Array<() => void> = [];
+  private lastImageUrl: { id: string; url: string; loading: boolean } = {
+    id: "",
+    url: "",
+    loading: false,
+  };
 
   constructor() {
     this.cleanup();
@@ -119,6 +125,7 @@ class ElectronController {
               }
             }
           } else if (uri.startsWith("synara:")) {
+            /* empty */
           }
 
           if (!trackId) return;
@@ -196,7 +203,30 @@ class ElectronController {
       },
     };
 
-    if (metadata.trackId.length > 0) window.api.updateMpris(metadata);
+    if (metadata.trackId.length > 0) {
+      window.api.updateMpris(metadata);
+
+      if (this.lastImageUrl.id !== metadata.trackId) {
+        const oldId = this.lastImageUrl.id;
+        this.lastImageUrl.loading = true;
+        const imageUrl = await getImageUrlBySong(song)
+          .then((image) => image.url)
+          .catch(() => null);
+        if (imageUrl) {
+          this.lastImageUrl.loading = false;
+          this.lastImageUrl.id = metadata.trackId;
+          this.lastImageUrl.url = imageUrl;
+        } else {
+          this.lastImageUrl.loading = false;
+          this.lastImageUrl.id = oldId;
+        }
+      }
+
+      window.api.updateDiscordRPC({
+        ...metadata,
+        image: this.lastImageUrl.url,
+      });
+    }
   }
 
   cleanup() {

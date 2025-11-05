@@ -14,6 +14,8 @@ import { type PlayingSource, PlayingSourceType } from "$shared/types/settings";
 import { Queue } from "$lib/audio/queue";
 import { get } from "svelte/store";
 import { settings } from "$lib/settings";
+import type { SongWithPosition } from "$shared/types/beApi";
+import { debugLog } from "$lib/logger";
 
 export async function playSongById(id: Song["id"]) {
   if (!mediaSession.getQueue().find((s) => s.id === id)) {
@@ -55,7 +57,7 @@ export async function playPlaylistById(id: Playlist["id"]) {
 }
 
 export async function playSong(
-  song: Song,
+  song: Song | SongWithPosition,
   playlist: Array<Song> = [song],
   source: PlayingSource,
   shuffle: boolean = get(settings.shuffle),
@@ -71,7 +73,9 @@ export async function playSong(
     );
     mediaSession.playingSourceType.set(source.type);
   }
-  await mediaSession.playSong(song.id, shuffle);
+  if ("position" in song)
+    await mediaSession.playSongWithPosition(song, shuffle);
+  else await mediaSession.playSong(song.id);
 }
 
 export async function playNext(...songs: Array<Song>) {
