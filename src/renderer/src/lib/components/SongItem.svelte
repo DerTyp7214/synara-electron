@@ -129,7 +129,7 @@
   {#if showNumber}
     <span
       class="text-surface-contrast-50-950/50 me-2 mt-auto mb-auto text-sm font-medium tabular-nums"
-      >{showNumber}.</span
+      >{"position" in songRef ? songRef.position + 1 : showNumber}.</span
     >
   {/if}
   <div
