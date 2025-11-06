@@ -13,7 +13,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            build: "linux"
+          - os: macos-latest
+            build: "mac"
+          - os: ubuntu-latest
+            build: "win"
 
     runs-on: ${{ matrix.os }}
 
@@ -43,9 +49,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          key: ${{ runner.build }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+            ${{ runner.build }}-pnpm-store-
 
       - name: Install Dependencies and sync svelte-kit
         shell: bash
@@ -53,41 +59,34 @@ jobs:
           pnpm install --frozen-lockfile
           pnpm sync:sveltekit
 
-      - name: Build for ${{ matrix.os }}
+      - name: Build for ${{ matrix.build }}
         shell: bash
-        run: |
-          if [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
-            pnpm run build:linux
-          elif [ "${{ matrix.os }}" == "macos-latest" ]; then
-            pnpm run build:mac
-          elif [ "${{ matrix.os }}" == "windows-latest" ]; then
-            pnpm run build:windows
-          fi
+        run: pnpm run build:${{ matrix.build }}
 
       - name: Install yq for Linux YAML parsing
         if: runner.os == 'Linux'
         run: sudo snap install yq
 
       - name: Identify and Output Required Assets (Linux)
-        if: runner.os == 'Linux'
+        if: runner.build == 'linux'
         id: asset_finder_linux
         shell: bash
         run: |
           echo "ASSET_PATHS=$(yq '(.files[] | "dist/" + .url)' "dist/latest-linux.yml" | tr '\n' ' ' | tr -d '"')" >> $GITHUB_OUTPUT
 
+      - name: Identify and Output Required Assets (Windows)
+        if: runner.build == 'win'
+        id: asset_finder_windows
+        shell: bash
+        run: |
+          echo "ASSET_PATHS=$(yq '(.files[] | "dist/" + .url)' "dist/latest.yml" | tr '\n' ' ' | tr -d '"')" >> $GITHUB_OUTPUT
+
       - name: Identify and Output Required Assets (macOS)
-        if: runner.os == 'macOS'
+        if: runner.build == 'mac'
         id: asset_finder_macos
         shell: bash
         run: |
           echo "ASSET_PATHS=$(find dist -type f -name "*.dmg" | tr '\n' ' ')" >> $GITHUB_OUTPUT
-
-      - name: Identify and Output Required Assets (Windows)
-        if: runner.os == 'Windows'
-        id: asset_finder_windows
-        shell: bash
-        run: |
-          echo "ASSET_PATHS=$(find dist -type f -name "*.exe" | tr '\n' ' ')" >> $GITHUB_OUTPUT
 
       - name: Upload Selective Build Artifacts
         uses: actions/upload-artifact@v4
@@ -96,9 +95,9 @@ jobs:
           overwrite: 'true'
           path: |
             package.json
-            ${{ runner.os == 'Linux' && steps.asset_finder_linux.outputs.ASSET_PATHS || '' }}
-            ${{ runner.os == 'macOS' && steps.asset_finder_macos.outputs.ASSET_PATHS || '' }}
-            ${{ runner.os == 'Windows' && steps.asset_finder_windows.outputs.ASSET_PATHS || '' }}
+            ${{ runner.build == 'linux' && steps.asset_finder_linux.outputs.ASSET_PATHS || '' }}
+            ${{ runner.build == 'mac' && steps.asset_finder_macos.outputs.ASSET_PATHS || '' }}
+            ${{ runner.build == 'win' && steps.asset_finder_windows.outputs.ASSET_PATHS || '' }}
 
   release:
     name: Create GitHub Release
