@@ -1,5 +1,9 @@
 name: Build Electron App
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches:
@@ -53,6 +57,10 @@ jobs:
           restore-keys: |
             ${{ runner.build }}-pnpm-store-
 
+      - name: Install wine for Windows build
+        if: runner.build == 'win'
+        run: sudo snap install wine
+
       - name: Install Dependencies and sync svelte-kit
         shell: bash
         run: |
@@ -66,10 +74,6 @@ jobs:
       - name: Install yq for Linux YAML parsing
         if: runner.os == 'Linux'
         run: sudo snap install yq
-
-      - name: Install wine for Windows build
-        if: runner.build == 'win'
-        run: sudo snap install wine
 
       - name: Identify and Output Required Assets (Linux)
         if: runner.build == 'linux'
