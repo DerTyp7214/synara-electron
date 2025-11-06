@@ -138,6 +138,7 @@ jobs:
         id: collect_final_assets
         shell: bash
         run: |
+          sudo chmod -R +r assets/
           PKG_FILE=$(find assets -type f -name 'package.json' | head -n 1)
 
           if [ -z "$PKG_FILE" ]; then
