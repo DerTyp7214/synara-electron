@@ -57,6 +57,15 @@ jobs:
           restore-keys: |
             ${{ matrix.build }}-pnpm-store-
 
+      - name: Cache APT Packages
+        uses: actions/cache@v4
+        if: matrix.build == 'win'
+        with:
+          path: /var/cache/apt/archives
+          key: ${{ matrix.build }}-apt-cache-winehq-noble
+          restore-keys: |
+            ${{ matrix.build }}-apt-cache-
+
       - name: Install WineHQ (Stable for Noble)
         if: matrix.build == 'win'
         run: |
@@ -69,15 +78,6 @@ jobs:
 
           sudo apt update
           sudo apt install -y --install-recommends winehq-stable
-
-      - name: Cache APT Packages
-        uses: actions/cache@v4
-        if: matrix.build == 'win'
-        with:
-          path: /var/cache/apt/archives
-          key: ${{ matrix.build }}-apt-cache-winehq-noble
-          restore-keys: |
-            ${{ matrix.build }}-apt-cache-
 
       - name: Install Dependencies and sync svelte-kit
         shell: bash
