@@ -120,7 +120,7 @@ jobs:
           name: ${{ runner.os }}-release-assets
           overwrite: 'true'
           path: |
-            package.json
+            ${{ matrix.build == 'linux' && 'package.json' || '' }}
             ${{ matrix.build == 'linux' && steps.asset_finder_linux.outputs.ASSET_PATHS || '' }}
             ${{ matrix.build == 'mac' && steps.asset_finder_macos.outputs.ASSET_PATHS || '' }}
             ${{ matrix.build == 'win' && steps.asset_finder_windows.outputs.ASSET_PATHS || '' }}
@@ -135,9 +135,10 @@ jobs:
 
     steps:
       - name: Download all build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           pattern: '*-release-assets'
+          merge-multiple: 'true'
           path: assets
 
       - name: Install jq
