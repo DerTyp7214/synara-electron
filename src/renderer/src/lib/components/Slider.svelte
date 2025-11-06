@@ -12,6 +12,8 @@
     class: clazz = "",
     scrollAction = false,
     scrollStep = 5,
+    orientation = "horizontal",
+    handleWheel = handleWheelFunction,
     onValueChanged = (_: number) => {},
   }: {
     defaultValue?: number;
@@ -23,6 +25,8 @@
     class?: string;
     scrollAction?: boolean;
     scrollStep?: number;
+    orientation?: "vertical" | "horizontal";
+    handleWheel?: (event: WheelEvent) => void;
     onValueChanged?: (value: number) => void;
   } = $props();
 
@@ -31,7 +35,7 @@
     value = details.value[0];
   }
 
-  function handleWheel(event: WheelEvent) {
+  function handleWheelFunction(event: WheelEvent) {
     if (!scrollAction) return;
 
     event.preventDefault();
@@ -53,15 +57,35 @@
     defaultValue={[defaultValue]}
     value={[value]}
     onValueChange={handleValueChange}
+    {orientation}
     {max}
     {min}
     step={0.1}
-    class="relative w-full"
+    class={cn({
+      "w-full": orientation === "horizontal",
+      "h-full": orientation === "vertical",
+    })}
   >
-    <Slider.Control>
-      <Slider.Track class="h-1.5 cursor-pointer">
-        <Slider.Range class="bg-surface-300-700" style="width: {buffer}%" />
-        <Slider.Range class="bg-secondary-700-300" />
+    <Slider.Control class="h-full w-full">
+      <Slider.Track
+        class={cn("cursor-pointer", {
+          "h-1.5 w-full": orientation === "horizontal",
+          "h-full w-1.5": orientation === "vertical",
+        })}
+      >
+        <Slider.Range
+          class={cn("bg-surface-300-700", {
+            block: buffer !== undefined,
+            hidden: buffer === undefined,
+          })}
+          style="{orientation === 'horizontal' ? 'width' : 'height'}: {buffer}%"
+        />
+        <Slider.Range
+          class={cn("bg-secondary-700-300", {
+            "h-full": orientation === "horizontal",
+            "w-full": orientation === "vertical",
+          })}
+        />
       </Slider.Track>
       {#if thumb}
         <Slider.Thumb index={0} class="size-2.5 cursor-pointer ring-2">

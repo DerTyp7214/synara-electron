@@ -30,6 +30,13 @@ export const flags: {
       handle: platform.isLinux,
     },
   ],
+  overlayScrollbar: [
+    {
+      flag: "enable-features",
+      value: "OverlayScrollbar",
+      handle: true,
+    },
+  ],
   enableWaylandSupport: [
     { flag: "enable-features", value: "UseOzonePlatform", handle: true },
     { flag: "ozone-platform-hint", value: "auto", handle: true },

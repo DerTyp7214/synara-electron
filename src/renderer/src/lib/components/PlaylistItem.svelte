@@ -92,7 +92,7 @@
 <button
   class={cn(
     "rounded-container flex flex-row",
-    "gap-2 p-3 shadow-md",
+    "gap-2 p-3 shadow-md select-none",
     "text-start transition-colors",
     {
       "bg-surface-contrast-800-200/40": !isSameSource,

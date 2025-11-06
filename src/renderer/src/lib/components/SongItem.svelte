@@ -20,9 +20,15 @@
   import type { PlayingSource } from "$shared/types/settings";
   import { openContextMenu } from "$lib/contextMenu/store.svelte";
   import { getContext } from "svelte";
-  import { TOAST_CONTEXT_KEY, type ToasterContext } from "$lib/consts";
+  import {
+    MEDIA_PLAYER_CONTEXT_KEY,
+    TOAST_CONTEXT_KEY,
+    type ToasterContext,
+  } from "$lib/consts";
   import { t } from "$lib/i18n/i18n";
   import type { SongWithPosition } from "$shared/types/beApi";
+  import { goto } from "$app/navigation";
+  import type { Writable } from "svelte/store";
 
   const {
     id,
@@ -108,6 +114,19 @@
         ? $currentSong?.position === songRef.position
         : true),
   );
+
+  const mediaPlayerContext = getContext<{
+    isOpen: Writable<boolean>;
+    showQueue: Writable<boolean>;
+    showLyrics: Writable<boolean>;
+  }>(MEDIA_PLAYER_CONTEXT_KEY);
+
+  function handleClick(block: () => void) {
+    return () => {
+      if (mediaPlayerContext) mediaPlayerContext.isOpen.set(false);
+      block();
+    };
+  }
 </script>
 
 <div
@@ -118,7 +137,7 @@
   class={cn(
     "rounded-container box-border",
     "flex flex-row gap-2 p-3 shadow-md",
-    "transition-colors",
+    "transition-colors select-none",
     clazz,
     {
       "bg-surface-contrast-800-200/40": !sameSong,
@@ -168,10 +187,13 @@
     </div>
     <div class="line-clamp-1 flex flex-row">
       {#each artists as artist, i (artist.id)}
-        <a
-          href="{resolve('/artists')}?artistId={artist.id}"
+        <button
+          onclick={handleClick(() =>
+            // eslint-disable-next-line svelte/no-navigation-without-resolve
+            goto(`${resolve("/artists")}?artistId=${artist.id}`),
+          )}
           class={cn(baseTextClasses, "font-medium", "whitespace-nowrap")}
-          >{artist.name}</a
+          >{artist.name}</button
         >
         {#if i < artists.length - 1}
           <span class="text-surface-contrast-50-950/50">,&nbsp;</span>
@@ -182,13 +204,18 @@
   {#if !hideAlbum}
     {#if album}
       <div class="mt-auto mb-auto flex flex-1">
-        <a href="{resolve('/albums')}?albumId={album.id}">
+        <button
+          onclick={handleClick(() =>
+            // eslint-disable-next-line svelte/no-navigation-without-resolve
+            goto(`${resolve("/albums")}?albumId=${album.id}`),
+          )}
+        >
           <span
             class={cn(textClasses, "font-bold", "overflow-hidden break-all")}
           >
             {album.name}
           </span>
-        </a>
+        </button>
       </div>
     {:else}
       <div class="flex-1"></div>

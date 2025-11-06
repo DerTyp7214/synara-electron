@@ -26,5 +26,7 @@ export const isElectron = () => {
 export const SERVER_SERVICE_TYPE = "_synara-api._tcp.local.";
 export const MAX_INT = 2147483647;
 
+export const MEDIA_PLAYER_CONTEXT_KEY = Symbol("MEDIA_PLAYER_CONTEXT_KEY");
+
 export const TOAST_CONTEXT_KEY = Symbol("SYNARA_TOAST_CONTEXT_KEY");
 export type ToasterContext = ReturnType<typeof createToaster>;
