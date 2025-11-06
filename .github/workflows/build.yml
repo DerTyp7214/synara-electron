@@ -67,6 +67,10 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo snap install yq
 
+      - name: Install wine for Windows build
+        if: runner.build == 'win'
+        run: sudo snap install wine
+
       - name: Identify and Output Required Assets (Linux)
         if: runner.build == 'linux'
         id: asset_finder_linux
