@@ -47,8 +47,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
-      - name: Install Dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Install Dependencies and sync svelte-kit
+        shell: bash
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm sync:sveltekit
 
       - name: Build for ${{ matrix.os }}
         shell: bash
