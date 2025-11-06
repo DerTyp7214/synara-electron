@@ -110,9 +110,6 @@ jobs:
     needs: [build]
     runs-on: ubuntu-latest
 
-    permissions:
-      contents: write
-
     steps:
       - name: Download all build artifacts
         uses: actions/download-artifact@v5
@@ -143,10 +140,11 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ steps.collect_final_assets.outputs.RELEASE_VERSION }}
+          tag_name: v${{ steps.collect_final_assets.outputs.RELEASE_VERSION }}-desktop
+          repository: DerTyp7214/synara
           generate_release_notes: true
           files: |
             assets/**
             !assets/**/package.json
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.SYNARA_GITHUB_TOKEN }}
