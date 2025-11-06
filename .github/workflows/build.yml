@@ -98,21 +98,21 @@ jobs:
         id: asset_finder_linux
         shell: bash
         run: |
-          echo "ASSET_PATHS=$(yq '(.files[] | "dist/" + .url)' "dist/latest-linux.yml")" >> $GITHUB_OUTPUT
+          echo "ASSET_PATHS=$(yq '(.files[] | "dist/" + .url)' "dist/latest-linux.yml" | tr '\n' ' ' | tr -d '"')" >> $GITHUB_OUTPUT
 
       - name: Identify and Output Required Assets (Windows)
         if: matrix.build == 'win'
         id: asset_finder_windows
         shell: bash
         run: |
-          echo "ASSET_PATHS=$(yq '(.files[] | "dist/" + .url)' "dist/latest.yml")" >> $GITHUB_OUTPUT
+          echo "ASSET_PATHS=$(yq '(.files[] | "dist/" + .url)' "dist/latest.yml" | tr '\n' ' ' | tr -d '"')" >> $GITHUB_OUTPUT
 
       - name: Identify and Output Required Assets (macOS)
         if: matrix.build == 'mac'
         id: asset_finder_macos
         shell: bash
         run: |
-          echo "ASSET_PATHS=$(find dist -type f -name "*.dmg")" >> $GITHUB_OUTPUT
+          echo "ASSET_PATHS=$(find dist -type f -name "*.dmg" | tr '\n' ' ')" >> $GITHUB_OUTPUT
 
       - name: Upload Selective Build Artifacts
         uses: actions/upload-artifact@v4
