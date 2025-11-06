@@ -57,18 +57,14 @@ jobs:
           restore-keys: |
             ${{ matrix.build }}-pnpm-store-
 
-      - name: Install WineHQ (Stable for Noble)
+      - name: 🍷 Install and Cache Wine
+        uses: awalsh128/cache-apt-pkgs-action@v1.6.0
         if: matrix.build == 'win'
-        run: |
-          sudo dpkg --add-architecture i386
-
-          sudo mkdir -pm755 /etc/apt/keyrings
-          sudo wget -O /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key
-
-          sudo wget -O /etc/apt/sources.list.d/winehq-noble.sources https://dl.winehq.org/wine-builds/ubuntu/dists/noble/winehq-noble.sources
-
-          sudo apt update
-          sudo apt install -y --install-recommends winehq-stable
+        with:
+          packages: winehq-stable winetricks
+          version: 24.04-noble-v1
+          add-repository: https://dl.winehq.org/wine-builds/ubuntu
+          execute_install_scripts: true
 
       - name: Install Dependencies and sync svelte-kit
         shell: bash
