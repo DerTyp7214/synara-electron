@@ -53,12 +53,12 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.build }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          key: ${{ matrix.build }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
-            ${{ runner.build }}-pnpm-store-
+            ${{ matrix.build }}-pnpm-store-
 
       - name: Install wine for Windows build
-        if: runner.build == 'win'
+        if: matrix.build == 'win'
         run: sudo snap install wine
 
       - name: Install Dependencies and sync svelte-kit
@@ -76,21 +76,21 @@ jobs:
         run: sudo snap install yq
 
       - name: Identify and Output Required Assets (Linux)
-        if: runner.build == 'linux'
+        if: matrix.build == 'linux'
         id: asset_finder_linux
         shell: bash
         run: |
           echo "ASSET_PATHS=$(yq '(.files[] | "dist/" + .url)' "dist/latest-linux.yml" | tr '\n' ' ' | tr -d '"')" >> $GITHUB_OUTPUT
 
       - name: Identify and Output Required Assets (Windows)
-        if: runner.build == 'win'
+        if: matrix.build == 'win'
         id: asset_finder_windows
         shell: bash
         run: |
           echo "ASSET_PATHS=$(yq '(.files[] | "dist/" + .url)' "dist/latest.yml" | tr '\n' ' ' | tr -d '"')" >> $GITHUB_OUTPUT
 
       - name: Identify and Output Required Assets (macOS)
-        if: runner.build == 'mac'
+        if: matrix.build == 'mac'
         id: asset_finder_macos
         shell: bash
         run: |
@@ -103,9 +103,9 @@ jobs:
           overwrite: 'true'
           path: |
             package.json
-            ${{ runner.build == 'linux' && steps.asset_finder_linux.outputs.ASSET_PATHS || '' }}
-            ${{ runner.build == 'mac' && steps.asset_finder_macos.outputs.ASSET_PATHS || '' }}
-            ${{ runner.build == 'win' && steps.asset_finder_windows.outputs.ASSET_PATHS || '' }}
+            ${{ matrix.build == 'linux' && steps.asset_finder_linux.outputs.ASSET_PATHS || '' }}
+            ${{ matrix.build == 'mac' && steps.asset_finder_macos.outputs.ASSET_PATHS || '' }}
+            ${{ matrix.build == 'win' && steps.asset_finder_windows.outputs.ASSET_PATHS || '' }}
 
   release:
     name: Create GitHub Release
