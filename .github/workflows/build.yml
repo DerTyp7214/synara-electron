@@ -143,8 +143,9 @@ jobs:
           tag_name: v${{ steps.collect_final_assets.outputs.RELEASE_VERSION }}-desktop
           repository: DerTyp7214/synara
           generate_release_notes: true
+          target_commitish: desktop
           files: |
             assets/**
-            !assets/**/package.json
+            !assets/package.json
         env:
           GITHUB_TOKEN: ${{ secrets.SYNARA_GITHUB_TOKEN }}
