@@ -22,6 +22,7 @@
     getImageUrl,
     millisecondsToHumanReadable,
     fullscreen,
+    nativeFullscreen,
     isMac,
   } from "$lib/utils";
   import { resolve } from "$app/paths";
@@ -358,7 +359,8 @@
         "justify-between p-3 pe-0",
         "transition-all",
         {
-          "draggable ps-20": isMac() && !$fullscreen && $isOpen,
+          "draggable ps-20":
+            isMac() && !$fullscreen && $isOpen && !$nativeFullscreen,
         },
       )}
     >

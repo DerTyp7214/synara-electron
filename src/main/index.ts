@@ -111,7 +111,7 @@ function createWindow(): void {
 
   mainWindow.webContents.once("did-finish-load", async () => {
     if (platform.isMacOS) {
-      const liquidGlass = (await import("electron-liquid-glass")) as any;
+      const liquidGlass = (await import("electron-liquid-glass")).default;
       const glassId = liquidGlass.addView(mainWindow.getNativeWindowHandle(), {
         cornerRadius: 16,
         tintColor: "#00000000",

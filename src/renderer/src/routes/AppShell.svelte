@@ -68,7 +68,7 @@
             "draggable transition-all",
             {
               "mb-2 min-h-10": !$nativeFullscreen,
-              "m-0 min-h-0": $nativeFullscreen,
+              "m-0 min-h-0 border-0": $nativeFullscreen,
             },
           )}
         ></div>
@@ -125,7 +125,7 @@
               "bg-surface-50-950/40 flex md:hidden",
               "rounded-container shadow-md",
               "app-card transition-colors",
-              "min-w-24",
+              "min-w-20",
               {
                 draggable: !sidebarOpen,
               },
@@ -143,7 +143,7 @@
         >
           <button
             onclick={() => (sidebarOpen = !sidebarOpen)}
-            class="transition-opacity hover:opacity-80"
+            class="flex transition-opacity hover:opacity-80 md:hidden"
           >
             <Menu />
           </button>
