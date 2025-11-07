@@ -89,9 +89,27 @@ jobs:
         shell: bash
         run: pnpm run build:${{ matrix.build }}
 
-      - name: Install yq for Linux YAML parsing
-        if: runner.os == 'Linux'
-        run: sudo snap install yq
+      - name: Move files
+        shell: bash
+        if: matrix.build == 'linux'
+        run: |
+          mkdir upload
+          mv dist/*.AppImage upload/synara-desktop.AppImage
+          mv dist/*.deb upload/synara-desktop.deb
+
+      - name: Move files
+        shell: bash
+        if: matrix.build == 'win'
+        run: |
+          mkdir upload
+          mv dist/*.exe upload/synara-desktop.exe
+
+      - name: Move files
+        shell: bash
+        if: matrix.build == 'mac'
+        run: |
+          mkdir upload
+          mv dist/*.dmg upload/synara-desktop.dmg
 
       - name: Upload Selective Build Artifacts
         uses: actions/upload-artifact@v4
@@ -100,10 +118,7 @@ jobs:
           overwrite: 'true'
           path: |
             ${{ matrix.build == 'linux' && 'package.json' || '' }}
-            ${{ matrix.build == 'linux' && 'dist/*.AppImage' || '' }}
-            ${{ matrix.build == 'linux' && 'dist/*.deb' || '' }}
-            ${{ matrix.build == 'mac' && 'dist/*.dmg*' || '' }}
-            ${{ matrix.build == 'win' && 'dist/*.exe' || '' }}
+            ${{ matrix.build == 'linux' && 'upload/*' || '' }}
 
   release:
     name: Create GitHub Release
