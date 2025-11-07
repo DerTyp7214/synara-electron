@@ -155,9 +155,11 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ steps.collect_final_assets.outputs.RELEASE_VERSION }}-desktop
+          tag_name: v${{ steps.collect_final_assets.outputs.RELEASE_VERSION }}${{ github.ref_name == 'master' && '-dev' || '' }}-desktop
+          name: Release v${{ needs.collect_final_assets.outputs.RELEASE_VERSION }} (${{ github.ref_name }})
           repository: DerTyp7214/synara
           generate_release_notes: false
+          prerelease: ${{ github.ref_name == 'master' }}
           target_commitish: desktop
           files: |
             assets/**
