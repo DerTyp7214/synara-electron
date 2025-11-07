@@ -117,8 +117,8 @@ jobs:
           name: ${{ matrix.build }}-release-assets
           overwrite: 'true'
           path: |
+            upload/*
             ${{ matrix.build == 'linux' && 'package.json' || '' }}
-            ${{ matrix.build == 'linux' && 'upload/*' || '' }}
 
   release:
     name: Create GitHub Release
@@ -157,7 +157,7 @@ jobs:
         with:
           tag_name: v${{ steps.collect_final_assets.outputs.RELEASE_VERSION }}-desktop
           repository: DerTyp7214/synara
-          generate_release_notes: true
+          generate_release_notes: false
           target_commitish: desktop
           files: |
             assets/**
