@@ -1,37 +1,34 @@
 <script lang="ts">
   import { Avatar } from "@skeletonlabs/skeleton-svelte";
   import { t } from "$lib/i18n/i18n";
-  import Spotify from "$lib/assets/Spotify.svelte";
-  import Tidal from "$lib/assets/Tidal.svelte";
   import cn from "classnames";
   import { resolve } from "$app/paths";
   import { goto } from "$app/navigation";
-  import { listSongsByPlaylist, type Playlist } from "$lib/api/playlists";
   import { mediaSession } from "$lib/audio/mediaSession";
   import { PlayingSourceType } from "$shared/types/settings";
   import { openContextMenu } from "$lib/contextMenu/store.svelte";
   import { playNext } from "$lib/mediaPlayer";
   import { getContext } from "svelte";
   import { TOAST_CONTEXT_KEY, type ToasterContext } from "$lib/consts";
-
-  type PlaylistOrigin = "tidal" | "spotify";
+  import type { Album, Artist } from "$shared/types/beApi";
+  import { listSongsByAlbum } from "$lib/api/albums";
 
   const {
-    playlistRef,
+    albumRef,
     name,
     by,
     songCount,
-    origin,
     imageUrl,
     size = 64,
+    class: clazz = "",
   }: {
-    playlistRef: Playlist;
+    albumRef: Album;
     name: string;
-    by?: string;
+    by?: Array<Artist>;
     songCount: number;
-    origin?: PlaylistOrigin;
     imageUrl?: string;
     size?: number;
+    class?: string;
   } = $props();
 
   const playingSourceType = $derived(mediaSession.playingSourceType);
@@ -40,27 +37,27 @@
   const toastContext = getContext<ToasterContext>(TOAST_CONTEXT_KEY);
 
   const isSameSource = $derived(
-    $playingSourceType === PlayingSourceType.Playlist &&
-      $playingSourceId === playlistRef.id,
+    $playingSourceType === PlayingSourceType.Album &&
+      $playingSourceId === albumRef.id,
   );
 
   async function handlePlayNext() {
-    const promise = new Promise<
-      Awaited<ReturnType<typeof listSongsByPlaylist>>
-    >((resolve, reject) => {
-      listSongsByPlaylist(playlistRef.id, 0, Number.MAX_SAFE_INTEGER)
-        .then((response) => {
-          playNext(...response.data)
-            .then(() => resolve(response))
-            .catch(reject);
-        })
-        .catch(reject);
-    });
+    const promise = new Promise<Awaited<ReturnType<typeof listSongsByAlbum>>>(
+      (resolve, reject) => {
+        listSongsByAlbum(albumRef.id, 0, Number.MAX_SAFE_INTEGER)
+          .then((response) => {
+            playNext(...response.data)
+              .then(() => resolve(response))
+              .catch(reject);
+          })
+          .catch(reject);
+      },
+    );
 
     toastContext.promise(promise, {
       loading: {
         title: $t("play.fetch.title"),
-        description: $t("play.fetch.description", { name: playlistRef.name }),
+        description: $t("play.fetch.description", { name: albumRef.name }),
       },
       success: (response) => ({
         title: $t("play.next"),
@@ -94,6 +91,7 @@
     "rounded-container flex flex-row",
     "gap-2 p-3 shadow-md select-none",
     "text-start transition-colors",
+    clazz,
     {
       "bg-surface-contrast-800-200/40": !isSameSource,
       "bg-secondary-300-700/40": isSameSource,
@@ -102,7 +100,7 @@
   oncontextmenu={handleContextMenu}
   onclick={() => {
     // eslint-disable-next-line svelte/no-navigation-without-resolve
-    goto(`${resolve("/playlists")}?playlistId=${playlistRef.id}`);
+    goto(`${resolve("/albums")}?albumId=${albumRef.id}`);
   }}
 >
   <Avatar
@@ -118,16 +116,26 @@
         .join("")}</Avatar.Fallback
     >
   </Avatar>
-  <div class="flex flex-grow flex-col justify-center font-medium">
-    <span class="line-clamp-1 overflow-ellipsis">{name}</span>
-    <span
-      class="text-surface-contrast-50-950/50 line-clamp-1 text-sm overflow-ellipsis"
-      >{by ? `${by} · ` : ""}{songCount} {$t("songs")}</span
-    >
+  <div
+    class="flex flex-grow flex-col justify-center overflow-hidden font-medium"
+  >
+    <span class="line-clamp-1 overflow-ellipsis" title={name}>{name}</span>
+    <span class="text-surface-contrast-50-950/50 flex flex-row gap-1 text-sm">
+      {#if by}
+        <div
+          class="line-clamp-1 flex w-max flex-row overflow-hidden break-all"
+          title={by.map((a) => a.name).join(", ")}
+        >
+          {#each by as artist, i (artist.id)}
+            <span class="line-clamp-1">{artist.name}</span>
+            {#if i < by.length - 1}
+              <span class="text-surface-contrast-50-950/50">,&nbsp;</span>
+            {/if}
+          {/each}
+        </div>
+        <span class="min-w-max">·</span>
+      {/if}
+      <span class="min-w-max">{songCount} {$t("songs")}</span>
+    </span>
   </div>
-  {#if origin === "spotify"}
-    <Spotify class="ms-auto mt-auto mb-auto" size={size / 2.5} />
-  {:else if origin === "tidal"}
-    <Tidal class="ms-auto mt-auto mb-auto" size={size / 3} />
-  {/if}
 </button>

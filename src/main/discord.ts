@@ -25,7 +25,7 @@ const defaultPresence = {
 
 const updateActivity = (mediaInfo?: MediaInfo) => {
   const activity = getActivity(mediaInfo);
-  if (mediaInfo?.player?.status === PlaybackStatus.Paused)
+  if (mediaInfo?.player?.status !== PlaybackStatus.Playing)
     rpc?.user?.clearActivity();
   else if (activity) rpc?.user?.setActivity(activity);
 };

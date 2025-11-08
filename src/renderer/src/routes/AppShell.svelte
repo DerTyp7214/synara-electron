@@ -14,6 +14,7 @@
   import { isMac, nativeFullscreen } from "$lib/utils";
   import { writable } from "svelte/store";
   import { onMount } from "svelte";
+  import Search from "$lib/components/Search.svelte";
 
   const { children } = $props();
 
@@ -139,6 +140,7 @@
             "rounded-container shadow-md",
             "app-card transition-colors",
             "flex items-center gap-2",
+            "justify-between",
           )}
         >
           <button
@@ -147,7 +149,7 @@
           >
             <Menu />
           </button>
-          <span>Top Bar</span>
+          <Search />
           <LightSwitch />
         </div>
       </div>

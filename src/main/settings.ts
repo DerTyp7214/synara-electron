@@ -10,7 +10,8 @@ import {
   TOKEN_SETTINGS_KEYS,
   TokenSettings,
 } from "../shared/types/settings";
-import { ipcMain } from "electron";
+import { app, ipcMain } from "electron";
+import path from "node:path";
 
 const schema: Schema<AppSettings> = {
   theme: {
@@ -40,6 +41,10 @@ const schema: Schema<AppSettings> = {
       maxDecibels: -20,
       smoothingTimeConstant: 0.75,
     },
+  },
+  downloadDir: {
+    type: "string",
+    default: path.join(app.getPath("music"), "synara"),
   },
 };
 

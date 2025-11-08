@@ -1,5 +1,5 @@
 import { type Artist, type Song } from "$shared/types/beApi";
-import { apiCall } from "$lib/api/utils";
+import { apiCall, queryApi } from "$lib/api/utils";
 import type { PagedResponse } from "$lib/api/apiTypes";
 
 export { type Artist };
@@ -17,6 +17,14 @@ export async function listSongsByArtist(
   });
 
   return response.getData();
+}
+
+export async function queryArtists(
+  query: string,
+  page?: number,
+  pageSize?: number,
+) {
+  return queryApi<Artist>("artist", query, page, pageSize);
 }
 
 export async function byId(artistId: Artist["id"]): Promise<Artist> {

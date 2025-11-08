@@ -1,8 +1,13 @@
 import { get } from "svelte/store";
 import { isJwtValid } from "$lib/api/jwt";
-import { ApiResponse, type TokenResponse } from "$lib/api/apiTypes";
+import {
+  ApiResponse,
+  type PagedResponse,
+  type TokenResponse,
+} from "$lib/api/apiTypes";
 import { debugLog } from "$lib/logger";
 import { settings } from "$lib/settings";
+import type { Album, Artist, Playlist, Song } from "$shared/types/beApi";
 
 async function getHeaders(
   auth?: boolean,
@@ -32,6 +37,9 @@ async function getHeaders(
 export async function refreshJwt() {
   try {
     const token = get(settings.token!)?.refreshToken;
+
+    debugLog("info", "refreshJwt.token", token);
+
     if (!token) return false;
 
     const response = await apiCall<TokenResponse>({
@@ -43,11 +51,14 @@ export async function refreshJwt() {
     if (response.isOk()) {
       const token = await response.getData();
 
+      debugLog("info", "refreshJwt.newToken", token);
+
       settings.token.set({
         jwt: token.token,
         refreshToken: token.refreshToken,
       });
     } else {
+      debugLog("error", "refreshJwt.response.isNotOk", response);
       settings.token.set({
         jwt: undefined,
         refreshToken: undefined,
@@ -77,6 +88,32 @@ function buildUrl(
   }
 
   return url;
+}
+
+type SearchType<T> = T extends Song
+  ? "song"
+  : T extends Album
+    ? "album"
+    : T extends Artist
+      ? "artist"
+      : T extends Playlist
+        ? "playlist"
+        : never;
+
+export async function queryApi<T>(
+  type: SearchType<T>,
+  query: string,
+  page?: number,
+  pageSize?: number,
+) {
+  const response = await apiCall<PagedResponse<T>>({
+    path: `/${type}/search/${encodeURIComponent(query)}`,
+    method: "GET",
+    query: { page, pageSize, explicit: "true" },
+    auth: true,
+  });
+
+  return response.getData();
 }
 
 export async function apiCall<T>(options: {

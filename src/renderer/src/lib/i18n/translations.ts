@@ -29,5 +29,7 @@ export default {
     "play.fetch.description": "Fetching songs for <b>{{name}}</b>",
     "play.next.success": "<b>{{songTitle}}</b> is playing next.",
     "play.next.error": "Error adding songs: {{message}}",
+
+    "search.placeholder": "Search",
   },
 } as const;

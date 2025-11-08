@@ -1,35 +1,26 @@
 <script lang="ts">
   import { Avatar } from "@skeletonlabs/skeleton-svelte";
   import { t } from "$lib/i18n/i18n";
-  import Spotify from "$lib/assets/Spotify.svelte";
-  import Tidal from "$lib/assets/Tidal.svelte";
   import cn from "classnames";
   import { resolve } from "$app/paths";
   import { goto } from "$app/navigation";
-  import { listSongsByPlaylist, type Playlist } from "$lib/api/playlists";
   import { mediaSession } from "$lib/audio/mediaSession";
   import { PlayingSourceType } from "$shared/types/settings";
   import { openContextMenu } from "$lib/contextMenu/store.svelte";
   import { playNext } from "$lib/mediaPlayer";
   import { getContext } from "svelte";
   import { TOAST_CONTEXT_KEY, type ToasterContext } from "$lib/consts";
-
-  type PlaylistOrigin = "tidal" | "spotify";
+  import type { Artist } from "$shared/types/beApi";
+  import { listSongsByArtist } from "$lib/api/artists";
 
   const {
-    playlistRef,
+    artistRef,
     name,
-    by,
-    songCount,
-    origin,
     imageUrl,
     size = 64,
   }: {
-    playlistRef: Playlist;
+    artistRef: Artist;
     name: string;
-    by?: string;
-    songCount: number;
-    origin?: PlaylistOrigin;
     imageUrl?: string;
     size?: number;
   } = $props();
@@ -40,27 +31,27 @@
   const toastContext = getContext<ToasterContext>(TOAST_CONTEXT_KEY);
 
   const isSameSource = $derived(
-    $playingSourceType === PlayingSourceType.Playlist &&
-      $playingSourceId === playlistRef.id,
+    $playingSourceType === PlayingSourceType.Artist &&
+      $playingSourceId === artistRef.id,
   );
 
   async function handlePlayNext() {
-    const promise = new Promise<
-      Awaited<ReturnType<typeof listSongsByPlaylist>>
-    >((resolve, reject) => {
-      listSongsByPlaylist(playlistRef.id, 0, Number.MAX_SAFE_INTEGER)
-        .then((response) => {
-          playNext(...response.data)
-            .then(() => resolve(response))
-            .catch(reject);
-        })
-        .catch(reject);
-    });
+    const promise = new Promise<Awaited<ReturnType<typeof listSongsByArtist>>>(
+      (resolve, reject) => {
+        listSongsByArtist(artistRef.id, 0, Number.MAX_SAFE_INTEGER)
+          .then((response) => {
+            playNext(...response.data)
+              .then(() => resolve(response))
+              .catch(reject);
+          })
+          .catch(reject);
+      },
+    );
 
     toastContext.promise(promise, {
       loading: {
         title: $t("play.fetch.title"),
-        description: $t("play.fetch.description", { name: playlistRef.name }),
+        description: $t("play.fetch.description", { name: artistRef.name }),
       },
       success: (response) => ({
         title: $t("play.next"),
@@ -91,7 +82,7 @@
 
 <button
   class={cn(
-    "rounded-container flex flex-row",
+    "rounded-container flex flex-col",
     "gap-2 p-3 shadow-md select-none",
     "text-start transition-colors",
     {
@@ -99,10 +90,11 @@
       "bg-secondary-300-700/40": isSameSource,
     },
   )}
+  style="max-width: calc(1.5rem + {size}px); width: calc(1.5rem + {size}px);"
   oncontextmenu={handleContextMenu}
   onclick={() => {
     // eslint-disable-next-line svelte/no-navigation-without-resolve
-    goto(`${resolve("/playlists")}?playlistId=${playlistRef.id}`);
+    goto(`${resolve("/artists")}?artistId=${artistRef.id}`);
   }}
 >
   <Avatar
@@ -118,16 +110,5 @@
         .join("")}</Avatar.Fallback
     >
   </Avatar>
-  <div class="flex flex-grow flex-col justify-center font-medium">
-    <span class="line-clamp-1 overflow-ellipsis">{name}</span>
-    <span
-      class="text-surface-contrast-50-950/50 line-clamp-1 text-sm overflow-ellipsis"
-      >{by ? `${by} · ` : ""}{songCount} {$t("songs")}</span
-    >
-  </div>
-  {#if origin === "spotify"}
-    <Spotify class="ms-auto mt-auto mb-auto" size={size / 2.5} />
-  {:else if origin === "tidal"}
-    <Tidal class="ms-auto mt-auto mb-auto" size={size / 3} />
-  {/if}
+  <span class="text-center font-medium">{name}</span>
 </button>

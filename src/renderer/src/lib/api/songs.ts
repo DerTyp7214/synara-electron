@@ -1,4 +1,4 @@
-import { apiCall } from "$lib/api/utils";
+import { apiCall, queryApi } from "$lib/api/utils";
 import type { PagedResponse } from "$lib/api/apiTypes";
 import type { Song } from "$shared/types/beApi";
 
@@ -26,6 +26,14 @@ export async function songById(songId: Song["id"]) {
   });
 
   return response.getData();
+}
+
+export async function querySongs(
+  query: string,
+  page?: number,
+  pageSize?: number,
+) {
+  return queryApi<Song>("song", query, page, pageSize);
 }
 
 export async function getContentLength(streamUrl: string): Promise<number> {

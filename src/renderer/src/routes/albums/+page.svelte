@@ -41,7 +41,7 @@
 {#key albumId}
   {#if albumId}
     <InfiniteScroll
-      class="flex max-h-full w-full flex-1 flex-col gap-2 overflow-y-auto"
+      class="flex h-full max-h-full w-full flex-col gap-2 overflow-y-auto"
       pageSize={80}
       bind:items
       initialPageUp={-1}

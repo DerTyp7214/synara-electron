@@ -7,6 +7,11 @@ export enum PlayingSourceType {
   Album = "album",
   Artist = "artist",
   LikedSongs = "likedSongs",
+
+  SongSearch = "songSearch",
+  ArtistSearch = "artistSearch",
+  AlbumSearch = "albumSearch",
+  PlaylistSearch = "playlistSearch",
 }
 
 export type PlayingSource = {
@@ -25,6 +30,7 @@ export interface AppSettings {
   volume: number;
   hideOnClose: boolean;
   discordRpc: boolean;
+  downloadDir: string;
   audioVisualizer: {
     minDecibels: number;
     maxDecibels: number;
