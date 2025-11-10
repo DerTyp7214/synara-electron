@@ -38,7 +38,7 @@
       onclick={() => handleClick(item.action, item.args)}
       class={cn(
         "rounded-base",
-        "px-3 py-2",
+        "px-3 py-2 text-start",
         "text-sm transition-colors",
         "text-surface-contrast-100-900 hover:bg-secondary-500 hover:text-white",
       )}

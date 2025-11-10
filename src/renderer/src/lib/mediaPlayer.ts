@@ -80,7 +80,12 @@ export async function playSong(
 
 export async function playNext(...songs: Array<Song>) {
   const currentQueue = get(mediaSession.getDerivedQueue());
-  await currentQueue.playNext(...songs);
+  currentQueue.playNext(...songs);
+}
+
+export async function addToQueue(...songs: Array<Song>) {
+  const currentQueue = get(mediaSession.getDerivedQueue());
+  currentQueue.addToQueue(...songs);
 }
 
 export async function playPlaylist(

@@ -156,6 +156,10 @@
       if (bottomSentinel) observer.unobserve(bottomSentinel);
     };
   });
+
+  function key(item: T, index: number) {
+    return `${item} - ${index}`;
+  }
 </script>
 
 <div
@@ -171,7 +175,7 @@
     {/if}
   </div>
 
-  {#each items as item, index (index)}
+  {#each items as item, index (key(item, index))}
     {@render renderItem({ item, index })}
   {:else}
     {@render noItems?.()}

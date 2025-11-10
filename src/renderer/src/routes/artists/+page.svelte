@@ -4,18 +4,33 @@
   import type { PagedResponse } from "$lib/api/apiTypes";
   import { byId, listSongsByArtist, type Artist } from "$lib/api/artists";
   import type { Song } from "$lib/api/songs";
-  import { getImageUrl } from "$lib/utils";
+  import { distinctBy, getImageUrl } from "$lib/utils";
   import { t } from "$lib/i18n/i18n";
   import { Play, Shuffle } from "@lucide/svelte";
+  import { ChevronRight } from "@jis3r/icons";
   import { playArtist } from "$lib/mediaPlayer";
   import InfiniteScroll from "$lib/components/InfiniteScroll.svelte";
   import SongItem from "$lib/components/SongItem.svelte";
   import Spinner from "$lib/components/Spinner.svelte";
   import { PlayingSourceType } from "$shared/types/settings";
+  import type { Album } from "$shared/types/beApi";
+  import { byArtistId } from "$lib/api/albums";
+  import AlbumItem from "$lib/components/AlbumItem.svelte";
+  import cn from "classnames";
 
   let artistId = $derived(page.url.searchParams.get("artistId")) as
     | Artist["id"]
     | null;
+
+  let albumPage = $state(0);
+  let albumPageSize = 25;
+  let albumHasNext = $state(true);
+  let albumExpanded = $state(false);
+
+  let singlePage = $state(0);
+  let singlePageSize = 25;
+  let singleHasNext = $state(true);
+  let singleExpanded = $state(false);
 
   async function getSongs(
     page: number,
@@ -25,13 +40,66 @@
     return listSongsByArtist(artistId, page, pageSize);
   }
 
-  let items: Array<Song> = $state([]);
+  async function getAlbums(): Promise<Array<Album>> {
+    if (!artistId || !albumHasNext) return [];
+    const newAlbums = await byArtistId(
+      artistId,
+      albumPage,
+      albumPageSize,
+      false,
+    );
+    albumHasNext = newAlbums.hasNextPage;
+    albumItems = distinctBy(
+      [...albumItems, ...newAlbums.data],
+      (item) => item.id,
+    );
+
+    return albumItems;
+  }
+
+  async function getSingles(): Promise<Array<Album>> {
+    if (!artistId || !singleHasNext) return [];
+    const newSingles = await byArtistId(
+      artistId,
+      singlePage,
+      singlePageSize,
+      true,
+    );
+    singleHasNext = newSingles.hasNextPage;
+    singleItems = distinctBy(
+      [...singleItems, ...newSingles.data],
+      (item) => item.id,
+    );
+
+    return singleItems;
+  }
+
+  let singleItems: Array<Album> = $state([]);
+  let albumItems: Array<Album> = $state([]);
+  let songItems: Array<Song> = $state([]);
 
   $effect(() => {
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     artistId;
 
-    items = [];
+    songItems = [];
+
+    albumPage = 0;
+    albumItems = [];
+    albumHasNext = true;
+    albumExpanded = false;
+
+    singlePage = 0;
+    singleItems = [];
+    singleHasNext = true;
+    singleExpanded = false;
+  });
+
+  $effect(() => {
+    if (artistId) {
+      getAlbums();
+      getSingles();
+    }
   });
 </script>
 
@@ -40,7 +108,7 @@
     <InfiniteScroll
       class="flex h-full max-h-full w-full flex-1 flex-col gap-2 overflow-y-auto"
       pageSize={80}
-      bind:items
+      bind:items={songItems}
       initialPageUp={-1}
       initialPageDown={0}
       loadMoreUp={getSongs}
@@ -87,13 +155,85 @@
             </div>
           </div>
         {/await}
+        <div class="flex flex-col p-4">
+          <button
+            class="h5 flex items-center ps-4 text-start"
+            onclick={() => (albumExpanded = !albumExpanded)}
+          >
+            <span>Albums</span>
+            <ChevronRight
+              class={cn("transition-transform", {
+                "rotate-90": albumExpanded,
+              })}
+            />
+          </button>
+          <div
+            class="3xl:grid-cols-5 grid grid-cols-1 gap-3 p-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
+          >
+            {#each albumExpanded ? albumItems : albumItems.slice(0, 5) as album, i (album.id + i)}
+              <AlbumItem
+                class="h-full w-full"
+                albumRef={album}
+                name={album.name}
+                songCount={album.songCount}
+                by={album.artists}
+                imageUrl={getImageUrl(album.coverId)}
+              />
+            {/each}
+            {#if albumHasNext}
+              <button
+                type="button"
+                class="btn preset-filled-secondary-300-700 me-auto mt-4"
+                onclick={getAlbums}
+              >
+                <span>Button</span>
+              </button>
+            {/if}
+          </div>
+        </div>
+        <div class="flex flex-col p-4">
+          <button
+            class="h5 flex items-center ps-4 text-start"
+            onclick={() => (singleExpanded = !singleExpanded)}
+          >
+            <span>Singles</span>
+            <ChevronRight
+              class={cn("transition-transform", {
+                "rotate-90": singleExpanded,
+              })}
+            />
+          </button>
+          <div
+            class="3xl:grid-cols-5 grid grid-cols-1 gap-3 p-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
+          >
+            {#each singleExpanded ? singleItems : singleItems.slice(0, 5) as single, i (single.id + i)}
+              <AlbumItem
+                class="h-full w-full"
+                albumRef={single}
+                name={single.name}
+                songCount={single.songCount}
+                by={single.artists}
+                imageUrl={getImageUrl(single.coverId)}
+              />
+            {/each}
+            {#if singleHasNext}
+              <button
+                type="button"
+                class="btn preset-filled-secondary-300-700 me-auto mt-4"
+                onclick={getSingles}
+              >
+                <span>Button</span>
+              </button>
+            {/if}
+          </div>
+        </div>
       {/snippet}
       {#snippet renderItem({ item, index })}
         <SongItem
           {...item}
           class="mx-8"
           songRef={item}
-          playlistRef={items}
+          playlistRef={songItems}
           showNumber={index + 1}
           playingSource={{
             type: PlayingSourceType.Artist,

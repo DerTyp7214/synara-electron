@@ -161,7 +161,20 @@ export class Queue implements Readable<QueueCallbackData> {
         position: q.length + i,
       })),
     ]);
-    this.maybeReshuffle();
+
+    if (get(settings.shuffle)) {
+      this.shuffledMapStore.update((shuffleMap) => {
+        const newShuffleMap = [...shuffleMap];
+        const songsLength = songs.length;
+
+        const newIndices = Array.from(
+          { length: songsLength },
+          (_, i) => newShuffleMap.length + i,
+        );
+
+        return [...newShuffleMap, ...newIndices];
+      });
+    }
   }
 
   public removeFromQueue(...songs: Array<Song>) {
@@ -172,7 +185,7 @@ export class Queue implements Readable<QueueCallbackData> {
     this.maybeReshuffle();
   }
 
-  public async playNext(...songs: Array<Song>) {
+  public playNext(...songs: Array<Song>) {
     this.queueStore.update((q) => {
       const currentSongIndex = get(this.currentIndex);
       const newQueue: Array<Song> = [...q];

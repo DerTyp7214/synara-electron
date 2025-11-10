@@ -37,7 +37,7 @@
 </script>
 
 <div class="flex h-full max-h-full w-full flex-col gap-4 overflow-y-auto p-4">
-  <span class="h2">Results for: <span class="italic">{searchQuery}</span></span>
+  <span class="h5">Results for: <span class="italic">{searchQuery}</span></span>
   <div class="flex flex-col gap-2 p-4">
     <span class="h3">Songs</span>
     {#each songs as song (song.id)}

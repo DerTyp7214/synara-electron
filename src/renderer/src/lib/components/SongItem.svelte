@@ -14,7 +14,7 @@
   import cn from "classnames";
   import { resolve } from "$app/paths";
   import ToolTip from "$lib/components/ToolTip.svelte";
-  import { playNext, playSong } from "$lib/mediaPlayer";
+  import { addToQueue, playNext, playSong } from "$lib/mediaPlayer";
   import Explicit from "$lib/assets/Explicit.svelte";
   import { mediaSession } from "$lib/audio/mediaSession";
   import type { PlayingSource } from "$shared/types/settings";
@@ -97,11 +97,26 @@
     });
   }
 
+  async function handleAddToQueue(song: Song) {
+    await addToQueue(song);
+
+    toastContext.success({
+      title: $t("play.addToQueue"),
+      description: $t("play.addToQueue.success", { songCount: "1" }),
+      duration: 4000,
+    });
+  }
+
   function handleContextMenu(event: MouseEvent) {
     openContextMenu(event, [
       {
         label: $t("play.next"),
         action: handlePlayNext,
+        args: songRef,
+      },
+      {
+        label: $t("play.addToQueue"),
+        action: handleAddToQueue,
         args: songRef,
       },
     ]);

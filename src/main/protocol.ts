@@ -47,7 +47,15 @@ export function registerProtocol(mainWindowHandler: () => BrowserWindow) {
   });
 
   app.whenReady().then(() => {
-    protocol.handle(PROTOCOL_SCHEME, offlineApiHandler);
+    protocol.handle(PROTOCOL_SCHEME, async (request) => {
+      switch (new URL(request.url).host) {
+        case "search":
+          // TODO: handle search in the ui
+          return new Response();
+        default:
+          return await offlineApiHandler(request);
+      }
+    });
   });
 
   return true;
@@ -57,7 +65,6 @@ async function offlineApiHandler(request: Request): Promise<Response> {
   const { host, pathname } = new URL(request.url);
 
   console.log(host, pathname, offlineHandler);
-
   if (host === "stream") {
     return new Response("<h1>Yay</h1>", {
       headers: { "content-type": "text/html" },

@@ -1,7 +1,7 @@
 import type { Song } from "$lib/api/songs";
 import type { PagedResponse } from "$lib/api/apiTypes";
 import { apiCall, queryApi } from "$lib/api/utils";
-import type { Album } from "$shared/types/beApi";
+import type { Album, Artist } from "$shared/types/beApi";
 
 export { type Album };
 
@@ -32,6 +32,22 @@ export async function byId(albumId: Album["id"]): Promise<Album> {
   const response = await apiCall<Album>({
     path: `/album/byId/${albumId}`,
     method: "GET",
+    auth: true,
+  });
+
+  return response.getData();
+}
+
+export async function byArtistId(
+  artistId: Artist["id"],
+  page?: number,
+  pageSize?: number,
+  singles?: boolean,
+) {
+  const response = await apiCall<PagedResponse<Album>>({
+    path: `/album/byArtist/${artistId}`,
+    method: "GET",
+    query: { page, pageSize, singles: (singles ?? false).toString() },
     auth: true,
   });
 

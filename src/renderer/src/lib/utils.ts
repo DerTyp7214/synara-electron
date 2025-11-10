@@ -251,4 +251,8 @@ export function invertArray(originalArray: Array<number>) {
   return invertedArray;
 }
 
+export function distinctBy<T, R>(items: Array<T>, value: (item: T) => R) {
+  return [...new Map(items.map((item) => [value(item), item])).values()];
+}
+
 export const { isMac, isLinux, isWindows } = window.api;
