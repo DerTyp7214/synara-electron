@@ -26,6 +26,7 @@
     origin,
     imageUrl,
     size = 64,
+    style = "",
   }: {
     playlistRef: Playlist;
     name: string;
@@ -34,6 +35,7 @@
     origin?: PlaylistOrigin;
     imageUrl?: string;
     size?: number;
+    style?: string;
   } = $props();
 
   const playingSourceType = $derived(mediaSession.playingSourceType);
@@ -149,6 +151,7 @@
 </script>
 
 <button
+  {style}
   class={cn(
     "rounded-container flex flex-row",
     "gap-2 p-3 shadow-md select-none",

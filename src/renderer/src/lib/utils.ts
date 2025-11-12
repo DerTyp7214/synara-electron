@@ -3,6 +3,8 @@ import { readable } from "svelte/store";
 import { debugLog } from "$lib/logger";
 import type { UUID } from "node:crypto";
 import type { Song } from "$shared/types/beApi";
+import type { OnNavigate } from "@sveltejs/kit";
+import type { MaybePromise } from "$lib/types";
 
 export function getImageUrl<K extends string | undefined>(
   imageId: K,
@@ -253,6 +255,19 @@ export function invertArray(originalArray: Array<number>) {
 
 export function distinctBy<T, R>(items: Array<T>, value: (item: T) => R) {
   return [...new Map(items.map((item) => [value(item), item])).values()];
+}
+
+export function defaultNavigation(
+  navigation: OnNavigate,
+): MaybePromise<void | (() => void)> {
+  if (!document.startViewTransition) return;
+
+  return new Promise((resolve) => {
+    document.startViewTransition(async () => {
+      resolve();
+      await navigation.complete;
+    });
+  });
 }
 
 export const { isMac, isLinux, isWindows } = window.api;

@@ -44,12 +44,14 @@
     addedAt,
     originalUrl = "",
     class: clazz = "",
+    style = "",
     playingSource,
     playlistRef,
     songRef,
     scrollIntoActive = false,
   }: Song & {
     class?: string;
+    style?: string;
     hideAlbum?: boolean;
     showNumber?: number;
     addedAt?: number;
@@ -149,6 +151,7 @@
   data-songId={id}
   oncontextmenu={handleContextMenu}
   role="listitem"
+  {style}
   class={cn(
     "rounded-container box-border",
     "flex flex-row gap-2 p-3 shadow-md",

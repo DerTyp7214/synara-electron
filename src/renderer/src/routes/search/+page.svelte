@@ -10,8 +10,10 @@
   import { queryPlaylists } from "$lib/api/playlists";
   import PlaylistItem from "$lib/components/PlaylistItem.svelte";
   import ArtistItem from "$lib/components/ArtistItem.svelte";
-  import { getImageUrl } from "$lib/utils";
+  import { defaultNavigation, getImageUrl } from "$lib/utils";
   import AlbumItem from "$lib/components/AlbumItem.svelte";
+  import { goto, onNavigate } from "$app/navigation";
+  import { resolve } from "$app/paths";
 
   let searchQuery = $derived(page.url.searchParams.get("query")) as
     | string
@@ -31,18 +33,34 @@
     playlists = await queryPlaylists(query, 0, 5).then((r) => r.data);
   }
 
+  function navigate(page: "songs") {
+    return () => {
+      switch (page) {
+        case "songs":
+          // eslint-disable-next-line svelte/no-navigation-without-resolve
+          goto(`${resolve("/search/songs")}?query=${searchQuery}`);
+          break;
+      }
+    };
+  }
+
   $effect(() => {
     search(searchQuery);
   });
+
+  onNavigate(defaultNavigation);
 </script>
 
 <div class="flex h-full max-h-full w-full flex-col gap-4 overflow-y-auto p-4">
-  <span class="h5">Results for: <span class="italic">{searchQuery}</span></span>
+  <span class="h5">
+    Results for: <span class="italic">{searchQuery}</span>
+  </span>
   <div class="flex flex-col gap-2 p-4">
     <span class="h3">Songs</span>
     {#each songs as song (song.id)}
       <SongItem
         {...song}
+        style="view-transition-name: song-{song.id}"
         songRef={song}
         playlistRef={songs}
         playingSource={{
@@ -55,6 +73,7 @@
     {#if songs.length > 0}
       <button
         type="button"
+        onclick={navigate("songs")}
         class="btn preset-filled-secondary-300-700 me-auto mt-4"
       >
         <span>Button</span>
@@ -71,6 +90,7 @@
       {#each albums as album (album.id)}
         <AlbumItem
           class="w-max max-w-sm flex-1"
+          style="view-transition-name: album-{album.id}"
           albumRef={album}
           name={album.name}
           songCount={album.songCount}
@@ -98,6 +118,7 @@
     <div class="flex w-full flex-row gap-2 overflow-x-auto">
       {#each artists as artist (artist.id)}
         <ArtistItem
+          style="view-transition-name: artist-{artist.id}"
           artistRef={artist}
           name={artist.name}
           size={96}
@@ -124,6 +145,7 @@
     <div class="flex w-full flex-row gap-2 overflow-x-auto">
       {#each playlists as playlist (playlist.id)}
         <PlaylistItem
+          style="view-transition-name: playlist-{playlist.id}"
           playlistRef={playlist}
           name={playlist.name}
           songCount={playlist.songs.length}

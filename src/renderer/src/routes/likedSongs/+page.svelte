@@ -8,6 +8,8 @@
     type PlayingSource,
     PlayingSourceType,
   } from "$shared/types/settings";
+  import { defaultNavigation } from "$lib/utils";
+  import { onNavigate } from "$app/navigation";
 
   const playingSource: PlayingSource = {
     type: PlayingSourceType.LikedSongs,
@@ -20,6 +22,8 @@
     const response = await listSongs(0, MAX_INT);
     items = [...response.data];
   });
+
+  onNavigate(defaultNavigation);
 </script>
 
 <SvelteVirtualList {items} itemsClass="gap-2 flex flex-col p-8">

@@ -5,13 +5,14 @@
   import Logo from "$lib/components/Logo.svelte";
   import LightSwitch from "$lib/components/LightSwitch.svelte";
   import Spinner from "$lib/components/Spinner.svelte";
-  import { goto } from "$app/navigation";
+  import { goto, onNavigate } from "$app/navigation";
   import { resolve } from "$app/paths";
   import { onMount } from "svelte";
   import type { Service } from "bonjour-service";
   import { health } from "$lib/api/main";
   import { settings } from "$lib/settings";
   import { get } from "svelte/store";
+  import { defaultNavigation } from "$lib/utils";
 
   let apiAddress: string = $state(get(settings.apiBase) ?? "");
   let errorMessage = $state("");
@@ -52,6 +53,8 @@
       bonjourUnsubscriber?.();
     };
   });
+
+  onNavigate(defaultNavigation);
 </script>
 
 <svelte:head>

@@ -6,9 +6,9 @@
   import LightSwitch from "$lib/components/LightSwitch.svelte";
   import Spinner from "$lib/components/Spinner.svelte";
   import { login } from "$lib/api/auth";
-  import { goto } from "$app/navigation";
+  import { goto, onNavigate } from "$app/navigation";
   import { resolve } from "$app/paths";
-  import { isMac } from "$lib/utils";
+  import { defaultNavigation, isMac } from "$lib/utils";
 
   let username = $state("");
   let password = $state("");
@@ -30,6 +30,8 @@
 
     await goto(resolve("/"), { replaceState: true });
   }
+
+  onNavigate(defaultNavigation);
 </script>
 
 <svelte:head>

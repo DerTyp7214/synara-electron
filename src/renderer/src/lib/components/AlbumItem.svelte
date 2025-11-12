@@ -24,6 +24,7 @@
     imageUrl,
     size = 64,
     class: clazz = "",
+    style = "",
   }: {
     albumRef: Album;
     name: string;
@@ -32,6 +33,7 @@
     imageUrl?: string;
     size?: number;
     class?: string;
+    style?: string;
   } = $props();
 
   const playingSourceType = $derived(mediaSession.playingSourceType);
@@ -154,6 +156,7 @@
 </script>
 
 <div
+  {style}
   class={cn(
     "rounded-container flex flex-row",
     "gap-2 p-3 shadow-md select-none",

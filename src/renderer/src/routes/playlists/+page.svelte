@@ -4,7 +4,7 @@
   import type { PagedResponse } from "$lib/api/apiTypes";
   import { byId, listSongsByPlaylist, type Playlist } from "$lib/api/playlists";
   import type { Song } from "$lib/api/songs";
-  import { getImageUrl } from "$lib/utils";
+  import { defaultNavigation, getImageUrl } from "$lib/utils";
   import { t } from "$lib/i18n/i18n";
   import { millisecondsToHumanReadable } from "$lib/utils.js";
   import { Play, Shuffle } from "@lucide/svelte";
@@ -13,6 +13,7 @@
   import SongItem from "$lib/components/SongItem.svelte";
   import Spinner from "$lib/components/Spinner.svelte";
   import { PlayingSourceType } from "$shared/types/settings";
+  import { onNavigate } from "$app/navigation";
 
   let playlistId = $derived(page.url.searchParams.get("playlistId")) as
     | Playlist["id"]
@@ -34,6 +35,8 @@
 
     items = [];
   });
+
+  onNavigate(defaultNavigation);
 </script>
 
 {#key playlistId}

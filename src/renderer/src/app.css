@@ -67,6 +67,13 @@
   body {
     @apply bg-transparent mac:bg-secondary-50-950/50;
   }
+
+  ::selection {
+    /*noinspection CssInvalidFunction*/
+    color: light-dark(white, black);
+    /*noinspection CssInvalidFunction*/
+    background-color: light-dark(var(--color-secondary-800), var(--color-secondary-200));
+  }
 }
 
 [data-mode="dark"] {

@@ -9,7 +9,7 @@
     event.preventDefault();
 
     // eslint-disable-next-line svelte/no-navigation-without-resolve
-    goto(`${resolve("/search")}?query=${encodeURIComponent(query)}`);
+    await goto(`${resolve("/search")}?query=${encodeURIComponent(query)}`);
   }
 </script>
 
@@ -17,7 +17,7 @@
   <label class="label">
     <input
       bind:value={query}
-      class="input ring-surface-500 !m-0"
+      class="input border-secondary-950-50 focus-within:border-secondary-800-200 bg-surface-50-950/50 !m-0 border-2 ring-0 transition-colors"
       type="text"
       placeholder={$t("search.placeholder")}
     />

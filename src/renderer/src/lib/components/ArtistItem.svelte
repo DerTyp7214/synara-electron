@@ -18,11 +18,13 @@
     name,
     imageUrl,
     size = 64,
+    style = "",
   }: {
     artistRef: Artist;
     name: string;
     imageUrl?: string;
     size?: number;
+    style?: string;
   } = $props();
 
   const playingSourceType = $derived(mediaSession.playingSourceType);
@@ -90,7 +92,7 @@
       "bg-secondary-300-700/40": isSameSource,
     },
   )}
-  style="max-width: calc(1.5rem + {size}px); width: calc(1.5rem + {size}px);"
+  style="max-width: calc(1.5rem + {size}px); width: calc(1.5rem + {size}px); {style}"
   oncontextmenu={handleContextMenu}
   onclick={() => {
     // eslint-disable-next-line svelte/no-navigation-without-resolve
@@ -110,5 +112,5 @@
         .join("")}</Avatar.Fallback
     >
   </Avatar>
-  <span class="text-center font-medium">{name}</span>
+  <span class="text-center font-medium break-words">{name}</span>
 </button>

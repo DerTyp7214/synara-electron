@@ -4,7 +4,7 @@
   import type { PagedResponse } from "$lib/api/apiTypes";
   import type { Song } from "$lib/api/songs";
   import { listSongsByAlbum, type Album, byId } from "$lib/api/albums";
-  import { getImageUrl } from "$lib/utils";
+  import { defaultNavigation, getImageUrl } from "$lib/utils";
   import { t } from "$lib/i18n/i18n";
   import { millisecondsToHumanReadable } from "$lib/utils.js";
   import { Play, Shuffle } from "@lucide/svelte";
@@ -15,6 +15,7 @@
   import cn from "classnames";
   import { resolve } from "$app/paths";
   import { PlayingSourceType } from "$shared/types/settings";
+  import { onNavigate } from "$app/navigation";
 
   let albumId = $derived(page.url.searchParams.get("albumId")) as
     | Album["id"]
@@ -36,6 +37,8 @@
 
     items = [];
   });
+
+  onNavigate(defaultNavigation);
 </script>
 
 {#key albumId}
