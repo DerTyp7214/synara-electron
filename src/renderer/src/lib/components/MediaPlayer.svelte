@@ -24,6 +24,7 @@
     fullscreen,
     nativeFullscreen,
     isMac,
+    globalKeydown,
   } from "$lib/utils";
   import { resolve } from "$app/paths";
   import { Explicit, SkipBack, SkipForward, Pause } from "$lib/assets";
@@ -59,6 +60,7 @@
   let visualizerCanvas = $state<HTMLCanvasElement>();
   let queueElement = $state<HTMLDivElement>();
 
+  const bassAmplitude = $derived(mediaSession.bassAmplitude(0, 1, 2));
   const playingSourceId = $derived(mediaSession.playingSourceId);
   const currentPosition = $derived(mediaSession.currentPosition);
   const currentBuffer = $derived(mediaSession.currentBuffer);
@@ -196,17 +198,58 @@
       cleanupResizeListener();
     };
   });
+
+  const audioVisualEffects = $derived.by(() => {
+    if (!showVisualizer) return "--tw-brightness: brightness(30%);";
+    return `--tw-saturate: saturate(${0.8 + ($bassAmplitude / 255) * 0.8}); --tw-brightness: brightness(${20 + ($bassAmplitude / 255) * 15}%);`;
+  });
+
+  function handleKeyDown(event: KeyboardEvent) {
+    event.preventDefault();
+
+    switch (event.code) {
+      case "KeyF":
+        if ($isOpen) {
+          if ($fullscreen) document.exitFullscreen();
+          else footerElement?.requestFullscreen();
+        }
+        break;
+      case "Space":
+        if (mediaSession.isPaused()) mediaSession.play();
+        else mediaSession.pause();
+        break;
+      case "KeyN":
+        if (event.shiftKey) mediaSession.playNext();
+        break;
+      case "KeyP":
+        if (event.shiftKey) mediaSession.playPrev();
+        break;
+      case "KeyO":
+        if (event.shiftKey) $isOpen = !$isOpen;
+        break;
+      case "ArrowRight":
+        audioSession.seekBy(5);
+        break;
+      case "ArrowLeft":
+        audioSession.seekBy(-5);
+        break;
+      default:
+        console.log(event);
+    }
+  }
 </script>
 
 <footer
   bind:this={footerElement}
   data-mode={$isOpen ? "dark" : undefined}
+  use:globalKeydown={handleKeyDown}
   class={cn(
     "flex flex-shrink-0",
-    "app-card fixed mt-0",
+    "fixed mt-0",
     "flex-col transition-all",
     "text-surface-950-50",
     {
+      "app-card": !$isOpen,
       "bg-surface-50-950/40": !$isOpen,
       "bg-surface-50-950/70": $isOpen,
       "rounded-container shadow-md": !$isOpen,
@@ -218,12 +261,14 @@
 >
   {#if $currentSong?.coverId}
     <div
-      style="background-image: url({getImageUrl($currentSong.coverId)})"
+      style="background-image: url({getImageUrl(
+        $currentSong.coverId,
+      )}); {audioVisualEffects}"
       class={cn(
         "absolute top-0 left-0 h-full w-full",
         "scale-110 bg-cover bg-center",
         "z-0 transition-opacity",
-        "blur-2xl brightness-30",
+        "blur-2xl",
         {
           "opacity-100": $isOpen,
           "opacity-0": !$isOpen,
@@ -311,7 +356,8 @@
         src={getImageUrl($currentSong.coverId)}
         alt="cover"
         class={cn(
-          "aspect-square h-[40vh] min-w-[40vh] transition-all",
+          "transition-all duration-75",
+          "aspect-square h-[40vh] min-w-[40vh]",
           "rounded-container overflow-hidden",
           {
             "max-h-0 opacity-0": !$isOpen,
@@ -386,7 +432,11 @@
           hidden: $showQueue || ($showLyrics && hasLyrics),
         })}
       >
-        <AudioLines />
+        <AudioLines
+          class={cn({
+            "audio-lines-icon animate": showVisualizer && !$isPaused,
+          })}
+        />
       </button>
     </div>
   </div>
@@ -464,7 +514,7 @@
     </div>
 
     <div class="flex flex-2 flex-col items-center">
-      <div class="flex flex-row items-center gap-2 pe-1">
+      <div class="audio-interactive flex flex-row items-center gap-2 pe-1">
         <button
           onclick={handleActionClick("shuffle")}
           class={cn("transition-all hover:opacity-80", {

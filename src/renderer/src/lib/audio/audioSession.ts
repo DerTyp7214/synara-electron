@@ -97,6 +97,11 @@ export class AudioSession {
     this.audio.currentTime = position / 1000;
   }
 
+  seekBy(seconds: number) {
+    if (this.audio.currentTime + seconds < this.audio.duration)
+      this.audio.currentTime += seconds;
+  }
+
   getPositionInSeconds() {
     return this.audio.currentTime;
   }

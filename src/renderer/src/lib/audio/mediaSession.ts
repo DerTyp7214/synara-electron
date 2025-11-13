@@ -1,7 +1,13 @@
 import { audioSession } from "$lib/audio/audioSession";
 import { getContentLength, type Song } from "$lib/api/songs";
 import { getStreamUrl, roundRect } from "$lib/utils";
-import { derived, get, type Unsubscriber, writable } from "svelte/store";
+import {
+  derived,
+  get,
+  readable,
+  type Unsubscriber,
+  writable,
+} from "svelte/store";
 import { createCurve } from "$lib/audio/utils";
 import { electronController } from "$lib/audio/electronController";
 import { RepeatMode } from "$shared/models/repeatMode";
@@ -288,6 +294,44 @@ export class MediaSession {
     audioSession.setSrc(url);
     if (start) await audioSession.play();
     //this.setupAudioConnection();
+  }
+
+  bassAmplitude(...bands: Array<number>) {
+    return readable(0, (set) => {
+      let rafId: NodeJS.Timeout;
+
+      const analyze = async () => {
+        if (!this.dataArray) {
+          rafId = setTimeout(analyze, 100);
+          return;
+        }
+
+        const limit = bands.length;
+
+        if (limit <= 0) {
+          rafId = setTimeout(analyze, 100);
+          return;
+        }
+
+        let sum = 0;
+        for (let i = 0; i < this.dataArray.length; i++) {
+          if (bands.includes(i)) sum += this.dataArray[i];
+        }
+
+        const averageAmplitude = sum / limit;
+
+        set(averageAmplitude);
+
+        rafId = setTimeout(analyze, 25);
+      };
+
+      void analyze();
+
+      return () => {
+        clearTimeout(rafId);
+        set(0);
+      };
+    });
   }
 
   drawVisualizer(canvas: HTMLCanvasElement) {

@@ -270,4 +270,43 @@ export function defaultNavigation(
   });
 }
 
+export function globalKeydown(
+  node: HTMLElement,
+  callback: (event: KeyboardEvent) => void,
+) {
+  const IGNORED_TAGS = ["INPUT", "TEXTAREA", "SELECT"];
+  const IGNORED_CLASS = "audio-interactive";
+
+  /** @param {KeyboardEvent} event */
+  function handleKeydown(event: KeyboardEvent) {
+    const target = event.target;
+
+    if (
+      target instanceof HTMLElement &&
+      IGNORED_TAGS.includes(target.tagName)
+    ) {
+      return;
+    }
+
+    if (target instanceof HTMLElement && target.isContentEditable) {
+      return;
+    }
+
+    const isInsideExcludedArea = (target as HTMLElement)?.closest(
+      `.${IGNORED_CLASS}`,
+    );
+    if (isInsideExcludedArea) return;
+
+    callback(event);
+  }
+
+  document.addEventListener("keydown", handleKeydown);
+
+  return {
+    destroy() {
+      document.removeEventListener("keydown", handleKeydown);
+    },
+  };
+}
+
 export const { isMac, isLinux, isWindows } = window.api;
