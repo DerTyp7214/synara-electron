@@ -39,7 +39,6 @@
   import InfiniteScroll from "$lib/components/InfiniteScroll.svelte";
   import Spinner from "$lib/components/Spinner.svelte";
   import type { Song } from "$lib/api/songs";
-  import { nullSong } from "$shared/types/settings";
   import { MEDIA_PLAYER_CONTEXT_KEY } from "$lib/consts";
 
   let {
@@ -204,8 +203,13 @@
     return `--tw-saturate: saturate(${0.8 + ($bassAmplitude / 255) * 0.8}); --tw-brightness: brightness(${20 + ($bassAmplitude / 255) * 15}%);`;
   });
 
-  function handleKeyDown(event: KeyboardEvent) {
-    event.preventDefault();
+  function handleKeyDown(
+    event: KeyboardEvent,
+    audioInteractiveFocused: boolean,
+  ) {
+    if (event.code === "KeyR" && event.shiftKey && event.ctrlKey) return;
+
+    if (!audioInteractiveFocused) event.preventDefault();
 
     switch (event.code) {
       case "KeyF":
@@ -215,6 +219,7 @@
         }
         break;
       case "Space":
+        if (audioInteractiveFocused) return;
         if (mediaSession.isPaused()) mediaSession.play();
         else mediaSession.pause();
         break;
@@ -506,9 +511,15 @@
         </div>
         <span
           class="text-secondary-700-300 text-2xs line-clamp-1 text-start font-bold text-ellipsis"
-          title={$t("player.playingAt", { bitrate: $bitrate.toString() })}
+          title={$t("player.playingAt", {
+            bitrate: $bitrate.toString(),
+            sampleRate: ($currentSong.sampleRate / 1000).toString(),
+          })}
         >
-          {$t("player.playingAt", { bitrate: $bitrate.toString() })}
+          {$t("player.playingAt", {
+            bitrate: $bitrate.toString(),
+            sampleRate: ($currentSong.sampleRate / 1000).toString(),
+          })}
         </span>
       </div>
     </div>

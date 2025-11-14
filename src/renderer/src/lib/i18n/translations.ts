@@ -2,7 +2,7 @@ export default {
   en: {
     title: "Synara",
 
-    "player.playingAt": "Playing At {{bitrate}}kbps",
+    "player.playingAt": "Playing At {{bitrate}}kbps ({{sampleRate}}kHz)",
 
     duration: "Duration",
 

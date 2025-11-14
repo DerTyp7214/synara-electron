@@ -5,6 +5,7 @@ import {
   derived,
   get,
   readable,
+  readonly,
   type Unsubscriber,
   writable,
 } from "svelte/store";
@@ -36,6 +37,7 @@ export class MediaSession {
 
   paused = writable<boolean>(true);
   bitrate = writable<number>(0);
+  sampleRate = writable<number>(0);
   muted = writable<boolean>(false);
 
   volume = settings.volume;
@@ -120,6 +122,7 @@ export class MediaSession {
         if (duration <= 0 || duration === Infinity) return;
         const contentLength = await getContentLength(source);
         this.bitrate.set(Math.floor((contentLength * 8) / duration / 1000));
+        this.sampleRate.set(this.audioContext?.sampleRate ?? 0);
         fetched = true;
       };
       audioSession.once("durationchange", fetch);
@@ -459,7 +462,7 @@ export class MediaSession {
   }
 
   getDerivedQueue() {
-    return this.queue;
+    return readonly(this.queue);
   }
 
   async loadSongsFromQueue(

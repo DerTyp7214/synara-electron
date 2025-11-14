@@ -272,7 +272,7 @@ export function defaultNavigation(
 
 export function globalKeydown(
   node: HTMLElement,
-  callback: (event: KeyboardEvent) => void,
+  callback: (event: KeyboardEvent, audioInteractiveFocused: boolean) => void,
 ) {
   const IGNORED_TAGS = ["INPUT", "TEXTAREA", "SELECT"];
   const IGNORED_CLASS = "audio-interactive";
@@ -295,9 +295,8 @@ export function globalKeydown(
     const isInsideExcludedArea = (target as HTMLElement)?.closest(
       `.${IGNORED_CLASS}`,
     );
-    if (isInsideExcludedArea) return;
 
-    callback(event);
+    callback(event, !!isInsideExcludedArea);
   }
 
   document.addEventListener("keydown", handleKeydown);
