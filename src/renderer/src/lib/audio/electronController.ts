@@ -28,7 +28,7 @@ declare global {
 
 class ElectronController {
   private unsubscribers: Array<() => void> = [];
-  private lastImageUrl: { id: string; url: string; loading: boolean } = {
+  private lastImageUrl: { id: string; url: string | null; loading: boolean } = {
     id: "",
     url: "",
     loading: false,
@@ -207,24 +207,18 @@ class ElectronController {
       window.api.updateMpris(metadata);
 
       if (this.lastImageUrl.id !== metadata.trackId) {
-        const oldId = this.lastImageUrl.id;
         this.lastImageUrl.loading = true;
         const imageUrl = await getImageUrlBySong(song)
           .then((image) => image.url)
           .catch(() => null);
-        if (imageUrl) {
-          this.lastImageUrl.loading = false;
-          this.lastImageUrl.id = metadata.trackId;
-          this.lastImageUrl.url = imageUrl;
-        } else {
-          this.lastImageUrl.loading = false;
-          this.lastImageUrl.id = oldId;
-        }
+        this.lastImageUrl.loading = false;
+        this.lastImageUrl.id = metadata.trackId;
+        this.lastImageUrl.url = imageUrl;
       }
 
       window.api.updateDiscordRPC({
         ...metadata,
-        image: this.lastImageUrl.url,
+        image: this.lastImageUrl.url ?? undefined,
       });
     }
   }

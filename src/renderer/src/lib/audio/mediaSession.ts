@@ -4,6 +4,7 @@ import { getStreamUrl, roundRect } from "$lib/utils";
 import {
   derived,
   get,
+  type Readable,
   readable,
   readonly,
   type Unsubscriber,
@@ -20,6 +21,8 @@ import { Queue } from "$lib/audio/queue";
 import type { UUID } from "node:crypto";
 import { nullSong } from "$shared/types/settings";
 import type { SongWithPosition } from "$shared/types/beApi";
+import { colorMix, lerpOklchString } from "$lib/color/converters";
+import { LinearGradientTracker } from "$lib/color/gradient";
 
 // noinspection JSUnusedGlobalSymbols
 export class MediaSession {
@@ -337,8 +340,27 @@ export class MediaSession {
     });
   }
 
-  drawVisualizer(canvas: HTMLCanvasElement) {
-    requestAnimationFrame(() => this.drawVisualizer(canvas));
+  private frameCount = 0;
+  private lastTime = performance.now();
+
+  private fps = writable(0);
+
+  getFps(): Readable<number> {
+    return readonly(this.fps);
+  }
+
+  drawVisualizer(canvas: HTMLCanvasElement, time: number = performance.now()) {
+    const deltaTime = time - this.lastTime;
+    this.frameCount++;
+
+    if (deltaTime >= 1000) {
+      this.fps.set(this.frameCount / (deltaTime / 1000));
+
+      this.frameCount = 0;
+      this.lastTime = time;
+    }
+
+    requestAnimationFrame((time) => this.drawVisualizer(canvas, time));
     if (!this.dataArray || !this.audioAnalyser) return;
 
     const ctx = canvas.getContext("2d");
@@ -348,12 +370,31 @@ export class MediaSession {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    const WIDTH = canvas.width;
+    const PADDING = 20;
+
+    const WIDTH = canvas.width - PADDING;
     const HEIGHT = canvas.height;
 
     if (WIDTH === 0 || HEIGHT === 0) return;
 
-    ctx.fillStyle = "rgba(255, 255, 255, .8)";
+    const styles = window.getComputedStyle(canvas);
+    const secondary300 = styles
+      .getPropertyValue("--color-secondary-300")
+      .trim();
+    const tertiary300 = styles.getPropertyValue("--color-tertiary-300").trim();
+
+    const gradient = new LinearGradientTracker(ctx, 0, 0, 0, HEIGHT);
+
+    gradient.addColorStop(0.2, tertiary300);
+    gradient.addColorStop(0.5, secondary300);
+    gradient.addColorStop(0.8, tertiary300);
+
+    ctx.fillStyle = gradient.getCanvasGradient();
+
+    ctx.shadowColor = secondary300;
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
 
     const dataArray = createCurve(
       [...this.dataArray].slice(0, -Math.floor(this.dataArray.length / 8)),
@@ -373,9 +414,16 @@ export class MediaSession {
         HEIGHT,
       );
 
+      ctx.shadowBlur = Math.min((barHeight * 1.25) / HEIGHT, 1) * 10;
+      ctx.fillStyle = colorMix(
+        tertiary300,
+        secondary300,
+        Math.min((barHeight * 1.25) / HEIGHT, 1),
+      );
+
       roundRect(
         ctx,
-        i * (barWidth + barSpacing),
+        PADDING / 2 + i * (barWidth + barSpacing),
         HEIGHT / 2 - barHeight / 2,
         Math.max(barWidth, 1),
         barHeight,

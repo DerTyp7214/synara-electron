@@ -40,6 +40,10 @@
   import Spinner from "$lib/components/Spinner.svelte";
   import type { Song } from "$lib/api/songs";
   import { MEDIA_PLAYER_CONTEXT_KEY } from "$lib/consts";
+  import {
+    getColorCssVars,
+    imageColors as derivedImageColors,
+  } from "$lib/color/utils";
 
   let {
     isOpen = writable(false),
@@ -68,10 +72,13 @@
   const currentSongQueue = $derived($currentQueue.queue);
   const currentSong = $derived($currentQueue.currentSong);
   const repeatMode = $derived(mediaSession.repeatMode);
+  const sampleRate = $derived(mediaSession.sampleRate);
   const shuffled = $derived(mediaSession.shuffled);
   const isPaused = $derived(mediaSession.paused);
   const bitrate = $derived(mediaSession.bitrate);
   const muted = $derived(mediaSession.muted);
+
+  const imageColors = derivedImageColors($currentQueue.currentSong);
 
   const hasLyrics = $derived.by(() => ($currentSong?.lyrics ?? "") !== "");
 
@@ -208,6 +215,7 @@
     audioInteractiveFocused: boolean,
   ) {
     if (event.code === "KeyR" && event.shiftKey && event.ctrlKey) return;
+    if (event.code === "KeyI" && event.shiftKey && event.ctrlKey) return;
 
     if (!audioInteractiveFocused) event.preventDefault();
 
@@ -248,6 +256,7 @@
   bind:this={footerElement}
   data-mode={$isOpen ? "dark" : undefined}
   use:globalKeydown={handleKeyDown}
+  style={$isOpen ? getColorCssVars($imageColors) : ""}
   class={cn(
     "flex flex-shrink-0",
     "fixed mt-0",
@@ -513,12 +522,12 @@
           class="text-secondary-700-300 text-2xs line-clamp-1 text-start font-bold text-ellipsis"
           title={$t("player.playingAt", {
             bitrate: $bitrate.toString(),
-            sampleRate: ($currentSong.sampleRate / 1000).toString(),
+            sampleRate: ($sampleRate / 1000).toString(),
           })}
         >
           {$t("player.playingAt", {
             bitrate: $bitrate.toString(),
-            sampleRate: ($currentSong.sampleRate / 1000).toString(),
+            sampleRate: ($sampleRate / 1000).toString(),
           })}
         </span>
       </div>

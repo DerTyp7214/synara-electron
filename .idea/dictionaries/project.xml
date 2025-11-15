@@ -2,6 +2,9 @@
   <dictionary name="project">
     <words>
       <w>commitish</w>
+      <w>lerp</w>
+      <w>lerped</w>
+      <w>oklch</w>
       <w>synara</w>
     </words>
   </dictionary>

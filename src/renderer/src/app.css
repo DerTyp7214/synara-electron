@@ -47,12 +47,13 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: theme('colors.primary.500');
+    background-color: var(--color-secondary-500);
     border-radius: 100vh;
   }
 
   * {
-    scrollbar-color: theme('colors.primary.500') transparent;
+    /*noinspection CssInvalidFunction*/
+    scrollbar-color: light-dark(var(--color-secondary-700), var(--color-secondary-300)) transparent;
   }
 
   *:focus-visible {
