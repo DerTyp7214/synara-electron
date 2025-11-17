@@ -137,7 +137,7 @@ export function rotateOklchHue(
  * @param oklchString The color string from CSS.
  * @returns An object containing the parsed components and original lightness string, or null if parsing fails.
  */
-function parseOklch(
+export function parseOklch(
   oklchString: string,
 ): { l: number; c: number; h: number; lightnessStr: string } | null {
   // Regex to match L, C, H values within oklch() parentheses
@@ -216,4 +216,17 @@ export function lerpOklchString(
 
 export function colorMix(colorA: string, colorB: string, lerp: number): string {
   return `color-mix(in lab, ${colorA} ${lerp * 100}%, ${colorB} ${100 - lerp * 100}%)`;
+}
+
+export function sortedByLightness(
+  colorA: string,
+  colorB: string,
+): [string, string] {
+  const lA = parseOklch(colorA)?.l;
+  const lB = parseOklch(colorB)?.l;
+
+  if (!lA || !lB) return [colorA, colorB];
+
+  if (lA > lB) return [colorA, colorB];
+  return [colorB, colorA];
 }

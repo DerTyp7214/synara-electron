@@ -61,7 +61,12 @@ jobs:
         uses: actions/cache@v4
         if: matrix.build == 'win'
         with:
-          path: /var/cache/apt/archives
+          path: |
+            /var/cache/apt/archives/**
+            !/var/cache/apt/archives/lock
+            !/var/cache/apt/archives/lock/**
+            !/var/cache/apt/archives/partial
+            !/var/cache/apt/archives/partial/**
           key: ${{ matrix.build }}-apt-cache-winehq-noble
           restore-keys: |
             ${{ matrix.build }}-apt-cache-
@@ -116,6 +121,7 @@ jobs:
         with:
           name: ${{ matrix.build }}-release-assets
           overwrite: 'true'
+          retention-days: 1
           path: |
             upload/*
             ${{ matrix.build == 'linux' && 'package.json' || '' }}

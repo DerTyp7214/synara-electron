@@ -21,7 +21,11 @@ import { Queue } from "$lib/audio/queue";
 import type { UUID } from "node:crypto";
 import { nullSong } from "$shared/types/settings";
 import type { SongWithPosition } from "$shared/types/beApi";
-import { colorMix, lerpOklchString } from "$lib/color/converters";
+import {
+  colorMix,
+  lerpOklchString,
+  sortedByLightness,
+} from "$lib/color/converters";
 import { LinearGradientTracker } from "$lib/color/gradient";
 
 // noinspection JSUnusedGlobalSymbols
@@ -383,11 +387,13 @@ export class MediaSession {
       .trim();
     const tertiary300 = styles.getPropertyValue("--color-tertiary-300").trim();
 
+    const [colorA, colorB] = sortedByLightness(secondary300, tertiary300);
+
     const gradient = new LinearGradientTracker(ctx, 0, 0, 0, HEIGHT);
 
-    gradient.addColorStop(0.2, tertiary300);
-    gradient.addColorStop(0.5, secondary300);
-    gradient.addColorStop(0.8, tertiary300);
+    gradient.addColorStop(0.2, colorA);
+    gradient.addColorStop(0.5, colorB);
+    gradient.addColorStop(0.8, colorA);
 
     ctx.fillStyle = gradient.getCanvasGradient();
 
@@ -414,12 +420,14 @@ export class MediaSession {
         HEIGHT,
       );
 
-      ctx.shadowBlur = Math.min((barHeight * 1.25) / HEIGHT, 1) * 10;
-      ctx.fillStyle = colorMix(
-        tertiary300,
-        secondary300,
+      const color = colorMix(
+        colorA,
+        colorB,
         Math.min((barHeight * 1.25) / HEIGHT, 1),
       );
+      ctx.shadowColor = color;
+      ctx.shadowBlur = Math.min((barHeight * 1.25) / HEIGHT, 1) * 10;
+      ctx.fillStyle = color;
 
       roundRect(
         ctx,

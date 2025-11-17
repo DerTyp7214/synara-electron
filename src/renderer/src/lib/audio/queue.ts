@@ -50,7 +50,7 @@ export class Queue implements Readable<QueueCallbackData> {
     initialQueue = [],
     initialIndex = 0,
     initialShuffledMap = [],
-    shuffled = false,
+    shuffled = get(settings.shuffle),
     writeToSettings = false,
   }: {
     id: string;
@@ -86,6 +86,8 @@ export class Queue implements Readable<QueueCallbackData> {
 
     if (this.writeToSettings) this.setShuffled(shuffled);
 
+    if (initialShuffledMap.length === 0) this.shuffle(shuffled);
+
     settings.shuffle.subscribe((shuffled) => {
       this.setShuffled(shuffled);
     });
@@ -104,7 +106,7 @@ export class Queue implements Readable<QueueCallbackData> {
             .map(({ sortKey, ...item }) => item)
         );
       },
-      [] as Array<Song>,
+      get(this.queueStore),
     ) as Readable<Array<SongWithPosition>>;
 
     this.duration = derived(this.queueStore, ($queue) =>
@@ -228,13 +230,17 @@ export class Queue implements Readable<QueueCallbackData> {
     const currentShuffle = get(settings.shuffle);
     if (currentShuffle === shuffled) return;
 
+    this.shuffle(shuffled);
+    settings.shuffle.set(shuffled);
+  }
+
+  public shuffle(shuffled: boolean = get(settings.shuffle)) {
     if (shuffled) {
       const shuffleMap = this.generateShuffleMap(get(this.queueStore).length);
       this.shuffledMapStore.set(shuffleMap);
     } else {
       this.shuffledMapStore.set([]);
     }
-    settings.shuffle.set(shuffled);
   }
 
   public setIndex(index: number) {

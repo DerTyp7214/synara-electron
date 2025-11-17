@@ -63,12 +63,14 @@ export async function playSong(
   shuffle: boolean = get(settings.shuffle),
 ): Promise<void> {
   const currentQueue = get(mediaSession.getDerivedQueue());
-  if (currentQueue.id !== source.id) {
+  const newQueue = currentQueue.id !== source.id;
+  if (newQueue) {
     mediaSession.setQueue(
       new Queue({
         id: source.id,
         name: source.type,
         initialQueue: playlist,
+        shuffled: shuffle,
       }),
     );
     mediaSession.playingSourceType.set(source.type);
