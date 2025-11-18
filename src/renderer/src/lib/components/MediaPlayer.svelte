@@ -61,7 +61,7 @@
 
   let footerElement = $state<HTMLElement>();
   let visualizerCanvas = $state<HTMLCanvasElement>();
-  let queueElement = $state<HTMLDivElement>();
+  let queueElement = $state<HTMLElement>();
 
   const bassAmplitude = $derived(mediaSession.bassAmplitude(0, 1, 2));
   const playingSourceId = $derived(mediaSession.playingSourceId);
@@ -78,7 +78,7 @@
   const bitrate = $derived(mediaSession.bitrate);
   const muted = $derived(mediaSession.muted);
 
-  const imageColors = derivedImageColors($currentQueue.currentSong);
+  const imageColors = $derived(derivedImageColors($currentQueue.currentSong));
 
   const hasLyrics = $derived.by(() => ($currentSong?.lyrics ?? "") !== "");
 
@@ -191,17 +191,18 @@
   });
 
   $effect(() => {
-    if ($showQueue) scrollIntoActiveSong();
+    if ($showQueue) setTimeout(scrollIntoActiveSong, 100);
   });
 
   onMount(() => {
-    mediaSession.drawVisualizer(visualizerCanvas!);
+    const animationFrame = mediaSession.drawVisualizer(visualizerCanvas!);
 
     const cleanupResizeListener = createResizeListener(visualizerCanvas!);
 
     return () => {
       audioSession.kill();
       cleanupResizeListener();
+      cancelAnimationFrame(get(animationFrame));
     };
   });
 
@@ -300,7 +301,6 @@
     })}
   >
     <div
-      bind:this={queueElement}
       class={cn(
         "flex h-full max-h-full min-w-[100vw] transition-transform",
         "flex-col items-center justify-center overflow-hidden",
@@ -317,6 +317,7 @@
             class="flex w-full flex-1 flex-col gap-2 overflow-y-auto p-8"
             initialPageUp={$currentQueue.getPage(pageSize) - 1}
             initialPageDown={$currentQueue.getPage(pageSize)}
+            bind:scrollContainer={queueElement}
             bind:nextUpPage
             bind:nextDownPage
             bind:hasMoreUp
@@ -533,7 +534,7 @@
       </div>
     </div>
 
-    <div class="flex flex-2 flex-col items-center">
+    <div class="flex flex-[1.75] flex-col items-center">
       <div class="audio-interactive flex flex-row items-center gap-2 pe-1">
         <button
           onclick={handleActionClick("shuffle")}

@@ -11,6 +11,7 @@
 
   interface Props<T> {
     class?: string;
+    scrollContainer?: HTMLElement;
     items: T[];
     loadMoreUp: LoadFunction;
     loadMoreDown: LoadFunction;
@@ -36,6 +37,7 @@
 
   let {
     class: clazz = "",
+    scrollContainer = $bindable<HTMLElement>(),
     items = $bindable(),
     loadMoreUp,
     loadMoreDown,
@@ -55,7 +57,6 @@
     noItems,
   }: Props<T> = $props();
 
-  let scrollContainer = $state<HTMLElement>();
   let topSentinel = $state<HTMLElement>();
   let bottomSentinel = $state<HTMLElement>();
   let isLoadingUp = $state(false);

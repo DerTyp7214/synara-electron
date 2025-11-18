@@ -3,7 +3,7 @@
   import { page } from "$app/state";
   import type { PagedResponse } from "$lib/api/apiTypes";
   import type { Song } from "$lib/api/songs";
-  import { listSongsByAlbum, type Album, byId } from "$lib/api/albums";
+  import { type Album, byId, listSongsByAlbum } from "$lib/api/albums";
   import { defaultNavigation, getImageUrl } from "$lib/utils";
   import { t } from "$lib/i18n/i18n";
   import { millisecondsToHumanReadable } from "$lib/utils.js";
@@ -71,12 +71,15 @@
               </Avatar>
               <div class="flex flex-col px-4 py-2">
                 <span class="h3">{album.name}</span>
-                <div class="text-surface-contrast-50-950/70">
+                <div class="text-surface-contrast-50-950/50">
+                  <span class="text-sm">
+                    {album.releaseDate}
+                  </span>
+                  <span class="min-w-max">·</span>
                   {#each album.artists as artist, i (artist.id)}
                     <a
                       href="{resolve('/artists')}?artistId={artist.id}"
                       class={cn(
-                        "text-surface-contrast-50-950/50",
                         "hover:text-surface-contrast-50-950/80",
                         "transition-colors",
                         "text-sm",
@@ -85,9 +88,7 @@
                       )}>{artist.name}</a
                     >
                     {#if i < album.artists.length - 1}
-                      <span class="text-surface-contrast-50-950/50"
-                        >,&nbsp;</span
-                      >
+                      <span>,&nbsp;</span>
                     {/if}
                   {/each}
                 </div>

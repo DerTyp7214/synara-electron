@@ -21,12 +21,7 @@ import { Queue } from "$lib/audio/queue";
 import type { UUID } from "node:crypto";
 import { nullSong } from "$shared/types/settings";
 import type { SongWithPosition } from "$shared/types/beApi";
-import {
-  colorMix,
-  lerpOklchString,
-  sortedByLightness,
-} from "$lib/color/converters";
-import { LinearGradientTracker } from "$lib/color/gradient";
+import { colorMix, sortedByLightness } from "$lib/color/converters";
 
 // noinspection JSUnusedGlobalSymbols
 export class MediaSession {
@@ -353,6 +348,8 @@ export class MediaSession {
     return readonly(this.fps);
   }
 
+  private currentAnimationFrame = writable(0);
+
   drawVisualizer(canvas: HTMLCanvasElement, time: number = performance.now()) {
     const deltaTime = time - this.lastTime;
     this.frameCount++;
@@ -364,11 +361,14 @@ export class MediaSession {
       this.lastTime = time;
     }
 
-    requestAnimationFrame((time) => this.drawVisualizer(canvas, time));
-    if (!this.dataArray || !this.audioAnalyser) return;
+    this.currentAnimationFrame.set(
+      requestAnimationFrame((time) => this.drawVisualizer(canvas, time)),
+    );
+    if (!this.dataArray || !this.audioAnalyser)
+      return readonly(this.currentAnimationFrame);
 
     const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!ctx) return readonly(this.currentAnimationFrame);
 
     this.audioAnalyser.getByteFrequencyData(this.dataArray);
 
@@ -379,7 +379,8 @@ export class MediaSession {
     const WIDTH = canvas.width - PADDING;
     const HEIGHT = canvas.height;
 
-    if (WIDTH === 0 || HEIGHT === 0) return;
+    if (WIDTH === 0 || HEIGHT === 0)
+      return readonly(this.currentAnimationFrame);
 
     const styles = window.getComputedStyle(canvas);
     const secondary300 = styles
@@ -388,14 +389,6 @@ export class MediaSession {
     const tertiary300 = styles.getPropertyValue("--color-tertiary-300").trim();
 
     const [colorA, colorB] = sortedByLightness(secondary300, tertiary300);
-
-    const gradient = new LinearGradientTracker(ctx, 0, 0, 0, HEIGHT);
-
-    gradient.addColorStop(0.2, colorA);
-    gradient.addColorStop(0.5, colorB);
-    gradient.addColorStop(0.8, colorA);
-
-    ctx.fillStyle = gradient.getCanvasGradient();
 
     ctx.shadowColor = secondary300;
     ctx.shadowBlur = 0;
@@ -438,6 +431,8 @@ export class MediaSession {
         barRadius,
       );
     }
+
+    return readonly(this.currentAnimationFrame);
   }
 
   async reset() {
