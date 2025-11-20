@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { listSongs, type Song } from "$lib/api/songs.js";
+  import { likedSongs, type Song } from "$lib/api/songs.js";
   import SongItem from "$lib/components/SongItem.svelte";
   import SvelteVirtualList from "@humanspeak/svelte-virtual-list";
   import { onMount } from "svelte";
@@ -19,7 +19,7 @@
   let items: Array<Song> = $state([]);
 
   onMount(async () => {
-    const response = await listSongs(0, MAX_INT);
+    const response = await likedSongs(0, MAX_INT);
     items = [...response.data];
   });
 
@@ -34,6 +34,7 @@
       songRef={item}
       playlistRef={items}
       showNumber={index + 1}
+      addedAt={item.userSongUpdatedAt}
     />
   {/snippet}
 </SvelteVirtualList>

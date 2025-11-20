@@ -73,7 +73,7 @@ export class Queue implements Readable<QueueCallbackData> {
     this.shuffledMapStore = writable(copy(initialShuffledMap));
 
     this.queueStore.subscribe((queue) => {
-      if (this.writeToSettings) settings.queue.set(queue);
+      if (this.writeToSettings) settings.queue.set(copy(queue));
     });
 
     this.shuffledMapStore.subscribe((map) => {
@@ -176,6 +176,18 @@ export class Queue implements Readable<QueueCallbackData> {
 
         return [...newShuffleMap, ...newIndices];
       });
+    }
+  }
+
+  public updateSong(song: SongWithPosition) {
+    const q = get(this.queueStore);
+    const index = q.findIndex(
+      (s) => s.id === song.id && s.position === song.position,
+    );
+
+    if (index !== -1) {
+      q[index] = song;
+      settings.queue.set(copy(q));
     }
   }
 

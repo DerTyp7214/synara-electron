@@ -1,9 +1,9 @@
 <script lang="ts">
   import { Avatar } from "@skeletonlabs/skeleton-svelte";
-  import { Play } from "@lucide/svelte";
+  import { Play, HeartPlus, Heart } from "@lucide/svelte";
   import Spotify from "$lib/assets/Spotify.svelte";
   import Tidal from "$lib/assets/Tidal.svelte";
-  import type { Song } from "$lib/api/songs";
+  import { setLiked, type Song } from "$lib/api/songs";
   import {
     copy,
     getImageUrl,
@@ -28,9 +28,11 @@
   import { t } from "$lib/i18n/i18n";
   import type { SongWithPosition } from "$shared/types/beApi";
   import { goto } from "$app/navigation";
-  import type { Writable } from "svelte/store";
+  import { get, type Writable } from "svelte/store";
+  import dayjs from "$lib/dayJsUtils";
+  import { debugLog } from "$lib/logger";
 
-  const {
+  let {
     id,
     title,
     artists,
@@ -40,6 +42,7 @@
     explicit,
     showNumber,
     hideAlbum,
+    isFavourite = $bindable(false),
     size = 46,
     addedAt,
     originalUrl = "",
@@ -47,14 +50,14 @@
     style = "",
     playingSource,
     playlistRef,
-    songRef,
+    songRef = $bindable(),
     scrollIntoActive = false,
   }: Song & {
     class?: string;
     style?: string;
     hideAlbum?: boolean;
     showNumber?: number;
-    addedAt?: number;
+    addedAt?: string;
     size?: number;
     playingSource: PlayingSource;
     playlistRef: Array<Song>;
@@ -122,6 +125,30 @@
         args: songRef,
       },
     ]);
+  }
+
+  let togglingFavourite = $state(false);
+  async function toggleFavourite() {
+    if (togglingFavourite) return;
+    togglingFavourite = true;
+
+    try {
+      const updatedSong = await setLiked(id, !isFavourite);
+
+      if (updatedSong.isFavourite !== isFavourite) {
+        songRef.isFavourite = updatedSong.isFavourite;
+
+        if ("position" in songRef)
+          get(mediaSession.getDerivedQueue()).updateSong({
+            ...songRef,
+            isFavourite,
+          });
+      }
+    } catch (e) {
+      debugLog("error", e);
+    }
+
+    togglingFavourite = false;
   }
 
   const sameSong = $derived.by(
@@ -240,17 +267,34 @@
     {/if}
   {/if}
   {#if addedAt}
-    <span class={cn(textClasses, "me-2 mt-auto mb-auto font-bold")}>
-      {addedAt}
-    </span>
+    <ToolTip
+      text={dayjs(addedAt).format("LLL")}
+      class={cn(
+        "me-2 mt-auto mb-auto flex flex-[0.5] items-center justify-center",
+      )}
+    >
+      <span class={cn(textClasses, "font-bold")}>
+        {dayjs(addedAt).fromNow()}
+      </span>
+    </ToolTip>
   {/if}
   <span class={cn(textClasses, "me-2 mt-auto mb-auto font-bold")}>
     {millisecondsToHumanReadable(duration)}
   </span>
+  <button
+    class="me-2 flex items-center justify-center transition-transform hover:scale-110"
+    onclick={toggleFavourite}
+  >
+    {#if isFavourite}
+      <Heart fill="currentColor" size={size / 2} />
+    {:else}
+      <HeartPlus size={size / 2} />
+    {/if}
+  </button>
   {#if getOrigin(originalUrl) === SongOrigin.Spotify}
     <Spotify class="ms-auto mt-auto mb-auto" size={size / 2.5} />
   {:else if getOrigin(originalUrl) === SongOrigin.Tidal}
-    <ToolTip text={originalUrl}>
+    <ToolTip text={originalUrl} class="flex items-center justify-center">
       <Tidal class="ms-auto mt-auto mb-auto" size={size / 3} />
     </ToolTip>
   {/if}

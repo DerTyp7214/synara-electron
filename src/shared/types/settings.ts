@@ -71,6 +71,7 @@ export const nullSong: Song & { position: number } = {
   duration: 0,
   artists: [],
   position: 0,
+  isFavourite: false,
 };
 
 export const APP_SETTINGS_KEYS: Array<keyof AppSettings> = [

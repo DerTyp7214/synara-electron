@@ -55,6 +55,7 @@
     "classnames": "^2.5.1",
     "colorthief": "^2.6.0",
     "concurrently": "^9.2.1",
+    "dayjs": "^1.11.19",
     "electron": "github:castlabs/electron-releases#v37.2.5+wvcus",
     "electron-builder": "^25.1.8",
     "electron-serve": "^3.0.0",

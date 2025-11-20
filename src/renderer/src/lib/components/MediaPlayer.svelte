@@ -458,7 +458,15 @@
 
   <!-- Bottombar -->
   <div
-    class="z-20 flex max-h-24 min-h-24 w-full items-center gap-2 p-4 select-none"
+    class={cn(
+      "z-20 flex",
+      "max-h-24 min-h-24 w-full",
+      "items-center gap-2 p-4",
+      "select-none",
+      {
+        "opacity-30 transition-opacity duration-500 hover:opacity-100": $isOpen,
+      },
+    )}
   >
     <div class="flex flex-1 overflow-hidden">
       <div class="rounded-base relative min-h-16 min-w-16 overflow-hidden">

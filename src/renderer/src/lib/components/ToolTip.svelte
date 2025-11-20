@@ -1,11 +1,11 @@
 <script lang="ts">
   import { Portal, Tooltip } from "@skeletonlabs/skeleton-svelte";
 
-  const { children, text } = $props();
+  const { children, text, class: clazz = "" } = $props();
 </script>
 
 <Tooltip>
-  <Tooltip.Trigger>{@render children()}</Tooltip.Trigger>
+  <Tooltip.Trigger class={clazz}>{@render children()}</Tooltip.Trigger>
   <Portal>
     <Tooltip.Positioner>
       <Tooltip.Content class="card bg-surface-100-900 max-w-md p-2 shadow-xl">

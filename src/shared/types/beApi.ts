@@ -21,6 +21,9 @@ export interface Song {
   lyrics?: string;
   path: string;
   releaseDate?: number;
+  isFavourite: boolean;
+  userSongCreatedAt?: string;
+  userSongUpdatedAt?: string;
 }
 
 export interface Album {

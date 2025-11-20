@@ -18,6 +18,34 @@ export async function listSongs(
   return response.getData();
 }
 
+export async function likedSongs(
+  page?: number,
+  pageSize?: number,
+): Promise<PagedResponse<Song>> {
+  const response = await apiCall<PagedResponse<Song>>({
+    path: "/song/liked",
+    method: "GET",
+    query: { page, pageSize, explicit: "true" },
+    auth: true,
+  });
+
+  return response.getData();
+}
+
+export async function setLiked(
+  songId: Song["id"],
+  liked: boolean,
+): Promise<Song> {
+  const response = await apiCall<Song>({
+    path: `/song/setLiked/${songId}`,
+    method: "POST",
+    body: { liked },
+    auth: true,
+  });
+
+  return response.getData();
+}
+
 export async function songById(songId: Song["id"]) {
   const response = await apiCall<Song>({
     path: `/song/byId/${songId}`,
