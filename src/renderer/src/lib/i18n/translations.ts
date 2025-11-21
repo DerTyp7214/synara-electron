@@ -9,6 +9,7 @@ export default {
     songs: "Songs",
     "n-songs": "{{amount}} Songs",
     "songs.loadMore": "Load More",
+    "songs.all": "All Songs",
 
     "likedSongs.title": "Liked Songs",
 

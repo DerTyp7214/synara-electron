@@ -13,6 +13,8 @@
     Volume1,
     Volume2,
     VolumeX,
+    Heart,
+    HeartPlus,
   } from "@lucide/svelte";
   import { Minimize, Maximize, AudioLines, ChevronUp } from "@jis3r/icons";
   import cn from "classnames";
@@ -38,12 +40,13 @@
   import { get, type Writable, writable } from "svelte/store";
   import InfiniteScroll from "$lib/components/InfiniteScroll.svelte";
   import Spinner from "$lib/components/Spinner.svelte";
-  import type { Song } from "$lib/api/songs";
+  import { setLiked, type Song } from "$lib/api/songs";
   import { MEDIA_PLAYER_CONTEXT_KEY } from "$lib/consts";
   import {
     getColorCssVars,
     imageColors as derivedImageColors,
   } from "$lib/color/utils";
+  import { debugLog } from "$lib/logger";
 
   let {
     isOpen = writable(false),
@@ -157,6 +160,33 @@
     "transition-colors",
     "text-sm",
   ];
+
+  let togglingFavourite = $state(false);
+  async function toggleFavourite() {
+    if (togglingFavourite) return;
+    togglingFavourite = true;
+
+    try {
+      const updatedSong = await setLiked(
+        $currentSong.id,
+        !$currentSong.isFavourite,
+      );
+
+      if (updatedSong.isFavourite !== $currentSong.isFavourite) {
+        get(mediaSession.getDerivedQueue()).updateSong(
+          {
+            ...$currentSong,
+            isFavourite: updatedSong.isFavourite,
+          },
+          true,
+        );
+      }
+    } catch (e) {
+      debugLog("error", e);
+    }
+
+    togglingFavourite = false;
+  }
 
   $effect(() => {
     if (!$isOpen) {
@@ -513,6 +543,16 @@
           {#if $currentSong.explicit}
             <Explicit />
           {/if}
+          <button onclick={toggleFavourite}>
+            {#if $currentSong.isFavourite}
+              <Heart
+                class="size-5 transition-transform hover:scale-110"
+                fill="currentColor"
+              />
+            {:else}
+              <HeartPlus class="size-5 transition-transform hover:scale-110" />
+            {/if}
+          </button>
         </div>
         <div class="line-clamp-1 flex flex-row">
           {#each $currentSong.artists as artist, i (artist.id)}

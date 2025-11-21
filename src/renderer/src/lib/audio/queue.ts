@@ -179,7 +179,7 @@ export class Queue implements Readable<QueueCallbackData> {
     }
   }
 
-  public updateSong(song: SongWithPosition) {
+  public updateSong(song: SongWithPosition, refresh: boolean = false) {
     const q = get(this.queueStore);
     const index = q.findIndex(
       (s) => s.id === song.id && s.position === song.position,
@@ -187,7 +187,8 @@ export class Queue implements Readable<QueueCallbackData> {
 
     if (index !== -1) {
       q[index] = song;
-      settings.queue.set(copy(q));
+      if (refresh) this.queueStore.set(q);
+      else settings.queue.set(copy(q));
     }
   }
 
@@ -270,7 +271,7 @@ export class Queue implements Readable<QueueCallbackData> {
     if (get(settings.shuffle)) {
       const map = get(this.shuffledMapStore);
       index = map[index] + 1;
-      index = Number(invertArray(map)[index] ?? NaN);
+      index = Number(invertArray(map)[index] ?? invertArray(map)[0] ?? NaN);
     } else index += 1;
     if (index > maxIndex && get(settings.repeatMode) === RepeatMode.List)
       this.setIndex(0);
@@ -288,7 +289,9 @@ export class Queue implements Readable<QueueCallbackData> {
     if (get(settings.shuffle)) {
       const map = get(this.shuffledMapStore);
       index = map[index] - 1;
-      index = Number(invertArray(map)[index] ?? NaN);
+      index = Number(
+        invertArray(map)[index] ?? invertArray(map)[maxIndex] ?? NaN,
+      );
     } else index -= 1;
     if (index < 0 && get(settings.repeatMode) === RepeatMode.List)
       this.setIndex(maxIndex);

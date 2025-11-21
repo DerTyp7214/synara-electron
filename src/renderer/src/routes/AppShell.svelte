@@ -150,6 +150,12 @@
             <Menu />
           </button>
           <Search />
+          <button
+            class="ms-2 me-auto"
+            onclick={() => goto(resolve("/allSongs"))}
+          >
+            {$t("songs.all")}
+          </button>
           <LightSwitch />
         </div>
       </div>

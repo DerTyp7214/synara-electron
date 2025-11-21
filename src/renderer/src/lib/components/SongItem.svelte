@@ -141,7 +141,7 @@
         if ("position" in songRef)
           get(mediaSession.getDerivedQueue()).updateSong({
             ...songRef,
-            isFavourite,
+            isFavourite: updatedSong.isFavourite,
           });
       }
     } catch (e) {
