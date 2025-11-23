@@ -73,8 +73,8 @@
   const currentBuffer = $derived(mediaSession.currentBuffer);
   const currentVolume = $derived(mediaSession.volume);
   const currentQueue = $derived(mediaSession.getDerivedQueue());
-  const currentSongQueue = $derived($currentQueue.queue);
-  const currentSong = $derived($currentQueue.currentSong);
+  const currentSongQueue = $derived($currentQueue?.queue);
+  const currentSong = $derived($currentQueue?.currentSong);
   const repeatMode = $derived(mediaSession.repeatMode);
   const sampleRate = $derived(mediaSession.sampleRate);
   const shuffled = $derived(mediaSession.shuffled);
@@ -82,7 +82,7 @@
   const bitrate = $derived(mediaSession.bitrate);
   const muted = $derived(mediaSession.muted);
 
-  const imageColors = $derived(derivedImageColors($currentQueue.currentSong));
+  const imageColors = $derived(derivedImageColors($currentQueue?.currentSong));
 
   const hasLyrics = $derived.by(() => ($currentSong?.lyrics ?? "") !== "");
 
@@ -201,8 +201,8 @@
   const pageSize = 30;
 
   let queue: Array<Song> = $state([]);
-  let nextUpPage: number = $state($currentQueue.getPage(pageSize) - 1);
-  let nextDownPage: number = $state($currentQueue.getPage(pageSize));
+  let nextUpPage: number = $state(($currentQueue?.getPage(pageSize) ?? 0) - 1);
+  let nextDownPage: number = $state($currentQueue?.getPage(pageSize) ?? 0);
   let hasMoreUp: boolean = $state(true);
   let hasMoreDown: boolean = $state(true);
 
