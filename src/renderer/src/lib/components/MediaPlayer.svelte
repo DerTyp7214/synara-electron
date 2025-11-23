@@ -35,6 +35,7 @@
   import { audioSession } from "$lib/audio/audioSession";
   import { mediaSession } from "$lib/audio/mediaSession";
   import { RepeatMode } from "$shared/models/repeatMode";
+  import ContextMenuManager from "$lib/contextMenu/ContextMenuManager.svelte";
   import LyricsView from "$lib/components/LyricsView.svelte";
   import SongItem from "$lib/components/SongItem.svelte";
   import { get, type Writable, writable } from "svelte/store";
@@ -304,6 +305,10 @@
     },
   )}
 >
+  {#if $isOpen}
+    <ContextMenuManager />
+  {/if}
+
   {#if $currentSong?.coverId}
     <div
       style="background-image: url({getImageUrl(
@@ -704,6 +709,7 @@
             max={100}
             thumb={false}
             class="h-24 w-2 flex-1"
+            sliderClass="bg-tertiary-700-300"
             value={$currentVolume}
             orientation="vertical"
             scrollAction

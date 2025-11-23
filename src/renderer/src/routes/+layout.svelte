@@ -14,10 +14,13 @@
   import { createToaster, Toast } from "@skeletonlabs/skeleton-svelte";
   import { setContext } from "svelte";
   import { TOAST_CONTEXT_KEY } from "$lib/consts";
+  import { writable } from "svelte/store";
 
   const { children } = $props();
 
   let validApiBase = $state(false);
+
+  const mediaPlayerOpen = writable(false);
 
   const toaster = createToaster({
     placement: "bottom-end",
@@ -61,7 +64,9 @@
   <title>{$t("title")}</title>
 </svelte:head>
 
-<ContextMenuManager />
+{#if !$mediaPlayerOpen}
+  <ContextMenuManager />
+{/if}
 
 <main
   class={cn(
@@ -84,7 +89,7 @@
       <Spinner size={56} />
     </div>
   {:else if $loggedIn && validApiBase}
-    <AppShell>
+    <AppShell {mediaPlayerOpen}>
       {@render children()}
     </AppShell>
   {:else}

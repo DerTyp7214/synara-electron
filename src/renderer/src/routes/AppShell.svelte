@@ -12,13 +12,17 @@
   import { goto } from "$app/navigation";
   import { resolve } from "$app/paths";
   import { isMac, nativeFullscreen } from "$lib/utils";
-  import { writable } from "svelte/store";
-  import { onMount } from "svelte";
+  import { onMount, type Snippet } from "svelte";
   import Search from "$lib/components/Search.svelte";
+  import { type Writable, writable } from "svelte/store";
 
-  const { children } = $props();
-
-  let mediaPlayerOpen = writable(false);
+  const {
+    children,
+    mediaPlayerOpen = writable(false),
+  }: {
+    children: Snippet;
+    mediaPlayerOpen: Writable<boolean>;
+  } = $props();
 
   let sidebarOpen = $state(false);
 

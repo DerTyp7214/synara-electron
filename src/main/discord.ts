@@ -67,6 +67,7 @@ const connectWithRetry = async (retryCount = 0) => {
     console.log("Connected to Discord");
     rpc?.on("ready", updateActivity);
     ipcMain.on("discord-rpc", observer);
+    rpc?.on("disconnected", connectWithRetry);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error);

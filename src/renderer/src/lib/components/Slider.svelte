@@ -10,6 +10,7 @@
     min = 0,
     thumb = true,
     class: clazz = "",
+    sliderClass = "bg-secondary-700-300",
     scrollAction = false,
     scrollStep = 5,
     orientation = "horizontal",
@@ -23,6 +24,7 @@
     min?: number;
     thumb?: boolean;
     class?: string;
+    sliderClass?: string;
     scrollAction?: boolean;
     scrollStep?: number;
     orientation?: "vertical" | "horizontal";
@@ -81,7 +83,7 @@
           style="{orientation === 'horizontal' ? 'width' : 'height'}: {buffer}%"
         />
         <Slider.Range
-          class={cn("bg-secondary-700-300", {
+          class={cn(sliderClass, {
             "h-full": orientation === "horizontal",
             "w-full": orientation === "vertical",
           })}
