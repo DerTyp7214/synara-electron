@@ -308,4 +308,8 @@ export function globalKeydown(
   };
 }
 
-export const { isMac, isLinux, isWindows } = window.api;
+export const { isMac, isLinux, isWindows } = window.api ?? {
+  isMac: () => false,
+  isLinux: () => true,
+  isWindows: () => false,
+};

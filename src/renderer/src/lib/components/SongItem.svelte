@@ -17,7 +17,7 @@
   import { addToQueue, playNext, playSong } from "$lib/mediaPlayer";
   import Explicit from "$lib/assets/Explicit.svelte";
   import { mediaSession } from "$lib/audio/mediaSession";
-  import type { PlayingSource } from "$shared/types/settings";
+  import { type PlayingSource } from "$shared/types/settings";
   import { openContextMenu } from "$lib/contextMenu/store.svelte";
   import { getContext } from "svelte";
   import {
@@ -77,7 +77,7 @@
   const textClasses = ["line-clamp-1", "overflow-ellipsis", ...baseTextClasses];
 
   const currentQueue = mediaSession.getDerivedQueue();
-  const currentSong = $derived($currentQueue.currentSong);
+  const currentSong = $derived($currentQueue?.currentSong);
 
   const toastContext = getContext<ToasterContext>(TOAST_CONTEXT_KEY);
 

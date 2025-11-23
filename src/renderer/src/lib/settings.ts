@@ -5,6 +5,7 @@ import {
 } from "$shared/types/settings";
 import { debugLog } from "$lib/logger";
 import { tick } from "svelte";
+import { DEFAULT_SETTINGS } from "$shared/settings";
 
 type SettingStores = {
   [K in keyof AppSettings]: Writable<AppSettings[K]>;
@@ -24,8 +25,7 @@ class Settings {
 
       store.subscribe((value) => {
         try {
-          if (value !== null)
-            window.api.set(key, structuredClone(value) as never);
+          if (value !== null) this.set(key, structuredClone(value) as never);
         } catch (e) {
           debugLog("error", "window.api.set", key, "with", value, e);
         }
@@ -50,7 +50,7 @@ class Settings {
 
   private async loadInitialSettings() {
     for (const key of SETTINGS_KEYS) {
-      const value = await window.api.get(key);
+      const value = await this.get(key);
 
       // @ts-expect-error should still work
       this.settings[key]?.set(value);
@@ -61,6 +61,49 @@ class Settings {
     await tick();
 
     this.loaded.set(true);
+  }
+
+  private set<K extends keyof AppSettings>(
+    key: K,
+    value: AppSettings[K],
+  ): void {
+    if (window.api) return window.api.set(key, value);
+    else this.setLocalStorage(key, value);
+  }
+
+  private async get<K extends keyof AppSettings>(
+    key: K,
+  ): Promise<AppSettings[K]> {
+    if (window.api) return window.api.get(key);
+    else return this.getLocalStorage(key) as AppSettings[K];
+  }
+
+  private setLocalStorage<K extends keyof AppSettings>(
+    key: K,
+    value: AppSettings[K],
+  ) {
+    try {
+      const storage = JSON.parse(localStorage.getItem("appSettings") ?? "{}");
+
+      localStorage.setItem(
+        "appSettings",
+        JSON.stringify({ ...storage, [key]: value }),
+      );
+    } catch (e) {
+      debugLog("error", "writing local storage", e);
+    }
+  }
+
+  private getLocalStorage<K extends keyof AppSettings>(key: K): AppSettings[K] {
+    try {
+      return (
+        JSON.parse(localStorage.getItem("appSettings") ?? "{}")[key] ??
+        DEFAULT_SETTINGS[key]
+      );
+    } catch (e) {
+      debugLog("error", "loading local storage", e);
+      return DEFAULT_SETTINGS[key];
+    }
   }
 }
 

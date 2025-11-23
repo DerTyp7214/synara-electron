@@ -1,10 +1,8 @@
 import Store, { Schema } from "electron-store";
-import { RepeatMode } from "../shared/models/repeatMode";
 import {
   APP_SETTINGS_KEYS,
   AppSettings,
   MediaSettings,
-  PlayingSourceType,
   QUEUE_SETTINGS_KEYS,
   QueueSettings,
   TOKEN_SETTINGS_KEYS,
@@ -12,35 +10,32 @@ import {
 } from "../shared/types/settings";
 import { app, ipcMain } from "electron";
 import path from "node:path";
+import { DEFAULT_SETTINGS } from "../shared/settings";
 
 const schema: Schema<AppSettings> = {
   theme: {
     type: "string",
-    default: "light",
+    default: DEFAULT_SETTINGS["theme"],
   },
   apiBase: {
     type: "string",
-    default: undefined,
+    default: DEFAULT_SETTINGS["apiBase"],
   },
   volume: {
     type: "number",
-    default: 50,
+    default: DEFAULT_SETTINGS["volume"],
   },
   hideOnClose: {
     type: "boolean",
-    default: false,
+    default: DEFAULT_SETTINGS["hideOnClose"],
   },
   discordRpc: {
     type: "boolean",
-    default: false,
+    default: DEFAULT_SETTINGS["discordRpc"],
   },
   audioVisualizer: {
     type: "object",
-    default: {
-      minDecibels: -90,
-      maxDecibels: -20,
-      smoothingTimeConstant: 0.75,
-    },
+    default: DEFAULT_SETTINGS["audioVisualizer"],
   },
   downloadDir: {
     type: "string",
@@ -55,41 +50,41 @@ const schema: Schema<AppSettings> = {
 const tokenSchema: Schema<TokenSettings> = {
   token: {
     type: "object",
-    default: {},
+    default: DEFAULT_SETTINGS["token"],
   },
 };
 
 const mediaSchema: Schema<MediaSettings> = {
   currentIndex: {
     type: "number",
-    default: -1,
+    default: DEFAULT_SETTINGS["currentIndex"],
   },
   playingSourceType: {
     type: "string",
-    default: PlayingSourceType.LikedSongs,
+    default: DEFAULT_SETTINGS["playingSourceType"],
   },
   playingSourceId: {
     type: "string",
-    default: "----",
+    default: DEFAULT_SETTINGS["playingSourceId"],
   },
   shuffle: {
     type: "boolean",
-    default: false,
+    default: DEFAULT_SETTINGS["shuffle"],
   },
   repeatMode: {
     type: "string",
-    default: RepeatMode.None,
+    default: DEFAULT_SETTINGS["repeatMode"],
   },
 };
 
 const queueSchema: Schema<QueueSettings> = {
   queue: {
     type: "array",
-    default: [],
+    default: DEFAULT_SETTINGS["queue"],
   },
   shuffleMap: {
     type: "array",
-    default: [],
+    default: DEFAULT_SETTINGS["shuffleMap"],
   },
 };
 
