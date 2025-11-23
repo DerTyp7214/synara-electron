@@ -10,17 +10,21 @@ import { settings } from "$lib/settings";
 export const loggedIn = writable<boolean>(false);
 
 export async function checkLogin(): Promise<boolean> {
-  const isValid = isJwtValid(get(settings.token)?.jwt);
+  let isValid = isJwtValid(get(settings.token)?.jwt);
+
+  if (isValid) {
+    isValid = await health().then((r) => r.available);
+  } else {
+    if (await refreshJwt()) return checkLogin();
+    else {
+      void goto(resolve("/login"));
+      isValid = false;
+    }
+  }
 
   loggedIn.set(isValid);
 
-  if (isValid) {
-    return await health().then((r) => r.available);
-  } else {
-    if (await refreshJwt()) return checkLogin();
-    void goto(resolve("/login"));
-    return false;
-  }
+  return isValid;
 }
 
 export async function login(

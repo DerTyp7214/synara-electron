@@ -573,7 +573,7 @@
           {/each}
         </div>
         <span
-          class="text-secondary-700-300 text-2xs line-clamp-1 text-start font-bold text-ellipsis"
+          class="text-secondary-700-300 text-2xs line-clamp-1 text-start font-bold text-ellipsis transition-colors"
           title={$t("player.playingAt", {
             bitrate: $bitrate.toString(),
             sampleRate: ($sampleRate / 1000).toString(),

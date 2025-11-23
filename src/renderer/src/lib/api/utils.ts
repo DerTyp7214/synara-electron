@@ -8,6 +8,7 @@ import {
 import { debugLog } from "$lib/logger";
 import { settings } from "$lib/settings";
 import type { Album, Artist, Playlist, Song } from "$shared/types/beApi";
+import { checkLogin } from "$lib/api/auth";
 
 async function getHeaders(
   auth?: boolean,
@@ -166,7 +167,8 @@ export async function apiCall<T>(options: {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       if (path === "/refresh-token") return new ApiResponse<T>(response);
       if (await refreshJwt()) return apiCall(options);
-      return new ApiResponse<T>(response);
+      if (await checkLogin()) return apiCall(options);
+      throw new Error("Unauthorized");
     }
     default: {
       throw new Error(

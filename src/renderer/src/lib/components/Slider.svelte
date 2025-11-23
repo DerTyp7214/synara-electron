@@ -83,7 +83,7 @@
           style="{orientation === 'horizontal' ? 'width' : 'height'}: {buffer}%"
         />
         <Slider.Range
-          class={cn(sliderClass, {
+          class={cn("transition-colors", sliderClass, {
             "h-full": orientation === "horizontal",
             "w-full": orientation === "vertical",
           })}

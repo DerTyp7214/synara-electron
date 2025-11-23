@@ -13,7 +13,7 @@ export class ApiResponse<T> {
   }
 
   async getData(): Promise<T> {
-    if (!this.data) this.data = await this.response.json();
+    if (!this.data) this.data = JSON.parse(await this.getRawText());
 
     debugLog("info", this.data);
 
