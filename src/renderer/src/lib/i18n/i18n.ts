@@ -1,13 +1,12 @@
 import translations from "$lib/i18n/translations";
-import { derived, writable } from "svelte/store";
+import { derived, get, writable } from "svelte/store";
+import { settings } from "$lib/settings";
 
 type PartialRecord<K extends PropertyKey, T> = {
   [P in K]?: T;
 };
 
-const browserLocale = navigator?.language?.split("-")?.[0] ?? "de";
-
-const storedLocale = localStorage.getItem("locale") ?? browserLocale;
+const storedLocale = get(settings.locale) ?? "us";
 
 export const locales = Object.keys(translations) as Locales[];
 export const locale = writable<Locales>(
@@ -15,7 +14,7 @@ export const locale = writable<Locales>(
 );
 
 locale.subscribe((value) => {
-  localStorage.setItem("locale", value);
+  settings.locale?.set(value);
 });
 
 export type TranslationsType = Readonly<typeof translations>;

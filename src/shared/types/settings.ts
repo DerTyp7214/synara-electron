@@ -31,6 +31,7 @@ export interface AppSettings {
   hideOnClose: boolean;
   discordRpc: boolean;
   downloadDir: string;
+  locale: string;
   audioVisualizer: {
     minDecibels: number;
     maxDecibels: number;

@@ -46,6 +46,10 @@ const schema: Schema<AppSettings> = {
     type: "string",
     default: path.join(app.getPath("music"), "synara"),
   },
+  locale: {
+    type: "string",
+    default: app.getLocaleCountryCode().toLowerCase() || "us",
+  },
 };
 
 const tokenSchema: Schema<TokenSettings> = {

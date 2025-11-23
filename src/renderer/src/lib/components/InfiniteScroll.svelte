@@ -150,11 +150,12 @@
         handleLoadDown();
       }
     };
-    setTimeout(checkInitialLoad, 100);
+    const timeout = setTimeout(checkInitialLoad, 100);
 
     return () => {
       if (topSentinel) observer.unobserve(topSentinel);
       if (bottomSentinel) observer.unobserve(bottomSentinel);
+      clearTimeout(timeout);
     };
   });
 
