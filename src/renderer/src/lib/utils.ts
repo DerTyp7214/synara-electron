@@ -1,3 +1,5 @@
+// noinspection JSUnusedGlobalSymbols
+
 import { getApiUrl } from "$lib/api/utils";
 import { readable } from "svelte/store";
 import { debugLog } from "$lib/logger";
@@ -271,7 +273,7 @@ export function defaultNavigation(
 }
 
 export function globalKeydown(
-  node: HTMLElement,
+  _: HTMLElement,
   callback: (event: KeyboardEvent, audioInteractiveFocused: boolean) => void,
 ) {
   const IGNORED_TAGS = ["INPUT", "TEXTAREA", "SELECT"];

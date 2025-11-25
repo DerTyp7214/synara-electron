@@ -20,6 +20,7 @@ import type { SettingsAPI } from "$shared/types/settings";
 import { getImageUrlBySong } from "$lib/api/sync";
 
 declare global {
+  // noinspection JSUnusedGlobalSymbols
   interface Window {
     electron: ElectronAPI;
     api: CustomApi & SettingsAPI;

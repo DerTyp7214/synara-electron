@@ -48,6 +48,7 @@
     imageColors as derivedImageColors,
   } from "$lib/color/utils";
   import { debugLog } from "$lib/logger";
+  import type { SongLikedEventData } from "$lib/audio/queue";
 
   let {
     isOpen = writable(false),
@@ -225,15 +226,25 @@
     if ($showQueue) setTimeout(scrollIntoActiveSong, 100);
   });
 
+  function handleLikedSongEvent({
+    detail: { songId, isFavourite },
+  }: CustomEvent<SongLikedEventData>) {
+    if ($currentSong.id === songId)
+      $currentQueue.updateSong({ ...$currentSong, isFavourite }, true);
+  }
+
   onMount(() => {
     const animationFrame = mediaSession.drawVisualizer(visualizerCanvas!);
 
     const cleanupResizeListener = createResizeListener(visualizerCanvas!);
 
+    window.addEventListener("songLiked", handleLikedSongEvent);
+
     return () => {
       audioSession.kill();
       cleanupResizeListener();
       cancelAnimationFrame(get(animationFrame));
+      window.removeEventListener("songLiked", handleLikedSongEvent);
     };
   });
 
@@ -507,13 +518,13 @@
       <div class="rounded-base relative min-h-16 min-w-16 overflow-hidden">
         <Avatar class="rounded-base h-16 w-16">
           <Avatar.Image src={getImageUrl($currentSong.coverId, 64)} />
-          <Avatar.Fallback class="bg-tertiary-100-900"
-            >{$currentSong.title
+          <Avatar.Fallback class="bg-tertiary-100-900">
+            {$currentSong.title
               .split(" ")
               .slice(0, 2)
               .map((s) => s.substring(0, 1).toUpperCase())
-              .join("")}</Avatar.Fallback
-          >
+              .join("")}
+          </Avatar.Fallback>
         </Avatar>
         <button
           onclick={() => ($isOpen = !$isOpen)}

@@ -537,6 +537,7 @@ export class MediaSession {
   }
 
   setQueue(queue: Queue) {
+    get(this.queue)?.disconnect();
     this.queue.set(queue);
   }
 }

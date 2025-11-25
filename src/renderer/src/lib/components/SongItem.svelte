@@ -19,7 +19,7 @@
   import { mediaSession } from "$lib/audio/mediaSession";
   import { type PlayingSource } from "$shared/types/settings";
   import { openContextMenu } from "$lib/contextMenu/store.svelte";
-  import { getContext } from "svelte";
+  import { getContext, onMount } from "svelte";
   import {
     MEDIA_PLAYER_CONTEXT_KEY,
     TOAST_CONTEXT_KEY,
@@ -31,6 +31,7 @@
   import { get, type Writable } from "svelte/store";
   import dayjs from "$lib/dayJsUtils";
   import { debugLog } from "$lib/logger";
+  import type { SongLikedEventData } from "$lib/audio/queue";
 
   let {
     id,
@@ -137,12 +138,14 @@
 
       if (updatedSong.isFavourite !== isFavourite) {
         songRef.isFavourite = updatedSong.isFavourite;
-
-        if ("position" in songRef)
-          get(mediaSession.getDerivedQueue()).updateSong({
-            ...songRef,
-            isFavourite: updatedSong.isFavourite,
-          });
+        window.dispatchEvent(
+          new CustomEvent<SongLikedEventData>("songLiked", {
+            detail: {
+              songId: updatedSong.id,
+              isFavourite: updatedSong.isFavourite,
+            },
+          }),
+        );
       }
     } catch (e) {
       debugLog("error", e);
@@ -171,6 +174,27 @@
       block();
     };
   }
+
+  function handleLikedSongEvent({
+    detail: { songId, isFavourite },
+  }: CustomEvent<SongLikedEventData>) {
+    if (id === songId) {
+      songRef.isFavourite = isFavourite;
+
+      if ("position" in songRef) {
+        get(mediaSession.getDerivedQueue()).updateSong({
+          ...songRef,
+          isFavourite: isFavourite,
+        });
+      }
+    }
+  }
+
+  onMount(() => {
+    window.addEventListener("songLiked", handleLikedSongEvent);
+
+    return () => window.removeEventListener("songLiked", handleLikedSongEvent);
+  });
 </script>
 
 <div

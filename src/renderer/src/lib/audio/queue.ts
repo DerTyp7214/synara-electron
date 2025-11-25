@@ -15,6 +15,18 @@ import { mediaSession } from "$lib/audio/mediaSession";
 import { copy, invertArray } from "$lib/utils";
 import type { SongWithPosition } from "$shared/types/beApi";
 
+export interface SongLikedEventData {
+  songId: Song["id"];
+  isFavourite: boolean;
+}
+
+declare global {
+  // noinspection JSUnusedGlobalSymbols
+  interface WindowEventMap {
+    songLiked: CustomEvent<SongLikedEventData>;
+  }
+}
+
 export type QueueCallbackData = {
   queue: Array<SongWithPosition>;
   index: number;
@@ -29,6 +41,8 @@ export class Queue implements Readable<QueueCallbackData> {
   private readonly queueStore: Writable<Array<SongWithPosition>>;
   private readonly shuffledMapStore: Writable<ShuffleMap>;
   private readonly currentIndexStore: Writable<number>;
+
+  private readonly unsubscribers: Array<() => void> = [];
 
   public readonly queue: Readable<Array<SongWithPosition>>;
   public readonly duration: Readable<number>;
@@ -72,25 +86,49 @@ export class Queue implements Readable<QueueCallbackData> {
     this.currentIndexStore = writable(initialIndex);
     this.shuffledMapStore = writable(copy(initialShuffledMap));
 
-    this.queueStore.subscribe((queue) => {
-      if (this.writeToSettings) settings.queue.set(copy(queue));
-    });
+    this.unsubscribers.push(
+      this.queueStore.subscribe((queue) => {
+        if (this.writeToSettings) settings.queue.set(copy(queue));
+      }),
+    );
 
-    this.shuffledMapStore.subscribe((map) => {
-      if (this.writeToSettings) settings.shuffleMap.set(map);
-    });
+    this.unsubscribers.push(
+      this.shuffledMapStore.subscribe((map) => {
+        if (this.writeToSettings) settings.shuffleMap.set(map);
+      }),
+    );
 
-    this.currentIndexStore.subscribe((index) => {
-      if (this.writeToSettings) settings.currentIndex.set(index);
-    });
+    this.unsubscribers.push(
+      this.currentIndexStore.subscribe((index) => {
+        if (this.writeToSettings) settings.currentIndex.set(index);
+      }),
+    );
 
     if (this.writeToSettings) this.setShuffled(shuffled);
 
     if (initialShuffledMap.length === 0) this.shuffle(shuffled);
 
-    settings.shuffle.subscribe((shuffled) => {
-      this.setShuffled(shuffled);
-    });
+    this.unsubscribers.push(
+      settings.shuffle.subscribe((shuffled) => {
+        this.setShuffled(shuffled);
+      }),
+    );
+
+    this.unsubscribers.push(
+      (() => {
+        const handler = ({
+          detail: { songId, isFavourite },
+        }: CustomEvent<SongLikedEventData>) => {
+          const queue = get(this.queueStore);
+
+          const index = queue.findIndex((song) => song.id === songId);
+
+          if (index >= 0) queue[index].isFavourite = isFavourite;
+        };
+        window.addEventListener("songLiked", handler);
+        return () => window.removeEventListener("songLiked", handler);
+      })(),
+    );
 
     this.queue = derived(
       [this.queueStore, this.shuffledMapStore],
@@ -380,5 +418,11 @@ export class Queue implements Readable<QueueCallbackData> {
       shuffleMap[i] = indices[i];
     }
     return shuffleMap;
+  }
+
+  public disconnect() {
+    for (const unsubscriber of this.unsubscribers) {
+      unsubscriber?.();
+    }
   }
 }
