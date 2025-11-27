@@ -182,6 +182,14 @@
           },
           true,
         );
+        window.dispatchEvent(
+          new CustomEvent<SongLikedEventData>("songLiked", {
+            detail: {
+              songId: updatedSong.id,
+              isFavourite: updatedSong.isFavourite,
+            },
+          }),
+        );
       }
     } catch (e) {
       debugLog("error", e);

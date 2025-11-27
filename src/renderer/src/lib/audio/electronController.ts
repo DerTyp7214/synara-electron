@@ -183,10 +183,12 @@ class ElectronController {
           artwork: artwork,
         });
 
-        navigator.mediaSession.setPositionState({
-          position: position / 1000,
-          duration: song.duration / 1000,
-        });
+        if (position <= song.duration) {
+          navigator.mediaSession.setPositionState({
+            position: position / 1000,
+            duration: song.duration / 1000,
+          });
+        }
 
         navigator.mediaSession.playbackState =
           playBackStateToMediaSessionState(playbackStatus);

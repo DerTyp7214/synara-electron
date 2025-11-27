@@ -57,7 +57,7 @@ export interface MediaSettings {
  * Song object send to last.fm for scrobbling.
  */
 export interface LastFmSong {
-  artist: string;
+  artist: Array<string>;
   track: string;
   /** Epoch in seconds */
   timestamp: number;
@@ -67,7 +67,7 @@ export interface LastFmSong {
   trackNumber?: number;
   /** MusicBrainZ Track ID */
   mbid?: string;
-  albumArtist?: string;
+  albumArtist?: Array<string>;
   /** Duration in seconds */
   duration?: number;
 }

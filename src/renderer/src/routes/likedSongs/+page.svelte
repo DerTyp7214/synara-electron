@@ -10,6 +10,7 @@
   } from "$shared/types/settings";
   import { defaultNavigation } from "$lib/utils";
   import { onNavigate } from "$app/navigation";
+  import { debugLog } from "$lib/logger";
 
   const playingSource: PlayingSource = {
     type: PlayingSourceType.LikedSongs,
@@ -18,9 +19,22 @@
 
   let items: Array<Song> = $state([]);
 
-  onMount(async () => {
-    const response = await likedSongs(0, MAX_INT);
-    items = [...response.data];
+  function handleSongLiked() {
+    void loadSongs();
+  }
+
+  async function loadSongs() {
+    debugLog("info", "loading songs");
+    const { data } = await likedSongs(0, MAX_INT);
+    items = [...data];
+  }
+
+  onMount(() => {
+    void loadSongs();
+
+    window.addEventListener("songLiked", handleSongLiked);
+
+    return () => window.removeEventListener("songLiked", handleSongLiked);
   });
 
   onNavigate(defaultNavigation);

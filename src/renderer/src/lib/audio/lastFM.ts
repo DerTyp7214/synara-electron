@@ -149,7 +149,7 @@ class LastFM {
       );
     }
 
-    const minTime = Math.min(song.duration * 0.3, 1000 * 60 * 4);
+    const minTime = Math.min(song.duration * 0.5, 1000 * 60 * 4);
     const alreadyPlayedTime =
       this.songTimeoutEndTime - this.songTimeoutStartTime;
 
@@ -218,14 +218,14 @@ class LastFM {
 
   private songToLastFmSong(song: Song, chosenByUser: boolean): LastFmSong {
     return {
-      artist: song.artists.map((a) => a.name).join(", "),
+      artist: song.artists.map((a) => a.name),
       track: song.title,
       timestamp: Math.floor(Date.now() / 1000),
       album: song.album?.name,
       chosenByUser: chosenByUser,
       trackNumber: song.trackNumber,
       // mbid: TODO: fetch mbid somehow
-      albumArtist: song.album?.artists.map((a) => a.name).join(", "),
+      albumArtist: song.album?.artists.map((a) => a.name),
       duration: song.duration,
     };
   }
