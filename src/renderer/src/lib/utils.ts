@@ -310,6 +310,10 @@ export function globalKeydown(
   };
 }
 
+export async function sleep(ms: number) {
+  await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export const { isMac, isLinux, isWindows } = window.api ?? {
   isMac: () => false,
   isLinux: () => true,

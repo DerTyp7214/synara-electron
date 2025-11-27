@@ -3,7 +3,7 @@ import {
   type Settings as AppSettings,
   SETTINGS_KEYS,
 } from "$shared/types/settings";
-import { debugLog } from "$lib/logger";
+import { scopedDebugLog, scopeStyle } from "$lib/logger";
 import { tick } from "svelte";
 import { DEFAULT_SETTINGS } from "$shared/settings";
 
@@ -12,6 +12,11 @@ type SettingStores = {
 };
 
 class Settings {
+  private logScope = {
+    name: "Settings",
+    style: scopeStyle("#fcdf18", "black"),
+  };
+
   private static instance: Settings;
   readonly settings: SettingStores;
 
@@ -27,7 +32,15 @@ class Settings {
         try {
           if (value !== null) this.set(key, structuredClone(value) as never);
         } catch (e) {
-          debugLog("error", "window.api.set", key, "with", value, e);
+          scopedDebugLog(
+            "error",
+            this.logScope,
+            "window.api.set",
+            key,
+            "with",
+            value,
+            e,
+          );
         }
       });
 
@@ -55,7 +68,15 @@ class Settings {
       // @ts-expect-error should still work
       this.settings[key]?.set(value);
 
-      debugLog("info", "Settings", "loaded", key, "with", value);
+      scopedDebugLog(
+        "info",
+        this.logScope,
+        "Settings",
+        "loaded",
+        key,
+        "with",
+        value,
+      );
     }
 
     await tick();
@@ -90,7 +111,7 @@ class Settings {
         JSON.stringify({ ...storage, [key]: value }),
       );
     } catch (e) {
-      debugLog("error", "writing local storage", e);
+      scopedDebugLog("error", this.logScope, "writing local storage", e);
     }
   }
 
@@ -101,7 +122,7 @@ class Settings {
         DEFAULT_SETTINGS[key]
       );
     } catch (e) {
-      debugLog("error", "loading local storage", e);
+      scopedDebugLog("error", this.logScope, "loading local storage", e);
       return DEFAULT_SETTINGS[key];
     }
   }

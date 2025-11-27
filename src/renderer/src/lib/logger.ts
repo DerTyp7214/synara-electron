@@ -38,15 +38,32 @@ const levelColors: Record<LogLevel, string> = {
   dirxml: "color: #6C7A89; font-style: italic;",
 };
 
+export const scopeStyle = (background: string, color: string = "white") =>
+  `color: ${color}; background: ${background}; padding: 2px 4px; border-radius: 2px; font-weight: bold;`;
+
 const shouldLog = localStorage.getItem("logDebug") === "true";
 const logDebugLevel = (localStorage.getItem("logDebugLevel") ??
   "error") as LogLevel;
 
-const csrdPrefix = (logLevel: LogLevel) => [
+const synaraPrefix = (logLevel: LogLevel) => [
   `%c[SYNARA]%c %c[${logLevel}]`,
   "color: white; background: #068f3a; padding: 2px 4px; border-radius: 2px; font-weight: bold;",
   "",
   levelColors[logLevel],
+];
+
+const synaraScopedPrefix = (
+  logLevel: LogLevel,
+  scope: string,
+  style: string,
+) => [
+  `%c[SYNARA]%c %c[${logLevel}]%c %c[${scope}]%c`,
+  "color: white; background: #068f3a; padding: 2px 4px; border-radius: 2px; font-weight: bold;",
+  "",
+  levelColors[logLevel],
+  "",
+  style,
+  "",
 ];
 
 export function debugLog(
@@ -58,7 +75,32 @@ export function debugLog(
     if (shouldLog && levelMap[logDebugLevel] <= levelMap[logLevel]) {
       // eslint-disable-next-line no-console
       console.groupCollapsed(
-        ...csrdPrefix(logLevel),
+        ...synaraPrefix(logLevel),
+        ...(await Promise.all(logs.map((l) => (l?.promise ? l.data() : l)))),
+      );
+      // eslint-disable-next-line no-console
+      console.trace();
+      // eslint-disable-next-line no-console
+      console.groupEnd();
+    }
+  })();
+}
+
+export function scopedDebugLog(
+  logLevel: LogLevel,
+  scope: { name: string; style: string } | string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ...logs: Array<{ promise: true; data: () => Promise<any> }> | Array<any>
+) {
+  (async () => {
+    if (shouldLog && levelMap[logDebugLevel] <= levelMap[logLevel]) {
+      // eslint-disable-next-line no-console
+      console.groupCollapsed(
+        ...synaraScopedPrefix(
+          logLevel,
+          typeof scope === "string" ? scope : scope.name,
+          typeof scope === "string" ? scopeStyle("#8f068a") : scope.style,
+        ),
         ...(await Promise.all(logs.map((l) => (l?.promise ? l.data() : l)))),
       );
       // eslint-disable-next-line no-console

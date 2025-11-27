@@ -52,6 +52,10 @@ const tokenSchema: Schema<TokenSettings> = {
     type: "object",
     default: DEFAULT_SETTINGS["token"],
   },
+  lastFmTokens: {
+    type: "object",
+    default: DEFAULT_SETTINGS["lastFmTokens"],
+  },
 };
 
 const mediaSchema: Schema<MediaSettings> = {
@@ -85,6 +89,10 @@ const queueSchema: Schema<QueueSettings> = {
   shuffleMap: {
     type: "array",
     default: DEFAULT_SETTINGS["shuffleMap"],
+  },
+  lastFmScrobbleQueue: {
+    type: "array",
+    default: DEFAULT_SETTINGS["lastFmScrobbleQueue"],
   },
 };
 

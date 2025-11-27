@@ -1,10 +1,15 @@
-import { debugLog } from "$lib/logger";
+import { scopedDebugLog, scopeStyle } from "$lib/logger";
 import type { PartialRecord } from "$lib/types";
 import { mediaSession } from "$lib/audio/mediaSession";
 
 type Listeners = keyof HTMLMediaElementEventMap;
 
 export class AudioSession {
+  private logScope = {
+    name: "AudioSession",
+    style: scopeStyle("#2bd3be", "black"),
+  };
+
   private audio: HTMLAudioElement = document.createElement("audio");
 
   private listeners: PartialRecord<Listeners, Array<EventListener>> = {};
@@ -19,7 +24,7 @@ export class AudioSession {
     try {
       for (const [key, listener] of Object.entries(this.eventListeners)) {
         this.audio?.removeEventListener(key, listener);
-        debugLog("info", "cleared listeners for", key);
+        scopedDebugLog("info", this.logScope, "cleared listeners for", key);
       }
       this.audio.remove();
     } catch (_) {
@@ -40,7 +45,7 @@ export class AudioSession {
   private addListeners() {
     for (const [key, listener] of Object.entries(this.eventListeners)) {
       this.audio?.removeEventListener(key, listener);
-      debugLog("info", "cleared listeners for", key);
+      scopedDebugLog("info", this.logScope, "cleared listeners for", key);
     }
 
     this.setupListeners("ended");

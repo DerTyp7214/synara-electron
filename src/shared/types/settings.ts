@@ -41,6 +41,7 @@ export interface AppSettings {
 
 export interface TokenSettings {
   token: { jwt?: string; refreshToken?: string };
+  lastFmTokens: {};
 }
 
 export interface MediaSettings {
@@ -51,9 +52,30 @@ export interface MediaSettings {
   repeatMode: RepeatMode;
 }
 
+/**
+ * @interface LastFmSong
+ * Song object send to last.fm for scrobbling.
+ */
+export interface LastFmSong {
+  artist: string;
+  track: string;
+  /** Epoch in seconds */
+  timestamp: number;
+  album?: string;
+  /** Converted to 0/1 when send to last.fm */
+  chosenByUser?: boolean;
+  trackNumber?: number;
+  /** MusicBrainZ Track ID */
+  mbid?: string;
+  albumArtist?: string;
+  /** Duration in seconds */
+  duration?: number;
+}
+
 export interface QueueSettings {
   queue: Array<Song>;
   shuffleMap: Array<number>;
+  lastFmScrobbleQueue: Array<LastFmSong>;
 }
 
 export const nullSong: Song & { position: number } = {
@@ -84,7 +106,10 @@ export const APP_SETTINGS_KEYS: Array<keyof AppSettings> = [
   "audioVisualizer",
 ];
 
-export const TOKEN_SETTINGS_KEYS: Array<keyof TokenSettings> = ["token"];
+export const TOKEN_SETTINGS_KEYS: Array<keyof TokenSettings> = [
+  "token",
+  "lastFmTokens",
+];
 
 export const MEDIA_SETTINGS_KEYS: Array<keyof MediaSettings> = [
   "currentIndex",
@@ -97,6 +122,7 @@ export const MEDIA_SETTINGS_KEYS: Array<keyof MediaSettings> = [
 export const QUEUE_SETTINGS_KEYS: Array<keyof QueueSettings> = [
   "queue",
   "shuffleMap",
+  "lastFmScrobbleQueue",
 ];
 
 export const SETTINGS_KEYS: Array<keyof Settings> = [

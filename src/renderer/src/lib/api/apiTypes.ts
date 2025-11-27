@@ -1,4 +1,5 @@
-import { debugLog } from "$lib/logger";
+import { scopedDebugLog } from "$lib/logger";
+import { apiLogScope } from "$lib/api/utils";
 
 export class ApiResponse<T> {
   private readonly status: number;
@@ -15,7 +16,7 @@ export class ApiResponse<T> {
   async getData(): Promise<T> {
     if (!this.data) this.data = JSON.parse(await this.getRawText());
 
-    debugLog("info", this.data);
+    scopedDebugLog("info", apiLogScope, this.data);
 
     return this.data!;
   }

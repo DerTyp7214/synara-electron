@@ -1,4 +1,5 @@
-import { debugLog } from "$lib/logger";
+import { scopedDebugLog } from "$lib/logger";
+import { apiLogScope } from "$lib/api/utils";
 
 interface TokenPayload {
   exp: number;
@@ -29,7 +30,7 @@ export function decodeJwt(token: string): TokenPayload | null {
 
     return JSON.parse(jsonPayload) as TokenPayload;
   } catch (error) {
-    debugLog("error", "JWT decoding failed:", error);
+    scopedDebugLog("error", apiLogScope, "JWT decoding failed:", error);
     return null;
   }
 }

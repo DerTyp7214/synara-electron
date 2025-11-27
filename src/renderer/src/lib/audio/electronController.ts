@@ -7,7 +7,7 @@ import type { CustomApi, MprisEventData } from "$shared/types/api";
 import { PlaybackStatus } from "$shared/models/playbackStatus";
 import type { RepeatMode } from "$shared/models/repeatMode";
 import { get } from "svelte/store";
-import { debugLog } from "$lib/logger";
+import { scopedDebugLog, scopeStyle } from "$lib/logger";
 import { audioSession } from "$lib/audio/audioSession";
 import {
   playAlbumById,
@@ -28,6 +28,11 @@ declare global {
 }
 
 class ElectronController {
+  private logScope = {
+    name: "ElectronController",
+    style: scopeStyle("#8f6406"),
+  };
+
   private unsubscribers: Array<() => void> = [];
   private lastImageUrl: { id: string; url: string | null; loading: boolean } = {
     id: "",
@@ -133,7 +138,13 @@ class ElectronController {
           return;
         }
         default: {
-          debugLog("warn", "uncaught mpris-event", event, data);
+          scopedDebugLog(
+            "warn",
+            this.logScope,
+            "uncaught mpris-event",
+            event,
+            data,
+          );
         }
       }
       window.api.updateMpris({ player });
@@ -180,7 +191,12 @@ class ElectronController {
         navigator.mediaSession.playbackState =
           playBackStateToMediaSessionState(playbackStatus);
       } catch (e) {
-        debugLog("error", "updateMediaControls > mediaSession", e);
+        scopedDebugLog(
+          "error",
+          this.logScope,
+          "updateMediaControls > mediaSession",
+          e,
+        );
       }
     }
 

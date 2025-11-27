@@ -25,6 +25,7 @@ export const DEFAULT_SETTINGS: AppSettings &
   locale: "us",
 
   token: {},
+  lastFmTokens: {},
 
   currentIndex: -1,
   playingSourceType: PlayingSourceType.LikedSongs,
@@ -34,4 +35,5 @@ export const DEFAULT_SETTINGS: AppSettings &
 
   queue: [],
   shuffleMap: [],
+  lastFmScrobbleQueue: [],
 };

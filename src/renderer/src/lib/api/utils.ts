@@ -5,10 +5,12 @@ import {
   type PagedResponse,
   type TokenResponse,
 } from "$lib/api/apiTypes";
-import { debugLog } from "$lib/logger";
+import { scopedDebugLog, scopeStyle } from "$lib/logger";
 import { settings } from "$lib/settings";
 import type { Album, Artist, Playlist, Song } from "$shared/types/beApi";
 import { checkLogin } from "$lib/api/auth";
+
+export const apiLogScope = { name: "Api", style: scopeStyle("#0a22b2") };
 
 async function getHeaders(
   auth?: boolean,
@@ -39,7 +41,7 @@ export async function refreshJwt() {
   try {
     const token = get(settings.token!)?.refreshToken;
 
-    debugLog("info", "refreshJwt.token", token);
+    scopedDebugLog("info", apiLogScope, "refreshJwt.token", token);
 
     if (!token) return false;
 
@@ -52,14 +54,19 @@ export async function refreshJwt() {
     if (response.isOk()) {
       const token = await response.getData();
 
-      debugLog("info", "refreshJwt.newToken", token);
+      scopedDebugLog("info", apiLogScope, "refreshJwt.newToken", token);
 
       settings.token.set({
         jwt: token.token,
         refreshToken: token.refreshToken,
       });
     } else {
-      debugLog("error", "refreshJwt.response.isNotOk", response);
+      scopedDebugLog(
+        "error",
+        apiLogScope,
+        "refreshJwt.response.isNotOk",
+        response,
+      );
       settings.token.set({
         jwt: undefined,
         refreshToken: undefined,
@@ -72,7 +79,7 @@ export async function refreshJwt() {
       jwt: undefined,
       refreshToken: undefined,
     });
-    debugLog("error", "refreshJwt", error);
+    scopedDebugLog("error", apiLogScope, "refreshJwt", error);
     return false;
   }
 }
@@ -146,7 +153,16 @@ export async function apiCall<T>(options: {
     options,
   );
 
-  debugLog("info", ">", path, method, query, body, expectedStatus);
+  scopedDebugLog(
+    "info",
+    apiLogScope,
+    ">",
+    path,
+    method,
+    query,
+    body,
+    expectedStatus,
+  );
 
   const response = await fetch(buildUrl(path, query, host), {
     method: method,
@@ -154,7 +170,7 @@ export async function apiCall<T>(options: {
     body: body ? JSON.stringify(body) : undefined,
   });
 
-  debugLog("info", "<", path, method, response);
+  scopedDebugLog("info", apiLogScope, "<", path, method, response);
 
   switch (response.status) {
     case expectedStatus: {

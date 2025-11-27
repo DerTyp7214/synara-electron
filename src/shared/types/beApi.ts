@@ -14,6 +14,7 @@ export interface Song {
   coverId?: UUID;
   discNumber: number;
   trackNumber: number;
+  /** Duration in millis */
   duration: number;
   explicit: boolean;
   fileSize: number;
