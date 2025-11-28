@@ -1,8 +1,31 @@
 import { apiCall, queryApi } from "$lib/api/utils";
 import type { PagedResponse } from "$lib/api/apiTypes";
 import type { Song } from "$shared/types/beApi";
+import { get } from "svelte/store";
+import { settings } from "$lib/settings";
 
 export { type Song };
+
+function cleanSong(song: Song): Song {
+  if (!get(settings.cleanTitles)) return song;
+
+  const regex =
+    /\s*([([]).*?(feat|ft|with|prod|live|remix|acoustic|radio edit|explicit|clean).*?([)\]])/gi;
+
+  return {
+    ...song,
+    title: song.title.replace(regex, "").trimEnd(),
+  };
+}
+
+async function cleanSongs(
+  response: Promise<PagedResponse<Song>>,
+): Promise<PagedResponse<Song>> {
+  return await response.then((res) => ({
+    ...res,
+    data: res.data.map(cleanSong),
+  }));
+}
 
 export async function listSongs(
   page?: number,
@@ -15,7 +38,7 @@ export async function listSongs(
     auth: true,
   });
 
-  return response.getData();
+  return cleanSongs(response.getData());
 }
 
 export async function likedSongs(
@@ -29,7 +52,7 @@ export async function likedSongs(
     auth: true,
   });
 
-  return response.getData();
+  return cleanSongs(response.getData());
 }
 
 export async function setLiked(
@@ -43,7 +66,7 @@ export async function setLiked(
     auth: true,
   });
 
-  return response.getData();
+  return cleanSong(await response.getData());
 }
 
 export async function songById(songId: Song["id"]) {
@@ -53,7 +76,7 @@ export async function songById(songId: Song["id"]) {
     auth: true,
   });
 
-  return response.getData();
+  return cleanSong(await response.getData());
 }
 
 export async function querySongs(
@@ -61,7 +84,7 @@ export async function querySongs(
   page?: number,
   pageSize?: number,
 ) {
-  return queryApi<Song>("song", query, page, pageSize);
+  return cleanSongs(queryApi<Song>("song", query, page, pageSize));
 }
 
 export async function getContentLength(streamUrl: string): Promise<number> {

@@ -31,6 +31,8 @@ export interface AppSettings {
   hideOnClose: boolean;
   discordRpc: boolean;
   downloadDir: string;
+  lastFm: boolean;
+  cleanTitles: boolean;
   locale: string;
   audioVisualizer: {
     minDecibels: number;
@@ -41,7 +43,14 @@ export interface AppSettings {
 
 export interface TokenSettings {
   token: { jwt?: string; refreshToken?: string };
-  lastFmTokens: {};
+  lastFmTokens: {
+    apiKey?: string;
+    sharedSecret?: string;
+  };
+  lastFmSession: {
+    key?: string;
+    name?: string;
+  };
 }
 
 export interface MediaSettings {
@@ -104,11 +113,14 @@ export const APP_SETTINGS_KEYS: Array<keyof AppSettings> = [
   "hideOnClose",
   "discordRpc",
   "audioVisualizer",
+  "lastFm",
+  "cleanTitles",
 ];
 
 export const TOKEN_SETTINGS_KEYS: Array<keyof TokenSettings> = [
   "token",
   "lastFmTokens",
+  "lastFmSession",
 ];
 
 export const MEDIA_SETTINGS_KEYS: Array<keyof MediaSettings> = [

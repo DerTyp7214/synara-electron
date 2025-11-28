@@ -66,6 +66,7 @@ const api: CustomApi & SettingsAPI = {
   async set<K extends keyof Settings>(key: K, value: Settings[K]) {
     await ipcRenderer.invoke("settings:set", key, value);
   },
+  openExternal: (url: string) => ipcRenderer.send("lastfm:open-external", url),
 };
 
 // Use `contextBridge` APIs to expose Electron APIs to

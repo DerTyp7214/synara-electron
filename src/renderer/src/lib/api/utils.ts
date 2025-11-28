@@ -125,13 +125,14 @@ export async function queryApi<T>(
 }
 
 export async function apiCall<T>(options: {
-  path: string;
+  path?: string;
   method: string;
   auth?: boolean;
   host?: string | null;
   headers?: Record<string, string>;
   query?: Record<string, PropertyKey | undefined>;
   body?: Record<string, unknown>;
+  formBody?: URLSearchParams;
   expectedStatus?: number;
   expectedErrorStatus?: number;
 }): Promise<ApiResponse<T>> {
@@ -141,12 +142,14 @@ export async function apiCall<T>(options: {
     auth,
     query,
     body,
+    formBody,
     host,
     expectedStatus,
     expectedErrorStatus,
     headers,
   } = Object.assign(
     {
+      path: "",
       query: {},
       expectedStatus: 200,
     },
@@ -157,7 +160,7 @@ export async function apiCall<T>(options: {
     "info",
     apiLogScope,
     ">",
-    path,
+    formBody?.get("method") ?? path,
     method,
     query,
     body,
@@ -167,7 +170,7 @@ export async function apiCall<T>(options: {
   const response = await fetch(buildUrl(path, query, host), {
     method: method,
     headers: await getHeaders(auth, headers),
-    body: body ? JSON.stringify(body) : undefined,
+    body: formBody?.toString() ?? (body ? JSON.stringify(body) : undefined),
   });
 
   scopedDebugLog("info", apiLogScope, "<", path, method, response);

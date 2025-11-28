@@ -51,6 +51,10 @@ ipcMain.handle("get-is-fullscreen", (event) => {
   return window?.isFullScreen() ?? false;
 });
 
+ipcMain.on("lastfm:open-external", (_, url: string) => {
+  void shell.openExternal(url);
+});
+
 function createWindow(): void {
   // Create the browser window.
   mainWindow = new BrowserWindow({
@@ -134,7 +138,6 @@ function createWindow(): void {
 
 function loadVite(): void {
   mainWindow
-    // @ts-expect-error it exists
     .loadURL(import.meta.env.MAIN_VITE_ELECTRON_RENDERER_URL)
     .catch((e) => {
       // eslint-disable-next-line no-console

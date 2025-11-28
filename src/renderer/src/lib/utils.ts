@@ -314,6 +314,23 @@ export async function sleep(ms: number) {
   await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+type PossiblyUndefined<T extends Record<string, unknown>> = {
+  [K in keyof T]: T[K] | undefined;
+};
+
+export function removeUndefined<T extends Record<string, unknown>>(
+  obj: PossiblyUndefined<T>,
+): Partial<T> {
+  return Object.keys(obj).reduce((newObj, key) => {
+    const value = obj[key];
+
+    if (value !== undefined) {
+      (newObj as Record<string, unknown>)[key] = value;
+    }
+    return newObj;
+  }, {} as Partial<T>);
+}
+
 export const { isMac, isLinux, isWindows } = window.api ?? {
   isMac: () => false,
   isLinux: () => true,

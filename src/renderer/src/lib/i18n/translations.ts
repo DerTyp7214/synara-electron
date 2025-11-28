@@ -11,6 +11,8 @@ export default {
     "songs.loadMore": "Load More",
     "songs.all": "All Songs",
 
+    "lastFm.confirmToken": "Confirm when you approved token permissions",
+
     "likedSongs.title": "Liked Songs",
 
     "playlists.title": "Playlists",

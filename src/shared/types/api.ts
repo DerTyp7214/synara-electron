@@ -59,4 +59,5 @@ export interface CustomApi {
   onFullScreenChange(callback: (isFullscreen: boolean) => void): () => void;
   registerListener(listener: MprisEventListener<MprisEventName>): void;
   registerBonjourListener(listener: BonjourEventListener): () => void;
+  openExternal(url: string): void;
 }

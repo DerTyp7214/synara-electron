@@ -41,6 +41,14 @@ const schema: Schema<AppSettings> = {
     type: "string",
     default: path.join(app.getPath("music"), "synara"),
   },
+  lastFm: {
+    type: "boolean",
+    default: DEFAULT_SETTINGS["lastFm"],
+  },
+  cleanTitles: {
+    type: "boolean",
+    default: DEFAULT_SETTINGS["cleanTitles"],
+  },
   locale: {
     type: "string",
     default: app.getLocaleCountryCode().toLowerCase() || "us",
@@ -55,6 +63,10 @@ const tokenSchema: Schema<TokenSettings> = {
   lastFmTokens: {
     type: "object",
     default: DEFAULT_SETTINGS["lastFmTokens"],
+  },
+  lastFmSession: {
+    type: "object",
+    default: DEFAULT_SETTINGS["lastFmSession"],
   },
 };
 

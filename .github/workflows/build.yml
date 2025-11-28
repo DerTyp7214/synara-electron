@@ -74,6 +74,9 @@ jobs:
       - name: Build for ${{ matrix.build }}
         shell: bash
         run: pnpm run build:${{ matrix.build }}
+        env:
+          MAIN_VITE_LAST_FM_API_KEY: ${{ secrets.LAST_FM_API_KEY }}
+          MAIN_VITE_LAST_FM_SHARED_SECRET: ${{ secrets.LAST_FM_SHARED_SECRET }}
 
       - name: Move files
         shell: bash

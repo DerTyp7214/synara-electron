@@ -5,12 +5,26 @@ import { get, type Unsubscriber, writable } from "svelte/store";
 import { mediaSession, MediaSession } from "$lib/audio/mediaSession";
 import { scopedDebugLog, scopeStyle } from "$lib/logger";
 import { sleep } from "$lib/utils";
+import {
+  getRequestToken,
+  getSessionKey,
+  scrobble,
+  updateNowPlaying,
+} from "$lib/api/lastFm";
+import { t } from "$lib/i18n/i18n";
+import { MusicBrainzApi } from "musicbrainz-api";
 
 class LastFM {
   private logScope = {
     name: "LastFM",
     style: scopeStyle("#D32F2F"),
   };
+
+  private mbApi = new MusicBrainzApi({
+    appName: "synara-lastFm",
+    appVersion: "1.0",
+    appContactInfo: "github@dertyp.dev",
+  });
 
   private scrobbleQueue = settings.lastFmScrobbleQueue;
   private scrobblingQueue: boolean = false;
@@ -30,6 +44,8 @@ class LastFM {
             if (!this.scrobblingQueue && queue) void this.runScrobbleQueue();
           }),
         );
+
+        if (get(settings.lastFm)) void this.checkAuth();
       }),
     );
   }
@@ -66,8 +82,8 @@ class LastFM {
         this.songTimeoutStartTime = Date.now();
         this.songTimeoutEndTime = this.songTimeoutStartTime;
 
-        this.nowPlaying(song);
         this.songTimer(song);
+        void this.nowPlaying(song);
       }),
       mediaSession.paused.subscribe((paused) => {
         if (paused) {
@@ -77,7 +93,10 @@ class LastFM {
 
             this.songTimeoutEndTime = Date.now();
           }
-        } else this.songTimer(get(this.currentSong), paused);
+        } else {
+          this.songTimer(get(this.currentSong), paused);
+          void this.nowPlaying(get(this.currentSong), paused);
+        }
       }),
       () => {
         for (const unsubscriber of this.queueUnsubscribers) unsubscriber?.();
@@ -91,17 +110,64 @@ class LastFM {
     }
   }
 
-  public nowPlaying(song: Song, chosenByUser: boolean = false) {
-    if (!song) return;
-    scopedDebugLog(
-      "info",
-      this.logScope,
-      "nowPlaying",
-      this.songToLastFmSong(song, chosenByUser),
-    );
+  public async checkAuth() {
+    const lastFmSession = get(settings.lastFmSession);
+    const session = lastFmSession.key
+      ? (lastFmSession as Required<typeof lastFmSession>)
+      : await this.startAuthFlow();
+
+    return !!session;
   }
 
-  public addSongToScrobbleQueue(song: Song, chosenByUser: boolean = false) {
+  async startAuthFlow() {
+    const { apiKey } = get(settings.lastFmTokens);
+
+    if (!apiKey) return;
+
+    const token = await getRequestToken();
+
+    const url = new URL("/api/auth", "https://www.last.fm");
+
+    url.searchParams.append("token", token);
+    url.searchParams.append("api_key", apiKey);
+
+    window.api?.openExternal(url.toString());
+
+    confirm(get(t)("lastFm.confirmToken"));
+
+    return await getSessionKey(token);
+  }
+
+  public async nowPlaying(
+    song: Song,
+    paused: boolean = get(mediaSession.paused),
+  ) {
+    if (!song || !get(settings.lastFm) || paused) {
+      scopedDebugLog(
+        "info",
+        this.logScope,
+        "skipping",
+        `paused: ${paused}`,
+        `lastFm: ${get(settings.lastFm)}`,
+        "song:",
+        song,
+      );
+      return;
+    }
+
+    const track = await this.songToLastFmSong(song, false);
+
+    scopedDebugLog("info", this.logScope, "nowPlaying", track);
+
+    await updateNowPlaying(track);
+  }
+
+  public async addSongToScrobbleQueue(
+    song: Song,
+    chosenByUser: boolean = false,
+  ) {
+    if (!get(settings.lastFm)) return;
+
     scopedDebugLog(
       "info",
       this.logScope,
@@ -111,10 +177,8 @@ class LastFM {
     );
 
     try {
-      this.scrobbleQueue.update((queue) => [
-        ...queue,
-        this.songToLastFmSong(song, chosenByUser),
-      ]);
+      const track = await this.songToLastFmSong(song, chosenByUser);
+      this.scrobbleQueue.update((queue) => [...queue, track]);
     } catch (error) {
       scopedDebugLog("error", this.logScope, error, song);
     }
@@ -180,7 +244,7 @@ class LastFM {
     this.songTimeout = setTimeout(
       (song) => {
         if (song.id === get(this.currentSong)?.id) {
-          this.addSongToScrobbleQueue(song);
+          void this.addSongToScrobbleQueue(song);
 
           this.songTimeoutStartTime = Date.now();
           this.songTimeoutEndTime = Date.now();
@@ -192,7 +256,8 @@ class LastFM {
   }
 
   private async runScrobbleQueue() {
-    return true; // TODO: remove return when lastFM is implemented
+    if (!get(settings.lastFm)) return;
+
     this.scrobblingQueue = true;
 
     let hasQueue = get(this.scrobbleQueue).length > 0;
@@ -213,21 +278,52 @@ class LastFM {
   private async scrobble(lastFmSong: LastFmSong): Promise<boolean> {
     scopedDebugLog("info", this.logScope, "scrobbling", lastFmSong);
 
-    return false;
+    try {
+      return await scrobble(lastFmSong);
+    } catch (error) {
+      scopedDebugLog("error", this.logScope, "scrobbling", error);
+      return false;
+    }
   }
 
-  private songToLastFmSong(song: Song, chosenByUser: boolean): LastFmSong {
+  private async songToLastFmSong(
+    song: Song,
+    chosenByUser: boolean,
+  ): Promise<LastFmSong> {
+    const mainArtist =
+      song.artists.find(({ name }) =>
+        song.album?.artists.find((a) => a.name === name),
+      )?.name ?? song.artists[0].name;
+
     return {
-      artist: song.artists.map((a) => a.name),
+      artist: [mainArtist],
       track: song.title,
       timestamp: Math.floor(Date.now() / 1000),
       album: song.album?.name,
       chosenByUser: chosenByUser,
       trackNumber: song.trackNumber,
-      // mbid: TODO: fetch mbid somehow
+      mbid: await this.getMbId(song),
       albumArtist: song.album?.artists.map((a) => a.name),
       duration: song.duration,
     };
+  }
+
+  private async getMbId(song: Song): Promise<string | undefined> {
+    const queryString = [
+      `query=recording:"${song.title}"`,
+      `artist:"${song.artists[0].name}"`,
+      `release:"${song.album?.name}"`,
+      `artistname:"${song.album?.artists[0].name}"`,
+    ].join(" AND ");
+
+    const response = await this.mbApi
+      .search("recording", {
+        query: queryString,
+        limit: 1,
+      })
+      .catch(() => undefined);
+
+    return (response?.count ?? 0) > 0 ? response!.recordings[0].id : undefined;
   }
 }
 

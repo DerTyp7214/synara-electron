@@ -22,10 +22,16 @@ export const DEFAULT_SETTINGS: AppSettings &
     smoothingTimeConstant: 0.75,
   },
   downloadDir: "",
+  lastFm: false,
+  cleanTitles: false,
   locale: "us",
 
   token: {},
-  lastFmTokens: {},
+  lastFmTokens: {
+    apiKey: import.meta.env.MAIN_VITE_LAST_FM_API_KEY,
+    sharedSecret: import.meta.env.MAIN_VITE_LAST_FM_SHARED_SECRET,
+  },
+  lastFmSession: {},
 
   currentIndex: -1,
   playingSourceType: PlayingSourceType.LikedSongs,
