@@ -14,6 +14,7 @@ import { audioSession } from "$lib/audio/audioSession";
 import { mediaSession } from "$lib/audio/mediaSession";
 import { copy, invertArray } from "$lib/utils";
 import type { SongWithPosition } from "$shared/types/beApi";
+import { scopeStyle } from "$lib/logger";
 
 export interface SongLikedEventData {
   songId: Song["id"];
@@ -35,6 +36,11 @@ type ShuffleMap = Array<number>;
 
 // noinspection JSUnusedGlobalSymbols
 export class Queue implements Readable<QueueCallbackData> {
+  private readonly logScope = {
+    name: "Queue",
+    style: scopeStyle("#66d32f", "black"),
+  };
+
   public readonly id: UUID | string;
   public readonly name: string;
 
@@ -176,7 +182,8 @@ export class Queue implements Readable<QueueCallbackData> {
         const song = $queue[$currentIndex];
         if (!song) return;
         else
-          songById(song.id)
+          songById
+            .bind(this)(song.id)
             .then((s) => set({ ...s, position: song.position }))
             .catch(() => set(nullSong));
       },

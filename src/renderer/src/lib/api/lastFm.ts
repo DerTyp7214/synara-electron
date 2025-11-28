@@ -37,7 +37,8 @@ export async function getRequestToken() {
 
   const apiSignature = getApiSignature(methodParams);
 
-  const response = await apiCall<{ token: string }>({
+  // @ts-expect-error in case of binding the function
+  const response = await apiCall.bind(this)<{ token: string }>({
     method: "get",
     host: apiEndpoint,
     query: {
@@ -68,7 +69,8 @@ export async function getSessionKey(token: string) {
 
   const apiSignature = getApiSignature(methodParams);
 
-  const response = await apiCall<{
+  // @ts-expect-error in case of binding the function
+  const response = await apiCall.bind(this)<{
     session: {
       key: string;
       name: string;
@@ -120,7 +122,8 @@ export async function updateNowPlaying(song: LastFmSong) {
 
   const apiSignature = getApiSignature(baseParams);
 
-  const response = await apiCall({
+  // @ts-expect-error in case of binding the function
+  const response = await apiCall.bind(this)({
     method: "post",
     host: apiEndpoint,
     headers: {
@@ -160,7 +163,8 @@ export async function scrobble(song: LastFmSong) {
 
   const apiSignature = getApiSignature(baseParams);
 
-  const response = await apiCall({
+  // @ts-expect-error in case of binding the function
+  const response = await apiCall.bind(this)({
     method: "post",
     host: apiEndpoint,
     headers: {

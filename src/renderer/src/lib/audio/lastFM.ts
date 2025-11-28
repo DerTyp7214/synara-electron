@@ -159,7 +159,7 @@ class LastFM {
 
     scopedDebugLog("info", this.logScope, "nowPlaying", track);
 
-    await updateNowPlaying(track);
+    await updateNowPlaying.bind(this)(track);
   }
 
   public async addSongToScrobbleQueue(
@@ -279,7 +279,7 @@ class LastFM {
     scopedDebugLog("info", this.logScope, "scrobbling", lastFmSong);
 
     try {
-      return await scrobble(lastFmSong);
+      return await scrobble.bind(this)(lastFmSong);
     } catch (error) {
       scopedDebugLog("error", this.logScope, "scrobbling", error);
       return false;

@@ -70,7 +70,8 @@ export async function setLiked(
 }
 
 export async function songById(songId: Song["id"]) {
-  const response = await apiCall<Song>({
+  // @ts-expect-error in case of binding the function
+  const response = await apiCall.bind(this)<Song>({
     path: `/song/byId/${songId}`,
     method: "GET",
     auth: true,

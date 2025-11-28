@@ -156,9 +156,12 @@ export async function apiCall<T>(options: {
     options,
   );
 
+  // @ts-expect-error in case of binding the function
+  const logScope = this?.logScope ?? apiLogScope;
+
   scopedDebugLog(
     "info",
-    apiLogScope,
+    logScope,
     ">",
     formBody?.get("method") ?? path,
     method,
@@ -173,18 +176,19 @@ export async function apiCall<T>(options: {
     body: formBody?.toString() ?? (body ? JSON.stringify(body) : undefined),
   });
 
-  scopedDebugLog("info", apiLogScope, "<", path, method, response);
+  scopedDebugLog("info", logScope, "<", path, method, response);
 
   switch (response.status) {
     case expectedStatus: {
-      return new ApiResponse<T>(response);
+      return new ApiResponse<T>(response, logScope);
     }
     case expectedErrorStatus: {
-      return new ApiResponse<T>(response);
+      return new ApiResponse<T>(response, logScope);
     }
     case 401: {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      if (path === "/refresh-token") return new ApiResponse<T>(response);
+      if (path === "/refresh-token")
+        return new ApiResponse<T>(response, logScope);
       if (await refreshJwt()) return apiCall(options);
       if (await checkLogin()) return apiCall(options);
       throw new Error("Unauthorized");
