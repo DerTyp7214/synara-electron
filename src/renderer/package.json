@@ -13,6 +13,9 @@
     "lint": "prettier --check . && eslint ."
   },
   "license": "MIT",
+  "dependencies": {
+    "dayjs": "^1.11.19"
+  },
   "devDependencies": {
     "@eslint/compat": "^1.4.0",
     "@eslint/js": "^9.36.0",
