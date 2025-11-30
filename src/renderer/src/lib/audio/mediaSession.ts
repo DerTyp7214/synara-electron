@@ -80,7 +80,7 @@ export class MediaSession {
 
     this.setupAudioConnection();
 
-    this.queue.set(
+    this.setQueue(
       new Queue({
         id: get(settings.playingSourceId),
         shuffled: get(settings.shuffle),
@@ -230,7 +230,7 @@ export class MediaSession {
       /* empty */
     }
 
-    if (!this.audioContext) return;
+    if (!this.audioContext || !audioSession) return;
 
     this.audioAnalyser = this.audioContext.createAnalyser();
 
@@ -537,8 +537,10 @@ export class MediaSession {
   }
 
   setQueue(queue: Queue) {
-    get(this.queue)?.disconnect();
-    this.queue.set(queue);
+    this.queue.update((oldQueue) => {
+      oldQueue?.disconnect();
+      return queue;
+    });
   }
 }
 

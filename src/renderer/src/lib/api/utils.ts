@@ -166,7 +166,7 @@ export async function apiCall<T>(options: {
     formBody?.get("method") ?? path,
     method,
     query,
-    body,
+    formBody ? Object.fromEntries([...formBody]) : body,
     expectedStatus,
   );
 

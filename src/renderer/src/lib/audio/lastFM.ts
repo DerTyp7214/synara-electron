@@ -159,7 +159,11 @@ class LastFM {
 
     scopedDebugLog("info", this.logScope, "nowPlaying", track);
 
-    await updateNowPlaying.bind(this)(track);
+    await updateNowPlaying
+      .bind(this)(track)
+      .catch((err) => {
+        scopedDebugLog("error", this.logScope, err);
+      });
   }
 
   public async addSongToScrobbleQueue(
@@ -267,7 +271,7 @@ class LastFM {
       const success = await this.scrobble(song);
 
       if (success) this.scrobbleQueue.update((queue) => [...queue.slice(1)]);
-      else await sleep(1000);
+      else await sleep(5000);
 
       hasQueue = get(this.scrobbleQueue).length > 0;
     }

@@ -102,10 +102,12 @@
         >
 
         <button
-          class="bg-secondary-950-50/20 rounded-container ms-4 me-4 mt-2 mb-4 p-2"
+          class="ms-4 me-4 mt-2 mb-4"
           onclick={() => goto(resolve("/likedSongs"))}
         >
-          <LikedSongsBg />
+          <LikedSongsBg
+            class="bg-secondary-950-50/20 rounded-container w-full"
+          />
         </button>
 
         <div class="bg-surface-600-400 ms-4 me-4 h-1 rounded-full"></div>
