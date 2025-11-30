@@ -272,7 +272,9 @@
   }
 
   g {
-    transition: transform 0.2s ease-out;
+    transition:
+      transform 0.2s ease-out,
+      color 0.2s ease-out;
     transform-origin: center;
   }
 

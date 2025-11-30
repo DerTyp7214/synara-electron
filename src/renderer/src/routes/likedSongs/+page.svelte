@@ -32,9 +32,7 @@
   onMount(() => {
     void loadSongs();
 
-    window.addEventListener("songLiked", handleSongLiked);
-
-    return () => window.removeEventListener("songLiked", handleSongLiked);
+    return window.listenCustomEvent("songLiked", handleSongLiked);
   });
 
   onNavigate(defaultNavigation);

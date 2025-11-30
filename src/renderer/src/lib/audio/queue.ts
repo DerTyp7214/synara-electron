@@ -21,13 +21,6 @@ export interface SongLikedEventData {
   isFavourite: boolean;
 }
 
-declare global {
-  // noinspection JSUnusedGlobalSymbols
-  interface WindowEventMap {
-    songLiked: CustomEvent<SongLikedEventData>;
-  }
-}
-
 export type QueueCallbackData = {
   queue: Array<SongWithPosition>;
   index: number;
@@ -131,8 +124,7 @@ export class Queue implements Readable<QueueCallbackData> {
 
           if (index >= 0) queue[index].isFavourite = isFavourite;
         };
-        window.addEventListener("songLiked", handler);
-        return () => window.removeEventListener("songLiked", handler);
+        return window.listenCustomEvent("songLiked", handler);
       })(),
     );
 

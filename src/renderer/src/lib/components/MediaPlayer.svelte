@@ -49,6 +49,7 @@
   } from "$lib/color/utils";
   import { debugLog } from "$lib/logger";
   import type { SongLikedEventData } from "$lib/audio/queue";
+  import { goto } from "$app/navigation";
 
   let {
     isOpen = writable(false),
@@ -182,14 +183,10 @@
           },
           true,
         );
-        window.dispatchEvent(
-          new CustomEvent<SongLikedEventData>("songLiked", {
-            detail: {
-              songId: updatedSong.id,
-              isFavourite: updatedSong.isFavourite,
-            },
-          }),
-        );
+        window.dispatchCustomEvent("songLiked", {
+          songId: updatedSong.id,
+          isFavourite: updatedSong.isFavourite,
+        });
       }
     } catch (e) {
       debugLog("error", e);
@@ -246,13 +243,16 @@
 
     const cleanupResizeListener = createResizeListener(visualizerCanvas!);
 
-    window.addEventListener("songLiked", handleLikedSongEvent);
+    const removeSongLikedListener = window.listenCustomEvent(
+      "songLiked",
+      handleLikedSongEvent,
+    );
 
     return () => {
       audioSession.kill();
       cleanupResizeListener();
       cancelAnimationFrame(get(animationFrame));
-      window.removeEventListener("songLiked", handleLikedSongEvent);
+      removeSongLikedListener();
     };
   });
 
@@ -272,7 +272,10 @@
 
     switch (event.code) {
       case "KeyF":
-        if ($isOpen) {
+        if (event.ctrlKey) {
+          $isOpen = false;
+          window.dispatchCustomEvent("focusSearch", event);
+        } else if ($isOpen) {
           if ($fullscreen) document.exitFullscreen();
           else footerElement?.requestFullscreen();
         }

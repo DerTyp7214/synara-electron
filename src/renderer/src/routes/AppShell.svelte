@@ -106,7 +106,11 @@
           onclick={() => goto(resolve("/likedSongs"))}
         >
           <LikedSongsBg
-            class="bg-secondary-950-50/20 rounded-container w-full"
+            class={cn(
+              "bg-secondary-950-50/20",
+              "rounded-container w-full",
+              "hover:text-secondary-900-100",
+            )}
           />
         </button>
 

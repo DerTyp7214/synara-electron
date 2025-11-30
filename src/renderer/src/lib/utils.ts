@@ -7,6 +7,7 @@ import type { UUID } from "node:crypto";
 import type { Song } from "$shared/types/beApi";
 import type { OnNavigate } from "@sveltejs/kit";
 import type { MaybePromise } from "$lib/types";
+import type { SongLikedEventData } from "$lib/audio/queue";
 
 export function getImageUrl<K extends string | undefined>(
   imageId: K,
@@ -336,3 +337,45 @@ export const { isMac, isLinux, isWindows } = window.api ?? {
   isLinux: () => true,
   isWindows: () => false,
 };
+
+type CustomEventType<K extends keyof WindowEventMap> =
+  WindowEventMap[K] extends CustomEvent
+    ? WindowEventMap[K]["detail"]
+    : WindowEventMap[K];
+
+window.dispatchCustomEvent = function <
+  K extends keyof WindowEventMap,
+  T extends CustomEventType<K>,
+>(event: K, data?: T) {
+  window.dispatchEvent(new CustomEvent(event, data));
+};
+
+window.listenCustomEvent = function <K extends keyof WindowEventMap>(
+  key: K,
+  callback: (event: WindowEventMap[K]) => void,
+) {
+  window.addEventListener(key, callback);
+
+  return () => window.removeEventListener(key, callback);
+};
+
+declare global {
+  interface Window {
+    dispatchCustomEvent: <
+      K extends keyof WindowEventMap,
+      T extends CustomEventType<K>,
+    >(
+      event: K,
+      data?: T,
+    ) => void;
+    listenCustomEvent: <K extends keyof WindowEventMap>(
+      key: K,
+      callback: (event: WindowEventMap[K]) => void,
+    ) => () => void;
+  }
+  // noinspection JSUnusedGlobalSymbols
+  interface WindowEventMap {
+    songLiked: CustomEvent<SongLikedEventData>;
+    focusSearch: CustomEvent<Event>;
+  }
+}

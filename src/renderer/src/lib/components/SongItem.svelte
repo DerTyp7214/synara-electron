@@ -138,14 +138,10 @@
 
       if (updatedSong.isFavourite !== isFavourite) {
         songRef.isFavourite = updatedSong.isFavourite;
-        window.dispatchEvent(
-          new CustomEvent<SongLikedEventData>("songLiked", {
-            detail: {
-              songId: updatedSong.id,
-              isFavourite: updatedSong.isFavourite,
-            },
-          }),
-        );
+        window.dispatchCustomEvent("songLiked", {
+          songId: updatedSong.id,
+          isFavourite: updatedSong.isFavourite,
+        });
       }
     } catch (e) {
       debugLog("error", e);
@@ -191,9 +187,7 @@
   }
 
   onMount(() => {
-    window.addEventListener("songLiked", handleLikedSongEvent);
-
-    return () => window.removeEventListener("songLiked", handleLikedSongEvent);
+    return window.listenCustomEvent("songLiked", handleLikedSongEvent);
   });
 </script>
 
