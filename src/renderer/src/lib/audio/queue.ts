@@ -225,7 +225,7 @@ export class Queue implements Readable<QueueCallbackData> {
     if (index !== -1) {
       q[index] = song;
       if (refresh) this.queueStore.set(q);
-      else settings.queue.set(copy(q));
+      else if (this.writeToSettings) settings.queue.set(copy(q));
     }
   }
 

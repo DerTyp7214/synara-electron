@@ -179,3 +179,61 @@ export async function scrobble(song: LastFmSong) {
 
   return response.isOk();
 }
+
+type UserInfo = {
+  age: string;
+  album_count: string;
+  artist_count: string;
+  bootstrap: string;
+  country: string;
+  gender: string;
+  image: Array<{
+    size: "small" | "medium" | "large" | "extralarge";
+    "#text": string;
+  }>;
+  name: string;
+  playcount: string;
+  playlists: string;
+  realname: string;
+  registered: {
+    unixtime: string;
+    "#text": number;
+  };
+  subscriber: string;
+  track_count: string;
+  type: string;
+  url: string;
+};
+
+export async function getUserInfo(): Promise<UserInfo> {
+  const { apiKey } = get(settings.lastFmTokens);
+  const { key: sessionKey } = get(settings.lastFmSession);
+
+  if (!sessionKey || !apiKey) throw new Error();
+
+  const baseParams = removeUndefined({
+    method: "user.getInfo",
+    api_key: apiKey,
+    sk: sessionKey,
+  });
+
+  const apiSignature = getApiSignature(baseParams);
+
+  // @ts-expect-error in case of binding the function
+  const response = await apiCall.bind(this)<{
+    user: UserInfo;
+  }>({
+    method: "post",
+    host: apiEndpoint,
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    formBody: new URLSearchParams({
+      ...baseParams,
+      api_sig: apiSignature,
+      format: "json",
+    }),
+  });
+
+  return response.getData().then((response) => response.user);
+}

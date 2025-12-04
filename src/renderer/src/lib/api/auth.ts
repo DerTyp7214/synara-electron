@@ -1,5 +1,9 @@
 import { apiCall, refreshJwt } from "$lib/api/utils";
-import { ApiResponse, type TokenResponse } from "$lib/api/apiTypes";
+import {
+  ApiResponse,
+  type TokenResponse,
+  type UserInfo,
+} from "$lib/api/apiTypes";
 import { get, writable } from "svelte/store";
 import { isJwtValid } from "$lib/api/jwt";
 import { resolve } from "$app/paths";
@@ -54,4 +58,16 @@ export async function login(
   }
 
   return response;
+}
+
+export async function userInfo(): Promise<UserInfo> {
+  const response = await apiCall<UserInfo>({
+    path: "/userInfo",
+    method: "GET",
+    auth: true,
+    expectedStatus: 200,
+    expectedErrorStatus: 401,
+  });
+
+  return response.getData();
 }

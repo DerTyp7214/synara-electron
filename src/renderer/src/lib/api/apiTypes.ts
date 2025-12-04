@@ -50,3 +50,8 @@ export interface PagedResponse<T> {
   page: number;
   pageSize: number;
 }
+
+export interface UserInfo {
+  id: string;
+  username: string;
+}

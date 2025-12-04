@@ -6,6 +6,8 @@ export default {
 
     duration: "Duration",
 
+    logout: "Logout",
+
     songs: "Songs",
     "n-songs": "{{amount}} Songs",
     "songs.loadMore": "Load More",
@@ -21,6 +23,23 @@ export default {
     "setup.title": "Setup",
     "setup.submit": "Submit",
     "setup.apiAddress.placeholder": "Address (e.g. 127.0.0.1:8080)",
+
+    "settings.title": "Settings",
+    "settings.check": "Check",
+    "settings.apply": "Apply",
+
+    "settings.synara.session": "Session",
+    "settings.apiBase": "API Base",
+    "settings.lastFmApiKey": "API Key",
+    "settings.lastFmSharedSecret": "Shared Secret",
+    "settings.hideOnClose": "Hide on Close",
+    "settings.discordRpc": "Discord RPC",
+    "settings.lastFm": "LastFM",
+    "settings.lastFm.login": "Login",
+    "settings.lastFm.logout": "Logout",
+    "settings.lastFmSession": "LastFM Session",
+    "settings.cleanTitles": "Clean Titles",
+    "settings.downloadDir": "Download Directory",
 
     "login.title": "Login",
     "login.submit": "Login",

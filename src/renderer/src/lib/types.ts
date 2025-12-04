@@ -14,3 +14,7 @@ export type FormatGuid<S extends string> =
     : S;
 
 export type MaybePromise<T> = T | Promise<T>;
+
+export type TypedKeys<T, O> = {
+  [K in keyof T]: T[K] extends O ? K : never;
+}[keyof T];

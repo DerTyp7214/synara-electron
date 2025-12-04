@@ -26,7 +26,11 @@
   onNavigate(defaultNavigation);
 </script>
 
-<SvelteVirtualList {items} itemsClass="gap-2 flex flex-col p-8">
+<SvelteVirtualList
+  {items}
+  defaultEstimatedItemHeight={72}
+  itemsClass="gap-2 flex flex-col p-8"
+>
   {#snippet renderItem(item, index)}
     <SongItem
       {...item}

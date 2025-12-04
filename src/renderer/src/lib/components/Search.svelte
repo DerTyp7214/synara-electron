@@ -29,7 +29,7 @@
     <input
       bind:this={inputField}
       bind:value={query}
-      class="input border-secondary-950-50 focus-within:border-secondary-800-200 bg-surface-50-950/50 !m-0 border-2 ring-0 transition-colors"
+      class="custom-input"
       type="text"
       placeholder={$t("search.placeholder")}
     />

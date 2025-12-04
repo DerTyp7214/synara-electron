@@ -15,8 +15,7 @@ class OfflineHandler {
 
   constructor() {
     this.downloadDir =
-      store.get("downloadDirectory") ??
-      path.join(app.getPath("music"), "synara");
+      store.get("downloadDir") ?? path.join(app.getPath("music"), "synara");
     this.metadataDir = path.join(app.getPath("userData"), "offline/metadata");
 
     this.initialize();

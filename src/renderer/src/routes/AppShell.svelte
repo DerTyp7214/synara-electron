@@ -3,7 +3,7 @@
   import Logo from "$lib/components/Logo.svelte";
   import cn from "classnames";
   import { Menu } from "@lucide/svelte";
-  import { ChevronLeft } from "@jis3r/icons";
+  import { ChevronLeft, Cog } from "@jis3r/icons";
   import MediaPlayer from "$lib/components/MediaPlayer.svelte";
   import PlaylistList from "$lib/components/PlaylistList.svelte";
   import { t } from "$lib/i18n/i18n";
@@ -167,6 +167,18 @@
             {$t("songs.all")}
           </button>
           <LightSwitch />
+          <button
+            onclick={() => goto(resolve("/settings"))}
+            class={cn(
+              "ms-2 me-2",
+              "flex items-center justify-center",
+              "rounded-md p-2",
+              "transition-colors",
+              "hover:bg-surface-950-50/20",
+            )}
+          >
+            <Cog />
+          </button>
         </div>
       </div>
 

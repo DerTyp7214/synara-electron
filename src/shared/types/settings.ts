@@ -112,6 +112,7 @@ export const APP_SETTINGS_KEYS: Array<keyof AppSettings> = [
   "volume",
   "hideOnClose",
   "discordRpc",
+  "downloadDir",
   "audioVisualizer",
   "lastFm",
   "cleanTitles",
