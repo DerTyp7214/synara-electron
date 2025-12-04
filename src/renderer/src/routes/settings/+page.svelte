@@ -322,39 +322,41 @@
     {#if $settingsValues["lastFm"]}
       {@render textValue("lastFmApiKey", false, true)}
       {@render textValue("lastFmSharedSecret", false, true)}
-    {/if}
 
-    <span class="h4 mt-5">{$t("settings.lastFmSession")}</span>
-    {#if $lastFmSession.key}
-      {#await getUserInfo() then userInfo}
-        <div class="flex flex-row gap-2">
-          <Avatar class="rounded-base h-16 w-16">
-            <Avatar.Image src={userInfo.image.toReversed()[0]["#text"]} />
-            <Avatar.Fallback class="bg-tertiary-100-900">
-              {userInfo.name.toUpperCase().substring(0, 2)}
-            </Avatar.Fallback>
-          </Avatar>
-          <div class="flex flex-col">
-            <span class="h5">{userInfo.realname}</span>
-            <span>
-              {new Intl.NumberFormat().format(Number(userInfo.playcount) || 0)}
-            </span>
+      <span class="h4 mt-5">{$t("settings.lastFmSession")}</span>
+      {#if $lastFmSession.key}
+        {#await getUserInfo() then userInfo}
+          <div class="flex flex-row gap-2">
+            <Avatar class="rounded-base h-16 w-16">
+              <Avatar.Image src={userInfo.image.toReversed()[0]["#text"]} />
+              <Avatar.Fallback class="bg-tertiary-100-900">
+                {userInfo.name.toUpperCase().substring(0, 2)}
+              </Avatar.Fallback>
+            </Avatar>
+            <div class="flex flex-col">
+              <span class="h5">{userInfo.realname}</span>
+              <span>
+                {new Intl.NumberFormat().format(
+                  Number(userInfo.playcount) || 0,
+                )}
+              </span>
+            </div>
           </div>
-        </div>
+          <button
+            onclick={() => stores.lastFmSession.set({})}
+            class="btn preset-filled-error-200-800 me-auto"
+          >
+            {$t("settings.lastFm.logout")}
+          </button>
+        {/await}
+      {:else}
         <button
-          onclick={() => stores.lastFmSession.set({})}
-          class="btn preset-filled-error-200-800 me-auto"
+          onclick={() => lastFM.startAuthFlow()}
+          class="btn preset-filled-success-200-800 me-auto"
         >
-          {$t("settings.lastFm.logout")}
+          {$t("settings.lastFm.login")}
         </button>
-      {/await}
-    {:else}
-      <button
-        onclick={() => lastFM.startAuthFlow()}
-        class="btn preset-filled-success-200-800 me-auto"
-      >
-        {$t("settings.lastFm.login")}
-      </button>
+      {/if}
     {/if}
   </div>
 </div>
