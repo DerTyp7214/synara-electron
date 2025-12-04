@@ -14,7 +14,7 @@
   import { onMount } from "svelte";
   import { getUserInfo } from "$lib/api/lastFm";
   import lastFM from "$lib/audio/lastFM";
-  import { loggedIn, userInfo } from "$lib/api/auth";
+  import { userInfo } from "$lib/api/auth";
 
   const stores = {
     apiBase: settings.apiBase,

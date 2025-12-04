@@ -93,7 +93,7 @@ export const nullSong: Song & { position: number } = {
   discNumber: 0,
   explicit: false,
   fileSize: 0,
-  id: crypto.randomUUID().replaceAll("-", "") as UUID,
+  id: "00000000-0000-4000-a000-000000000000".replaceAll("-", "") as UUID,
   originalUrl: "",
   path: "",
   sampleRate: 0,
