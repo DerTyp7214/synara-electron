@@ -11,7 +11,7 @@ export async function getImageUrlBySong<K extends Song>(song: K) {
     width: number;
     height: number;
   }>({
-    path: `/sync/${service}/get/imageUrl/byTrackId/${trackId}`,
+    path: `/metadata/${service}/imageUrl/byTrackId/${trackId}`,
     method: "GET",
     auth: true,
   });
