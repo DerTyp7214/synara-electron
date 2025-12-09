@@ -231,9 +231,11 @@
     if ($showQueue) setTimeout(scrollIntoActiveSong, 100);
   });
 
-  function handleLikedSongEvent({
-    detail: { songId, isFavourite },
-  }: CustomEvent<SongLikedEventData>) {
+  function handleLikedSongEvent({ detail }: CustomEvent<SongLikedEventData>) {
+    if (!detail) return;
+
+    const { songId, isFavourite } = detail;
+
     if ($currentSong.id === songId)
       $currentQueue.updateSong({ ...$currentSong, isFavourite }, true);
   }

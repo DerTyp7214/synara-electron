@@ -115,9 +115,10 @@ export class Queue implements Readable<QueueCallbackData> {
 
     this.unsubscribers.push(
       (() => {
-        const handler = ({
-          detail: { songId, isFavourite },
-        }: CustomEvent<SongLikedEventData>) => {
+        const handler = ({ detail }: CustomEvent<SongLikedEventData>) => {
+          if (!detail) return;
+
+          const { songId, isFavourite } = detail ?? {};
           const queue = get(this.queueStore);
 
           const index = queue.findIndex((song) => song.id === songId);

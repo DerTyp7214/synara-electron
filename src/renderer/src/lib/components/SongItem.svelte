@@ -171,9 +171,11 @@
     };
   }
 
-  function handleLikedSongEvent({
-    detail: { songId, isFavourite },
-  }: CustomEvent<SongLikedEventData>) {
+  function handleLikedSongEvent({ detail }: CustomEvent<SongLikedEventData>) {
+    if (!detail) return;
+
+    const { songId, isFavourite } = detail;
+
     if (id === songId) {
       songRef.isFavourite = isFavourite;
 

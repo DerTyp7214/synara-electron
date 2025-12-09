@@ -17,7 +17,7 @@ import {
 import { mediaSession } from "$lib/audio/mediaSession";
 import { playBackStateToMediaSessionState } from "$lib/audio/utils";
 import type { SettingsAPI } from "$shared/types/settings";
-import { getImageUrlBySong } from "$lib/api/sync";
+import { getImageUrlBySong } from "$lib/api/metadata";
 
 declare global {
   // noinspection JSUnusedGlobalSymbols
@@ -228,7 +228,7 @@ class ElectronController {
       if (this.lastImageUrl.id !== metadata.trackId) {
         this.lastImageUrl.loading = true;
         const imageUrl = await getImageUrlBySong(song)
-          .then((image) => image.url)
+          .then((image) => image?.url ?? null)
           .catch(() => null);
         this.lastImageUrl.loading = false;
         this.lastImageUrl.id = metadata.trackId;
