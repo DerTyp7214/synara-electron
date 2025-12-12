@@ -156,7 +156,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.SYNARA_GITHUB_TOKEN }}
 
-
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
