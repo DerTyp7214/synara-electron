@@ -69,7 +69,7 @@ jobs:
         if: matrix.build == 'linux'
         run: |
           sudo apt update
-          sudo apt install -y --install-recommends bsdtar
+          sudo apt install -y --install-recommends libarchive-tools
 
       - name: Install Dependencies and sync svelte-kit
         shell: bash
