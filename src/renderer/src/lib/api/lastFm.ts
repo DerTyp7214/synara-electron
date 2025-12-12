@@ -1,11 +1,11 @@
 // noinspection DuplicatedCode
 
-import { settings } from "$lib/settings";
+import { settings } from "$lib/utils/settings";
 import { get } from "svelte/store";
 import { Md5 } from "ts-md5";
 import { apiCall } from "$lib/api/utils";
 import type { LastFmSong } from "$shared/types/settings";
-import { removeUndefined } from "$lib/utils";
+import { removeUndefined } from "$lib/utils/utils";
 
 const apiEndpoint = "http://ws.audioscrobbler.com/2.0/";
 

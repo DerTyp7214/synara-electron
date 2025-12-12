@@ -8,7 +8,7 @@
     type PlayingSource,
     PlayingSourceType,
   } from "$shared/types/settings";
-  import { defaultNavigation } from "$lib/utils";
+  import { defaultNavigation } from "$lib/utils/utils";
   import { onNavigate } from "$app/navigation";
 
   const playingSource: PlayingSource = {

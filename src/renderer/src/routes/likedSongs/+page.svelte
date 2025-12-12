@@ -8,9 +8,9 @@
     type PlayingSource,
     PlayingSourceType,
   } from "$shared/types/settings";
-  import { defaultNavigation } from "$lib/utils";
+  import { defaultNavigation } from "$lib/utils/utils";
   import { onNavigate } from "$app/navigation";
-  import { debugLog } from "$lib/logger";
+  import { debugLog } from "$lib/utils/logger";
 
   const playingSource: PlayingSource = {
     type: PlayingSourceType.LikedSongs,

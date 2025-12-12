@@ -1,7 +1,7 @@
 <script lang="ts" generics="T">
   import { onMount, type Snippet, tick } from "svelte";
   import type { PagedResponse } from "$lib/api/apiTypes";
-  import { debugLog } from "$lib/logger";
+  import { debugLog } from "$lib/utils/logger";
   import cn from "classnames";
 
   type LoadFunction = (

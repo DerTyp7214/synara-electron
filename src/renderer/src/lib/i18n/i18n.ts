@@ -1,6 +1,6 @@
 import translations from "$lib/i18n/translations";
 import { derived, get, writable } from "svelte/store";
-import { settings } from "$lib/settings";
+import { settings } from "$lib/utils/settings";
 
 type PartialRecord<K extends PropertyKey, T> = {
   [P in K]?: T;

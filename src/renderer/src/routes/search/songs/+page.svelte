@@ -10,7 +10,7 @@
   } from "$shared/types/settings";
   import { ArrowLeft } from "@jis3r/icons";
   import { onNavigate } from "$app/navigation";
-  import { defaultNavigation } from "$lib/utils";
+  import { defaultNavigation } from "$lib/utils/utils";
 
   const playingSource: PlayingSource = {
     type: PlayingSourceType.LikedSongs,

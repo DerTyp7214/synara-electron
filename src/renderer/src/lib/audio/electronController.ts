@@ -1,5 +1,10 @@
 import { type Song } from "$lib/api/songs";
-import { getImageUrl, getStreamUrl, idToUuid, uuidToId } from "$lib/utils";
+import {
+  getImageUrl,
+  getStreamUrl,
+  idToUuid,
+  uuidToId,
+} from "$lib/utils/utils";
 import { isElectron } from "$lib/consts";
 import type { ElectronAPI } from "@electron-toolkit/preload";
 import type { MediaInfo } from "$shared/models/mediaInfo";
@@ -7,13 +12,13 @@ import type { CustomApi, MprisEventData } from "$shared/types/api";
 import { PlaybackStatus } from "$shared/models/playbackStatus";
 import type { RepeatMode } from "$shared/models/repeatMode";
 import { get } from "svelte/store";
-import { scopedDebugLog, scopeStyle } from "$lib/logger";
+import { scopedDebugLog, scopeStyle } from "$lib/utils/logger";
 import { audioSession } from "$lib/audio/audioSession";
 import {
   playAlbumById,
   playPlaylistById,
   playSongById,
-} from "$lib/mediaPlayer";
+} from "$lib/utils/mediaPlayer";
 import { mediaSession } from "$lib/audio/mediaSession";
 import { playBackStateToMediaSessionState } from "$lib/audio/utils";
 import type { SettingsAPI } from "$shared/types/settings";

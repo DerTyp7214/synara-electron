@@ -1,4 +1,4 @@
-import { scopedDebugLog, scopeStyle } from "$lib/logger";
+import { scopedDebugLog, scopeStyle } from "$lib/utils/logger";
 import type { PartialRecord } from "$lib/types";
 import { mediaSession } from "$lib/audio/mediaSession";
 

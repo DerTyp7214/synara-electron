@@ -1,10 +1,16 @@
-import { settings, settingsService } from "$lib/settings";
+import { settings, settingsService } from "$lib/utils/settings";
 import type { Song, SongWithPosition } from "$shared/types/beApi";
 import { type LastFmSong, nullSong } from "$shared/types/settings";
-import { get, type Unsubscriber, writable } from "svelte/store";
+import {
+  get,
+  readonly,
+  type Unsubscriber,
+  type Writable,
+  writable,
+} from "svelte/store";
 import { mediaSession, MediaSession } from "$lib/audio/mediaSession";
-import { scopedDebugLog, scopeStyle } from "$lib/logger";
-import { sleep } from "$lib/utils";
+import { scopedDebugLog, scopeStyle } from "$lib/utils/logger";
+import { sleep } from "$lib/utils/utils";
 import {
   getRequestToken,
   getSessionKey,
@@ -192,6 +198,8 @@ class LastFM {
   private songTimeoutStartTime: number = 0;
   private songTimeoutEndTime: number = 0;
 
+  private scrobbled: Writable<boolean> = writable(false);
+
   private songTimer(song: Song, paused: boolean = get(mediaSession.paused)) {
     if (!song || paused) {
       scopedDebugLog(
@@ -245,9 +253,11 @@ class LastFM {
       "cleared",
       this.songTimeout,
     );
+    this.scrobbled.set(false);
     this.songTimeout = setTimeout(
       (song) => {
         if (song.id === get(this.currentSong)?.id) {
+          this.scrobbled.set(true);
           void this.addSongToScrobbleQueue(song);
 
           this.songTimeoutStartTime = Date.now();
@@ -257,6 +267,10 @@ class LastFM {
       runTime,
       song,
     );
+  }
+
+  public hasScrobbled() {
+    return readonly(this.scrobbled);
   }
 
   private async runScrobbleQueue() {

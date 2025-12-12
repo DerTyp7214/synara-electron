@@ -2,10 +2,10 @@
   import { listPlaylists, type Playlist } from "$lib/api/playlists.js";
   import PlaylistItem from "$lib/components/PlaylistItem.svelte";
   import { t } from "$lib/i18n/i18n.js";
-  import { debugLog } from "$lib/logger";
+  import { debugLog } from "$lib/utils/logger";
   import { onMount } from "svelte";
   import Spinner from "$lib/components/Spinner.svelte";
-  import { getImageUrl } from "$lib/utils.js";
+  import { getImageUrl } from "$lib/utils/utils";
 
   let isLoading = $state(false);
   let hasNextPage = $state(true);

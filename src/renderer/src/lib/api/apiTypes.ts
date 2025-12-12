@@ -1,4 +1,4 @@
-import { scopedDebugLog } from "$lib/logger";
+import { scopedDebugLog } from "$lib/utils/logger";
 
 export class ApiResponse<T> {
   private readonly status: number;

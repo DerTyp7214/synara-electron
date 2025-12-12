@@ -10,9 +10,9 @@
   import { onMount } from "svelte";
   import type { Service } from "bonjour-service";
   import { health } from "$lib/api/main";
-  import { settings } from "$lib/settings";
+  import { settings } from "$lib/utils/settings";
   import { get } from "svelte/store";
-  import { defaultNavigation } from "$lib/utils";
+  import { defaultNavigation } from "$lib/utils/utils";
 
   let apiAddress: string = $state(get(settings.apiBase) ?? "");
   let errorMessage = $state("");

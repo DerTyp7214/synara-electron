@@ -8,7 +8,7 @@
   import { login } from "$lib/api/auth";
   import { goto, onNavigate } from "$app/navigation";
   import { resolve } from "$app/paths";
-  import { defaultNavigation, isMac } from "$lib/utils";
+  import { defaultNavigation, isMac } from "$lib/utils/utils";
 
   let username = $state("");
   let password = $state("");

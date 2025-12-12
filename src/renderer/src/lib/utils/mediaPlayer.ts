@@ -13,7 +13,7 @@ import {
 import { type PlayingSource, PlayingSourceType } from "$shared/types/settings";
 import { Queue } from "$lib/audio/queue";
 import { get } from "svelte/store";
-import { settings } from "$lib/settings";
+import { settings } from "$lib/utils/settings";
 import type { Artist, SongWithPosition } from "$shared/types/beApi";
 import { listSongsByArtist } from "$lib/api/artists";
 

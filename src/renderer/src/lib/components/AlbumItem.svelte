@@ -8,12 +8,12 @@
   import { mediaSession } from "$lib/audio/mediaSession";
   import { PlayingSourceType } from "$shared/types/settings";
   import { openContextMenu } from "$lib/contextMenu/store.svelte";
-  import { addToQueue, playAlbum, playNext } from "$lib/mediaPlayer";
+  import { addToQueue, playAlbum, playNext } from "$lib/utils/mediaPlayer";
   import { getContext } from "svelte";
   import { TOAST_CONTEXT_KEY, type ToasterContext } from "$lib/consts";
   import type { Album, Artist, Song } from "$shared/types/beApi";
   import { listSongsByAlbum } from "$lib/api/albums";
-  import { copy } from "$lib/utils";
+  import { copy } from "$lib/utils/utils";
   import type { PagedResponse } from "$lib/api/apiTypes";
 
   const {

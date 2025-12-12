@@ -1,4 +1,4 @@
-import { scopedDebugLog } from "$lib/logger";
+import { scopedDebugLog } from "$lib/utils/logger";
 import { apiLogScope } from "$lib/api/utils";
 
 interface TokenPayload {

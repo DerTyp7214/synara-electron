@@ -3,7 +3,7 @@ import {
   type Settings as AppSettings,
   SETTINGS_KEYS,
 } from "$shared/types/settings";
-import { scopedDebugLog, scopeStyle } from "$lib/logger";
+import { scopedDebugLog, scopeStyle } from "$lib/utils/logger";
 import { tick } from "svelte";
 import { DEFAULT_SETTINGS } from "$shared/settings";
 

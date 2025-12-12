@@ -6,10 +6,10 @@
   import { goto } from "$app/navigation";
   import { resolve } from "$app/paths";
   import { health } from "$lib/api/main.js";
-  import { settings, settingsService } from "$lib/settings";
+  import { settings, settingsService } from "$lib/utils/settings";
   import Spinner from "$lib/components/Spinner.svelte";
   import ContextMenuManager from "$lib/contextMenu/ContextMenuManager.svelte";
-  import { isLinux, isMac, isWindows } from "$src/lib/utils";
+  import { isLinux, isMac, isWindows } from "$lib/utils/utils";
   import cn from "classnames";
   import { createToaster, Toast } from "@skeletonlabs/skeleton-svelte";
   import { setContext } from "svelte";

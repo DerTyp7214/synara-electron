@@ -10,7 +10,7 @@
   import { queryPlaylists } from "$lib/api/playlists";
   import PlaylistItem from "$lib/components/PlaylistItem.svelte";
   import ArtistItem from "$lib/components/ArtistItem.svelte";
-  import { defaultNavigation, getImageUrl } from "$lib/utils";
+  import { defaultNavigation, getImageUrl } from "$lib/utils/utils";
   import AlbumItem from "$lib/components/AlbumItem.svelte";
   import { goto, onNavigate } from "$app/navigation";
   import { resolve } from "$app/paths";

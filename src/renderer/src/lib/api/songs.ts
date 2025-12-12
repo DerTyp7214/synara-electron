@@ -2,7 +2,7 @@ import { apiCall, queryApi } from "$lib/api/utils";
 import type { PagedResponse } from "$lib/api/apiTypes";
 import type { Song } from "$shared/types/beApi";
 import { get } from "svelte/store";
-import { settings } from "$lib/settings";
+import { settings } from "$lib/utils/settings";
 
 export { type Song };
 

@@ -5,8 +5,8 @@ import {
   type PagedResponse,
   type TokenResponse,
 } from "$lib/api/apiTypes";
-import { scopedDebugLog, scopeStyle } from "$lib/logger";
-import { settings } from "$lib/settings";
+import { scopedDebugLog, scopeStyle } from "$lib/utils/logger";
+import { settings } from "$lib/utils/settings";
 import type { Album, Artist, Playlist, Song } from "$shared/types/beApi";
 import { checkLogin } from "$lib/api/auth";
 

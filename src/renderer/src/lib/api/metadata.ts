@@ -1,6 +1,6 @@
 import type { Song } from "$shared/types/beApi";
 import { apiCall } from "$lib/api/utils";
-import { getOrigin, getOriginalTrackId } from "$lib/utils";
+import { getOrigin, getOriginalTrackId } from "$lib/utils/utils";
 
 export async function getImageUrlBySong<K extends Song>(song: K) {
   if (await supportsImageCache()) {

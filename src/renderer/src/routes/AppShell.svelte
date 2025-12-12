@@ -11,7 +11,7 @@
   import LikedSongsBg from "$lib/assets/LikedSongsBg.svelte";
   import { goto } from "$app/navigation";
   import { resolve } from "$app/paths";
-  import { isMac, nativeFullscreen } from "$lib/utils";
+  import { isMac, nativeFullscreen } from "$lib/utils/utils";
   import { onMount, type Snippet } from "svelte";
   import Search from "$lib/components/Search.svelte";
   import { type Writable, writable } from "svelte/store";

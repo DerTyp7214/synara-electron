@@ -1,6 +1,6 @@
 import { audioSession } from "$lib/audio/audioSession";
 import { getContentLength, type Song } from "$lib/api/songs";
-import { getStreamUrl, roundRect } from "$lib/utils";
+import { getStreamUrl, roundRect } from "$lib/utils/utils";
 import {
   derived,
   get,
@@ -16,7 +16,7 @@ import { RepeatMode } from "$shared/models/repeatMode";
 import { PlaybackStatus } from "$shared/models/playbackStatus";
 import type { PagedResponse } from "$lib/api/apiTypes";
 import { loggedIn } from "$lib/api/auth";
-import { settings, settingsService } from "$lib/settings";
+import { settings, settingsService } from "$lib/utils/settings";
 import { Queue } from "$lib/audio/queue";
 import type { UUID } from "node:crypto";
 import { nullSong } from "$shared/types/settings";

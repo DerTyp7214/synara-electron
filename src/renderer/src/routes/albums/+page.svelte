@@ -4,11 +4,11 @@
   import type { PagedResponse } from "$lib/api/apiTypes";
   import type { Song } from "$lib/api/songs";
   import { type Album, byId, listSongsByAlbum } from "$lib/api/albums";
-  import { defaultNavigation, getImageUrl } from "$lib/utils";
+  import { defaultNavigation, getImageUrl } from "$lib/utils/utils";
   import { t } from "$lib/i18n/i18n";
-  import { millisecondsToHumanReadable } from "$lib/utils.js";
+  import { millisecondsToHumanReadable } from "$lib/utils/utils";
   import { Play, Shuffle } from "@lucide/svelte";
-  import { playAlbum } from "$lib/mediaPlayer";
+  import { playAlbum } from "$lib/utils/mediaPlayer";
   import InfiniteScroll from "$lib/components/InfiniteScroll.svelte";
   import SongItem from "$lib/components/SongItem.svelte";
   import Spinner from "$lib/components/Spinner.svelte";

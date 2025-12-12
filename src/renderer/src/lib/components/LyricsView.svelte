@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { timecodeToMilliseconds } from "$lib/utils.js";
+  import { timecodeToMilliseconds } from "$lib/utils/utils";
   import cn from "classnames";
   import { onMount } from "svelte";
 

@@ -10,11 +10,11 @@
     getOrigin,
     millisecondsToHumanReadable,
     SongOrigin,
-  } from "$lib/utils";
+  } from "$lib/utils/utils";
   import cn from "classnames";
   import { resolve } from "$app/paths";
   import ToolTip from "$lib/components/ToolTip.svelte";
-  import { addToQueue, playNext, playSong } from "$lib/mediaPlayer";
+  import { addToQueue, playNext, playSong } from "$lib/utils/mediaPlayer";
   import Explicit from "$lib/assets/Explicit.svelte";
   import { mediaSession } from "$lib/audio/mediaSession";
   import { type PlayingSource } from "$shared/types/settings";
@@ -29,8 +29,8 @@
   import type { SongWithPosition } from "$shared/types/beApi";
   import { goto } from "$app/navigation";
   import { get, type Writable } from "svelte/store";
-  import dayjs from "$lib/dayJsUtils";
-  import { debugLog } from "$lib/logger";
+  import dayjs from "$lib/utils/dayJsUtils";
+  import { debugLog } from "$lib/utils/logger";
   import type { SongLikedEventData } from "$lib/audio/queue";
 
   let {

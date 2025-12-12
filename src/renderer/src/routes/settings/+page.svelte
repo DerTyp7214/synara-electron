@@ -1,11 +1,11 @@
 <script lang="ts">
   import { Avatar } from "@skeletonlabs/skeleton-svelte";
   import { onNavigate } from "$app/navigation";
-  import { copy, defaultNavigation } from "$lib/utils";
+  import { copy, defaultNavigation } from "$lib/utils/utils";
   import { Check, TriangleAlert, EyeOff } from "@jis3r/icons";
   import { Eye } from "@lucide/svelte";
   import { t } from "$lib/i18n/i18n";
-  import { settings } from "$lib/settings";
+  import { settings } from "$lib/utils/settings";
   import { type Writable, writable } from "svelte/store";
   import type { PartialRecord, TypedKeys } from "$lib/types";
   import { health } from "$lib/api/main";

@@ -9,7 +9,7 @@ import { isJwtValid } from "$lib/api/jwt";
 import { resolve } from "$app/paths";
 import { goto } from "$app/navigation";
 import { health } from "$lib/api/main";
-import { settings } from "$lib/settings";
+import { settings } from "$lib/utils/settings";
 
 export const loggedIn = writable<boolean>(false);
 

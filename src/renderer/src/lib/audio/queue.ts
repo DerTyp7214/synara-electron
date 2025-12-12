@@ -8,13 +8,13 @@ import {
 import { type Song, songById } from "$lib/api/songs";
 import { RepeatMode } from "$shared/models/repeatMode";
 import { nullSong } from "$shared/types/settings";
-import { settings } from "$lib/settings";
+import { settings } from "$lib/utils/settings";
 import type { UUID } from "node:crypto";
 import { audioSession } from "$lib/audio/audioSession";
 import { mediaSession } from "$lib/audio/mediaSession";
-import { copy, invertArray } from "$lib/utils";
+import { copy, invertArray } from "$lib/utils/utils";
 import type { SongWithPosition } from "$shared/types/beApi";
-import { scopeStyle } from "$lib/logger";
+import { scopeStyle } from "$lib/utils/logger";
 
 export interface SongLikedEventData {
   songId: Song["id"];

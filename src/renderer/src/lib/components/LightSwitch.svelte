@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Switch } from "@skeletonlabs/skeleton-svelte";
-  import { settings } from "$lib/settings";
+  import { settings } from "$lib/utils/settings";
 
   const theme = $derived(settings.theme);
   let checked = $derived($theme === "dark");

@@ -3,6 +3,8 @@
   import { Avatar } from "@skeletonlabs/skeleton-svelte";
   import {
     ArrowUp,
+    Heart,
+    HeartPlus,
     ListMusic,
     MicVocal,
     Play,
@@ -13,23 +15,23 @@
     Volume1,
     Volume2,
     VolumeX,
-    Heart,
-    HeartPlus,
+    CircleCheck,
+    CircleDivide,
   } from "@lucide/svelte";
-  import { Minimize, Maximize, AudioLines, ChevronUp } from "@jis3r/icons";
+  import { AudioLines, ChevronUp, Maximize, Minimize } from "@jis3r/icons";
   import cn from "classnames";
   import { onMount, setContext } from "svelte";
   import {
     createResizeListener,
-    getImageUrl,
-    millisecondsToHumanReadable,
     fullscreen,
-    nativeFullscreen,
-    isMac,
+    getImageUrl,
     globalKeydown,
-  } from "$lib/utils";
+    isMac,
+    millisecondsToHumanReadable,
+    nativeFullscreen,
+  } from "$lib/utils/utils";
   import { resolve } from "$app/paths";
-  import { Explicit, SkipBack, SkipForward, Pause } from "$lib/assets";
+  import { Explicit, Pause, SkipBack, SkipForward } from "$lib/assets";
   import { t } from "$lib/i18n/i18n";
   import Slider from "$lib/components/Slider.svelte";
   import { audioSession } from "$lib/audio/audioSession";
@@ -44,12 +46,16 @@
   import { setLiked, type Song } from "$lib/api/songs";
   import { MEDIA_PLAYER_CONTEXT_KEY } from "$lib/consts";
   import {
+    generateOklchScale,
     getColorCssVars,
     imageColors as derivedImageColors,
   } from "$lib/color/utils";
-  import { debugLog } from "$lib/logger";
+  import { debugLog } from "$lib/utils/logger";
   import type { SongLikedEventData } from "$lib/audio/queue";
-  import { goto } from "$app/navigation";
+  import lastFM from "$lib/audio/lastFM";
+  import { settings } from "$lib/utils/settings";
+  import PartivleEmitter from "$lib/components/PartivleEmitter.svelte";
+  import { windowDimensions } from "$lib/utils/windowStore";
 
   let {
     isOpen = writable(false),
@@ -79,7 +85,9 @@
   const currentSong = $derived($currentQueue?.currentSong);
   const repeatMode = $derived(mediaSession.repeatMode);
   const sampleRate = $derived(mediaSession.sampleRate);
+  const hasScrobbled = $derived(lastFM.hasScrobbled());
   const shuffled = $derived(mediaSession.shuffled);
+  const lastFmEnabled = $derived(settings.lastFm);
   const isPaused = $derived(mediaSession.paused);
   const bitrate = $derived(mediaSession.bitrate);
   const muted = $derived(mediaSession.muted);
@@ -165,6 +173,7 @@
   ];
 
   let togglingFavourite = $state(false);
+
   async function toggleFavourite() {
     if (togglingFavourite) return;
     togglingFavourite = true;
@@ -426,12 +435,26 @@
         },
       )}
     >
+      {#if $isOpen}
+        <PartivleEmitter
+          class={cn("absolute top-0 left-0 z-20 h-screen w-screen")}
+          colors={$imageColors}
+          yOffset={-($windowDimensions.height * 0.0475)}
+          velocityMultiplier={($bassAmplitude / 255) * 2}
+          emissionRate={Math.exp($bassAmplitude / 255) * 1.2}
+          startOffset={Math.min(
+            $windowDimensions.width * 0.8,
+            $windowDimensions.height * 0.4,
+          ) - 10}
+        />
+      {/if}
       <img
         src={getImageUrl($currentSong.coverId)}
         alt="cover"
+        style="width: min(80vw, 40vh); height: min(80vw, 40vh);"
         class={cn(
           "transition-all duration-75",
-          "aspect-square h-[40vh] min-w-[40vh]",
+          "z-30 aspect-square",
           "rounded-container overflow-hidden",
           {
             "max-h-0 opacity-0": !$isOpen,
@@ -443,7 +466,7 @@
         class={cn(
           "h-[20vh] w-11/12 transition-all",
           "absolute right-auto bottom-0 left-auto",
-          "overflow-hidden",
+          "z-30 overflow-hidden",
           {
             "max-h-0": !$isOpen || !showVisualizer,
             "max-h-[20vh]": $isOpen && showVisualizer,
@@ -521,7 +544,7 @@
       "z-20 flex",
       "max-h-24 min-h-24 w-full",
       "items-center gap-2 p-4",
-      "select-none",
+      "relative select-none",
       {
         "opacity-30 transition-opacity duration-500 hover:opacity-100": $isOpen,
       },
@@ -750,5 +773,14 @@
         onValueChanged={(value) => mediaSession.volume.set(value)}
       />
     </div>
+    {#if $lastFmEnabled}
+      <div class="absolute right-2 bottom-2">
+        {#if $hasScrobbled}
+          <CircleCheck class="text-success-700-300" size="12" />
+        {:else}
+          <CircleDivide class="text-surface-contrast-300-700" size="12" />
+        {/if}
+      </div>
+    {/if}
   </div>
 </footer>

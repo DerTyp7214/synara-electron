@@ -1,8 +1,8 @@
 import ColorThief, { type RGBColor } from "colorthief";
 import type { Song } from "$shared/types/beApi";
 import { derived, type Readable } from "svelte/store";
-import { getImageUrl } from "$lib/utils";
-import { rgbToOklch } from "$lib/color/converters";
+import { getImageUrl } from "$lib/utils/utils";
+import { oklchToRgb, rgbToOklch } from "$lib/color/converters";
 
 export async function getColorPalette(imageUrl?: string) {
   if (!imageUrl) return [[-1, -1, -1]] as RGBColor[];
@@ -36,13 +36,16 @@ export function imageColors(song: Readable<Song>): Readable<Array<RGBColor>> {
 }
 
 type IntervalType = Record<
-  number,
+  50 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 950,
   {
     L_delta: number;
     C_target: number;
     H_shift: number;
   }
 >;
+
+export type OKLCHColor = [number, number, number];
+export type OKLabColor = [number, number, number];
 
 export const targetScaleIntervals: IntervalType = {
   50: { L_delta: 48.82, C_target: 0.05, H_shift: 3.9 },
@@ -58,14 +61,29 @@ export const targetScaleIntervals: IntervalType = {
   950: { L_delta: -7.66, C_target: 0.13, H_shift: -5.11 },
 };
 
+export function transformColor(
+  input: RGBColor,
+  shade: keyof IntervalType,
+): RGBColor {
+  const [baseL, _, baseH] = rgbToOklch(input);
+
+  const H_800_ref = 296.27;
+
+  const L = baseL + targetScaleIntervals[shade].L_delta;
+  const C = targetScaleIntervals[shade].C_target;
+  const H = baseH + targetScaleIntervals[shade].H_shift * (baseH / H_800_ref);
+
+  return oklchToRgb([L, C, H]);
+}
+
 export function generateOklchScale(
-  [r, g, b]: RGBColor,
+  color: RGBColor,
   colorName: string = "secondary",
   intervals: IntervalType = targetScaleIntervals,
 ) {
   const scale: Record<string, string> = {};
 
-  const [baseL, _, baseH] = rgbToOklch(r, g, b);
+  const [baseL, _, baseH] = rgbToOklch(color);
 
   const H_800_ref = 296.27;
 

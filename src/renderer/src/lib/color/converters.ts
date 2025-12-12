@@ -1,4 +1,6 @@
-import { debugLog } from "$lib/logger";
+import { debugLog } from "$lib/utils/logger";
+import type { OKLabColor, OKLCHColor } from "$lib/color/utils";
+import type { RGBColor } from "colorthief";
 
 /**
  * @param {number} c Value from 0 to 1 (R, G, or B)
@@ -32,7 +34,7 @@ export function linearRgbToXyz(r: number, g: number, b: number): number[] {
  * @param {number} z
  * @returns {number[]} [L, a, b]
  */
-export function xyzToOkLab(x: number, y: number, z: number): number[] {
+export function xyzToOkLab(x: number, y: number, z: number): OKLabColor {
   // XYZ to LMS (D65) transformation
   const lmsL = x * 0.8189022 + y * 0.3618413 + z * -0.124081;
   const lmsM = x * 0.0329813 + y * 0.9215505 + z * 0.0457684;
@@ -58,7 +60,7 @@ export function xyzToOkLab(x: number, y: number, z: number): number[] {
  * @param {number} b OKLab b-axis
  * @returns {number[]} [L, C, H]
  */
-export function okLabToOklch(L: number, a: number, b: number): number[] {
+export function okLabToOklch([L, a, b]: OKLabColor): OKLCHColor {
   const C = Math.sqrt(a * a + b * b);
   let H = Math.atan2(b, a) * (180 / Math.PI);
 
@@ -78,7 +80,7 @@ export function okLabToOklch(L: number, a: number, b: number): number[] {
  * @param {number} b Blue (0-255)
  * @returns {number[]} [L, C, H]
  */
-export function rgbToOklch(r: number, g: number, b: number): number[] {
+export function rgbToOklch([r, g, b]: RGBColor): OKLCHColor {
   // Normalize to 0-1 range
   const nr = r / 255;
   const ng = g / 255;
@@ -93,10 +95,44 @@ export function rgbToOklch(r: number, g: number, b: number): number[] {
   const [x, y, z] = linearRgbToXyz(lr, lg, lb);
 
   // 3. XYZ to OKLab
-  const [okl, oka, okb] = xyzToOkLab(x, y, z);
+  const okLab = xyzToOkLab(x, y, z);
 
   // 4. OKLab to OKLCH
-  return okLabToOklch(okl, oka, okb);
+  return okLabToOklch(okLab);
+}
+
+export function oklchToRgb([L, C, H]: OKLCHColor): RGBColor {
+  // 1. OKLCH to OKLab (Cartesian coordinates)
+  const L_okl = L / 100; // Scale L from 0-100% to 0-1
+  const H_rad = H * (Math.PI / 180); // Convert Hue to radians
+
+  const a = C * Math.cos(H_rad);
+  const b = C * Math.sin(H_rad);
+
+  // 2. OKLab L, M, S (pre-non-linearity)
+  const L_ = L_okl + 0.39633779 * a + 0.21580375 * b;
+  const M_ = L_okl - 0.10556135 * a - 0.06385417 * b;
+  const S_ = L_okl - 0.08948418 * a - 1.29148554 * b;
+
+  // 3. Revert non-linearity (cube)
+  const L_cube = L_ * L_ * L_;
+  const M_cube = M_ * M_ * M_;
+  const S_cube = S_ * S_ * S_;
+
+  // 4. L, M, S to Linear sRGB
+  const r_lin = 4.07674166 * L_cube - 3.30771165 * M_cube + 0.23097 * S_cube;
+  const g_lin = -1.268438 * L_cube + 2.6097574 * M_cube - 0.34131939 * S_cube;
+  const b_lin = -0.004196 * L_cube - 0.70341861 * M_cube + 1.707629 * S_cube;
+
+  // 5. Linear sRGB to sRGB (gamma correction + clamping)
+  const [r_srgb, g_srgb, b_srgb] = [r_lin, g_lin, b_lin].map((v) => {
+    const val =
+      v <= 0.0031308 ? v * 12.92 : 1.055 * Math.pow(v, 1 / 2.4) - 0.055;
+    // Clamp and scale to 0-255
+    return Math.round(Math.max(0, Math.min(255, val * 255)));
+  });
+
+  return [r_srgb, g_srgb, b_srgb];
 }
 
 /**
@@ -224,6 +260,19 @@ export function sortedByLightness(
 ): [string, string] {
   const lA = parseOklch(colorA)?.l;
   const lB = parseOklch(colorB)?.l;
+
+  if (!lA || !lB) return [colorA, colorB];
+
+  if (lA > lB) return [colorA, colorB];
+  return [colorB, colorA];
+}
+
+export function sortedByLightnessOklch(
+  colorA: OKLCHColor,
+  colorB: OKLCHColor,
+): [OKLCHColor, OKLCHColor] {
+  const lA = colorA[0];
+  const lB = colorB[0];
 
   if (!lA || !lB) return [colorA, colorB];
 

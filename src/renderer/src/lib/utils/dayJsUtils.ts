@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import localizedFormat from "dayjs/plugin/localizedFormat";
-import { debugLog } from "$lib/logger";
+import { debugLog } from "$lib/utils/logger";
 
 const localeModules = import.meta.glob("/node_modules/dayjs/locale/*.js");
 

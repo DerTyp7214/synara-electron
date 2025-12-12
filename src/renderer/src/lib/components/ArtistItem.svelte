@@ -7,7 +7,7 @@
   import { mediaSession } from "$lib/audio/mediaSession";
   import { PlayingSourceType } from "$shared/types/settings";
   import { openContextMenu } from "$lib/contextMenu/store.svelte";
-  import { playNext } from "$lib/mediaPlayer";
+  import { playNext } from "$lib/utils/mediaPlayer";
   import { getContext } from "svelte";
   import { TOAST_CONTEXT_KEY, type ToasterContext } from "$lib/consts";
   import type { Artist } from "$shared/types/beApi";

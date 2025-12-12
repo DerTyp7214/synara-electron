@@ -1,5 +1,5 @@
 import { apiCall } from "$lib/api/utils";
-import { debugLog } from "$lib/logger";
+import { debugLog } from "$lib/utils/logger";
 
 export async function health(
   customHost?: string | null,

@@ -2,7 +2,7 @@
 
 import { getApiUrl } from "$lib/api/utils";
 import { readable } from "svelte/store";
-import { debugLog } from "$lib/logger";
+import { debugLog } from "$lib/utils/logger";
 import type { UUID } from "node:crypto";
 import type { Song } from "$shared/types/beApi";
 import type { OnNavigate } from "@sveltejs/kit";
