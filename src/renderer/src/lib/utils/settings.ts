@@ -6,6 +6,7 @@ import {
 import { scopedDebugLog, scopeStyle } from "$lib/utils/logger";
 import { tick } from "svelte";
 import { DEFAULT_SETTINGS } from "$shared/settings";
+import { copy } from "$lib/utils/utils";
 
 type SettingStores = {
   [K in keyof AppSettings]: Writable<AppSettings[K]>;
@@ -30,7 +31,7 @@ class Settings {
 
       store.subscribe((value) => {
         try {
-          if (value !== null) this.set(key, structuredClone(value) as never);
+          if (value !== null) void this.set(key, copy(value) as never);
         } catch (e) {
           scopedDebugLog(
             "error",
@@ -84,10 +85,10 @@ class Settings {
     this.loaded.set(true);
   }
 
-  private set<K extends keyof AppSettings>(
+  private async set<K extends keyof AppSettings>(
     key: K,
     value: AppSettings[K],
-  ): void {
+  ) {
     if (window.api) return window.api.set(key, value);
     else this.setLocalStorage(key, value);
   }
