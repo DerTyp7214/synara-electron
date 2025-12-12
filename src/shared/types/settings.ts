@@ -35,6 +35,7 @@ export interface AppSettings {
   cleanTitles: boolean;
   locale: string;
   audioVisualizer: {
+    enabled: boolean;
     minDecibels: number;
     maxDecibels: number;
     smoothingTimeConstant: number;

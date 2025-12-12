@@ -1,9 +1,9 @@
 appId: dev.dertyp.synara
 productName: synara
-electronVersion: 37.2.5
+electronVersion: 39.2.4+wvcus
 electronDownload:
-  version: 37.2.5+wvcus
-  mirror: https://github.com/castlabs/electron-releases/releases/download/v
+  custom:
+    url: 'https://github.com/castlabs/electron-releases/releases/download/v{1}/{2}'
 directories:
   buildResources: build
 files:
@@ -68,8 +68,11 @@ appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
 publish:
-  provider: generic
-  url: https://example.com/auto-updates
+  - provider: github
+    owner: DerTyp7214
+    repo: synara
+    private: true
+    vPrefixedTagName: false
 protocols:
   name: "synara"
   role: "Viewer"

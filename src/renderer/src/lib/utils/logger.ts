@@ -132,7 +132,7 @@ export function scopedDebugLog(
   })();
 }
 
-if (Object.prototype.hasOwnProperty.call(this ?? {}, "window")) {
+try {
   // @ts-expect-error it works
   window.setLogLevel = function (level?: false | LogLevel) {
     if (level === undefined)
@@ -143,4 +143,6 @@ if (Object.prototype.hasOwnProperty.call(this ?? {}, "window")) {
     localStorage.setItem("logDebug", "true");
     localStorage.setItem("logDebugLevel", level);
   };
+} catch (_) {
+  /* empty */
 }

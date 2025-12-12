@@ -55,6 +55,7 @@ export function updateMpris(mediaInfo: MediaInfo) {
     try {
       const mediaPlayer: MediaPlayerInfo = {
         ...(mediaInfo.player ?? {}),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ...((player.metadata as any)?.player ?? {}),
       };
       player.metadata = {
@@ -86,6 +87,7 @@ export function updateMpris(mediaInfo: MediaInfo) {
       player.canGoNext = true;
       player.canGoPrevious = true;
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.log(mediaInfo);
       // eslint-disable-next-line no-console
       console.error(e);

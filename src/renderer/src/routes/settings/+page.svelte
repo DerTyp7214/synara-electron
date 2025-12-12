@@ -15,6 +15,8 @@
   import { getUserInfo } from "$lib/api/lastFm";
   import lastFM from "$lib/audio/lastFM";
   import { userInfo } from "$lib/api/auth";
+  import { DEFAULT_SETTINGS } from "$shared/settings";
+  import { objectPropertyStore } from "$lib/utils/storeUtils";
 
   const stores = {
     apiBase: settings.apiBase,
@@ -28,6 +30,15 @@
     cleanTitles: settings.cleanTitles,
 
     downloadDir: settings.downloadDir,
+
+    particleMultiplier: objectPropertyStore(
+      settings.audioVisualizer,
+      "particleMultiplier",
+    ),
+    velocityMultiplier: objectPropertyStore(
+      settings.audioVisualizer,
+      "velocityMultiplier",
+    ),
   } as const;
 
   const apiBase = $derived(stores.apiBase);
@@ -40,6 +51,9 @@
   const lastFm = $derived(stores.lastFm);
   const cleanTitles = $derived(stores.cleanTitles);
   const downloadDir = $derived(stores.downloadDir);
+
+  const particleMultiplier = $derived(stores.particleMultiplier);
+  const velocityMultiplier = $derived(stores.velocityMultiplier);
 
   const originalData = $derived.by(() => ({
     apiBase: $apiBase,
@@ -54,6 +68,9 @@
     cleanTitles: $cleanTitles,
 
     downloadDir: $downloadDir,
+
+    particleMultiplier: $particleMultiplier,
+    velocityMultiplier: $velocityMultiplier,
   }));
 
   // svelte-ignore state_referenced_locally
@@ -172,6 +189,10 @@
 
   type bool = boolean;
   type str = string;
+  type num = number;
+  type TypedStrKeys = TypedKeys<SettingsType, str | undefined>;
+  type TypedBoolKeys = TypedKeys<SettingsType, bool>;
+  type TypedNumKeys = TypedKeys<SettingsType, num>;
 </script>
 
 <svelte:head>
@@ -179,7 +200,7 @@
 </svelte:head>
 
 {#snippet textValue(
-  key: TypedKeys<SettingsType, str | undefined>,
+  key: TypedStrKeys,
   check: bool,
   hidden: bool = false,
   customType: str | undefined = undefined,
@@ -254,10 +275,7 @@
   </div>
 {/snippet}
 
-{#snippet booleanValue(
-  key: TypedKeys<SettingsType, bool>,
-  label: str | undefined = undefined,
-)}
+{#snippet booleanValue(key: TypedBoolKeys, label: str | undefined = undefined)}
   <div class="flex flex-col gap-2">
     {#if label}
       <label class="flex items-center gap-2">
@@ -274,6 +292,48 @@
         class="custom-checkbox"
         type="checkbox"
         bind:checked={$settingsValues[key]}
+        onchange={handleApply(key)}
+      />
+    {/if}
+  </div>
+{/snippet}
+
+{#snippet rangeValue(
+  key: TypedNumKeys,
+  min: num = 0,
+  max: num = 1,
+  defaultValue: num = 0,
+  label: str | undefined = undefined,
+)}
+  <div class="flex flex-col gap-2">
+    {#if label}
+      <label class="flex flex-col items-start">
+        <span class="flex items-end gap-2">
+          <p>
+            {$t(`settings.${key}`)}: {$settingsValues[key].toFixed(2)}
+          </p>
+          <p class="text-xs opacity-50">
+            ({$t(`settings.default`, { value: defaultValue.toString() })})
+          </p>
+        </span>
+        <input
+          class="custom-range"
+          type="range"
+          {min}
+          {max}
+          step={0.01}
+          bind:value={$settingsValues[key]}
+          onchange={handleApply(key)}
+        />
+      </label>
+    {:else}
+      <input
+        class="custom-range"
+        type="range"
+        {min}
+        {max}
+        step={0.01}
+        bind:value={$settingsValues[key]}
         onchange={handleApply(key)}
       />
     {/if}
@@ -310,6 +370,26 @@
     {@render booleanValue("cleanTitles", $t("settings.cleanTitles"))}
 
     {@render textValue("downloadDir", false, false, "directory")}
+  </div>
+
+  <div class="border-secondary-800-200 mt-6 w-full border-t-2"></div>
+
+  <div class="mt-6 flex flex-col gap-3">
+    <span class="h2">Audio Visualizer</span>
+    {@render rangeValue(
+      "particleMultiplier",
+      0,
+      5,
+      DEFAULT_SETTINGS.audioVisualizer.particleMultiplier,
+      $t("settings.particleMultiplier"),
+    )}
+    {@render rangeValue(
+      "velocityMultiplier",
+      0,
+      5,
+      DEFAULT_SETTINGS.audioVisualizer.velocityMultiplier,
+      $t("settings.velocityMultiplier"),
+    )}
   </div>
 
   <div class="border-secondary-800-200 mt-6 w-full border-t-2"></div>

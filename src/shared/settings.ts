@@ -17,6 +17,7 @@ export const DEFAULT_SETTINGS: AppSettings &
   hideOnClose: false,
   discordRpc: false,
   audioVisualizer: {
+    enabled: true,
     minDecibels: -90,
     maxDecibels: -20,
     smoothingTimeConstant: 0.75,

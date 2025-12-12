@@ -10,7 +10,7 @@ class Particle {
   maxLife = 0;
 
   constructor(centerX: number, centerY: number, size: number, speed: number) {
-    this.maxLife = Math.floor(Math.random() * 120) + 240;
+    this.maxLife = Math.floor(Math.random() * 240) + 120;
 
     const halfSize = size / 2;
     const perimeter = size * 4;

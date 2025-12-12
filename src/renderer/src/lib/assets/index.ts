@@ -5,5 +5,15 @@ import Tidal from "$lib/assets/Tidal.svelte";
 import SkipBack from "$lib/assets/SkipBack.svelte";
 import SkipForward from "$lib/assets/SkipForward.svelte";
 import Pause from "$lib/assets/Pause.svelte";
+import AudioLines from "$lib/assets/AudioLines.svelte";
 
-export { Explicit, LikedSongsBg, Spotify, Tidal, SkipBack, SkipForward, Pause };
+export {
+  Explicit,
+  LikedSongsBg,
+  Spotify,
+  Tidal,
+  SkipBack,
+  SkipForward,
+  Pause,
+  AudioLines,
+};

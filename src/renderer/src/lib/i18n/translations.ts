@@ -31,6 +31,7 @@ export default {
     "settings.apply": "Apply",
 
     "settings.synara.session": "Session",
+    "settings.default": "Default: {{value}}",
     "settings.apiBase": "API Base",
     "settings.lastFmApiKey": "API Key",
     "settings.lastFmSharedSecret": "Shared Secret",
@@ -42,6 +43,8 @@ export default {
     "settings.lastFmSession": "LastFM Session",
     "settings.cleanTitles": "Clean Titles",
     "settings.downloadDir": "Download Directory",
+    "settings.particleMultiplier": "Particle Multiplier (0 = disabled)",
+    "settings.velocityMultiplier": "Velocity Multiplier",
 
     "login.title": "Login",
     "login.submit": "Login",

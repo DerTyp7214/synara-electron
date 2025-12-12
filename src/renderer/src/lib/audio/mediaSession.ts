@@ -75,7 +75,8 @@ export class MediaSession {
   }
 
   private setup() {
-    this.audioContext = new (window.AudioContext ||
+    this.audioContext = new (
+      window.AudioContext ||
       // eslint-disable-next-line
       (window as any).webkitAudioContext)();
 

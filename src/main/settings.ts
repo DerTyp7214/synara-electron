@@ -12,6 +12,14 @@ import { app, ipcMain } from "electron";
 import path from "node:path";
 import { DEFAULT_SETTINGS } from "../shared/settings";
 
+if (process.env.NODE_ENV === "development") {
+  const devPath = path.join(app.getAppPath(), "dev-config");
+  app.setPath("userData", devPath);
+
+  // eslint-disable-next-line no-console
+  console.log(`Using development userData path: ${devPath}`);
+}
+
 const schema: Schema<AppSettings> = {
   theme: {
     type: "string",

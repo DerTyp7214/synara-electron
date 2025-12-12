@@ -1,3 +1,5 @@
+// @ts-expect-error works though
+import icon from "../../resources/icon.png?asset";
 import {
   app,
   shell,
@@ -9,17 +11,24 @@ import {
 } from "electron";
 import { join } from "path";
 import { electronApp, optimizer, is, platform } from "@electron-toolkit/utils";
-// @ts-expect-error works though
-import icon from "../../resources/icon.png?asset";
 import serve from "electron-serve";
+import { Bonjour } from "bonjour-service";
+import path from "node:path";
 import { setFlags } from "./utils";
 import { addMPRIS, updateMpris } from "./mpris";
 import { MediaInfo } from "../shared/models/mediaInfo";
 import { MprisEventData, MprisEventName } from "../shared/types/api";
-import { Bonjour } from "bonjour-service";
 import { setupSettings, store } from "./settings";
 import { initRPC } from "./discord";
 import { registerProtocol } from "./protocol";
+
+if (process.env.NODE_ENV === "development") {
+  const devPath = path.join(app.getAppPath(), "dev-config");
+  app.setPath("userData", devPath);
+
+  // eslint-disable-next-line no-console
+  console.log(`Using development userData path: ${devPath}`);
+}
 
 const serveURL = serve({ directory: join(__dirname, "..", "renderer") });
 

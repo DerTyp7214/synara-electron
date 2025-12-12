@@ -51,9 +51,10 @@
   async function handleContextPlay(
     texts: {
       loading: { title: string; description: string };
-      success: (
-        response: PagedResponse<Song>,
-      ) => { title: string; description: string };
+      success: (response: PagedResponse<Song>) => {
+        title: string;
+        description: string;
+      };
       error: (error: unknown) => { title: string; description: string };
     },
     action: (...songs: Array<Song>) => Promise<void>,

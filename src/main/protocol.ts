@@ -64,6 +64,7 @@ export function registerProtocol(mainWindowHandler: () => BrowserWindow) {
 async function offlineApiHandler(request: Request): Promise<Response> {
   const { host, pathname } = new URL(request.url);
 
+  // eslint-disable-next-line no-console
   console.log(host, pathname, offlineHandler);
   if (host === "stream") {
     return new Response("<h1>Yay</h1>", {

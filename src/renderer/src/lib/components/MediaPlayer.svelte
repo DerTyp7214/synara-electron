@@ -18,7 +18,7 @@
     CircleCheck,
     CircleDivide,
   } from "@lucide/svelte";
-  import { AudioLines, ChevronUp, Maximize, Minimize } from "@jis3r/icons";
+  import { ChevronUp, Maximize, Minimize } from "@jis3r/icons";
   import cn from "classnames";
   import { onMount, setContext } from "svelte";
   import {
@@ -32,7 +32,13 @@
     nativeFullscreen,
   } from "$lib/utils/utils";
   import { resolve } from "$app/paths";
-  import { Explicit, Pause, SkipBack, SkipForward } from "$lib/assets";
+  import {
+    Explicit,
+    Pause,
+    SkipBack,
+    SkipForward,
+    AudioLines,
+  } from "$lib/assets";
   import { t } from "$lib/i18n/i18n";
   import Slider from "$lib/components/Slider.svelte";
   import { audioSession } from "$lib/audio/audioSession";
@@ -41,7 +47,7 @@
   import ContextMenuManager from "$lib/contextMenu/ContextMenuManager.svelte";
   import LyricsView from "$lib/components/LyricsView.svelte";
   import SongItem from "$lib/components/SongItem.svelte";
-  import { get, type Writable, writable } from "svelte/store";
+  import { derived, get, type Writable, writable } from "svelte/store";
   import InfiniteScroll from "$lib/components/InfiniteScroll.svelte";
   import Spinner from "$lib/components/Spinner.svelte";
   import { setLiked, type Song } from "$lib/api/songs";
@@ -54,6 +60,7 @@
   import PartivleEmitter from "$lib/components/PartivleEmitter.svelte";
   import { windowDimensions } from "$lib/utils/windowStore";
   import { imageColors as derivedImageColors } from "$lib/color/imageUtils";
+  import { objectPropertyStore } from "$lib/utils/storeUtils";
 
   let {
     isOpen = writable(false),
@@ -65,9 +72,10 @@
     showLyrics?: Writable<boolean>;
   } = $props();
 
+  // svelte-ignore state_referenced_locally
   setContext(MEDIA_PLAYER_CONTEXT_KEY, { isOpen, showQueue, showLyrics });
 
-  let showVisualizer = $state(true);
+  let showVisualizer = objectPropertyStore(settings.audioVisualizer, "enabled");
 
   let footerElement = $state<HTMLElement>();
   let visualizerCanvas = $state<HTMLCanvasElement>();
@@ -278,7 +286,7 @@
   });
 
   const audioVisualEffects = $derived.by(() => {
-    if (!showVisualizer) return "--tw-brightness: brightness(30%);";
+    if (!$showVisualizer) return "--tw-brightness: brightness(30%);";
     return `--tw-saturate: saturate(${0.8 + ($bassAmplitude / 255) * 0.8}); --tw-brightness: brightness(${20 + ($bassAmplitude / 255) * 15}%);`;
   });
 
@@ -333,7 +341,7 @@
   use:globalKeydown={handleKeyDown}
   style={$isOpen ? getColorCssVars($imageColors) : ""}
   class={cn(
-    "flex flex-shrink-0",
+    "flex shrink-0",
     "fixed mt-0",
     "flex-col transition-all",
     "text-surface-950-50",
@@ -344,7 +352,7 @@
       "rounded-container shadow-md": !$isOpen,
       "rounded-none shadow-none": $isOpen,
       "right-0 bottom-0 left-0 m-2 h-24 max-h-24": !$isOpen,
-      "right-0 bottom-0 left-0 m-0 h-full max-h-[100vh]": $isOpen,
+      "right-0 bottom-0 left-0 m-0 h-full max-h-screen": $isOpen,
     },
   )}
 >
@@ -373,14 +381,14 @@
   <!-- Cover and visualizer/Lyrics/Queue -->
   <div
     style="--max-player-height: calc(100vh - 6rem)"
-    class={cn("relative z-20 flex flex-1 flex-grow flex-row transition-all", {
+    class={cn("relative z-20 flex flex-1 grow flex-row transition-all", {
       "max-h-0 opacity-0": !$isOpen,
       "max-h-(--max-player-height) opacity-100": $isOpen,
     })}
   >
     <div
       class={cn(
-        "flex h-full max-h-full min-w-[100vw] transition-transform",
+        "flex h-full max-h-full min-w-screen transition-transform",
         "flex-col items-center justify-center overflow-hidden",
         "relative",
         {
@@ -436,7 +444,7 @@
     </div>
     <div
       class={cn(
-        "flex h-full min-w-[100vw] transition-transform",
+        "flex h-full min-w-screen transition-transform",
         "flex-col items-center justify-center select-none",
         {
           "translate-x-0": $showQueue,
@@ -445,14 +453,15 @@
         },
       )}
     >
-      {#if $isOpen && $audioVisualizerSettings.particleMultiplier > 0}
+      {#if $showVisualizer && $isOpen && $audioVisualizerSettings.particleMultiplier > 0}
         <PartivleEmitter
           class={cn("absolute top-0 left-0 z-20 h-screen w-screen")}
           colors={$imageColors}
           yOffset={-($windowDimensions.height * 0.044)}
           velocityMultiplier={Math.exp(
             ($bassAmplitude / 255) *
-              $audioVisualizerSettings.velocityMultiplier,
+              $audioVisualizerSettings.velocityMultiplier *
+              ($windowDimensions.width / 1920),
           )}
           emissionRate={Math.exp(
             ($bassAmplitude / 255) *
@@ -490,8 +499,8 @@
           "absolute right-auto bottom-0 left-auto",
           "z-30 overflow-hidden",
           {
-            "max-h-0": !$isOpen || !showVisualizer,
-            "max-h-[20vh]": $isOpen && showVisualizer,
+            "max-h-0": !$isOpen || !$showVisualizer,
+            "max-h-[20vh]": $isOpen && $showVisualizer,
           },
         )}
         bind:this={visualizerCanvas}
@@ -499,7 +508,7 @@
     </div>
     <div
       class={cn(
-        "flex max-h-full max-w-[100vw] min-w-[100vw] ",
+        "flex max-h-full max-w-[100vw] min-w-screen ",
         "flex-col transition-transform select-none",
         {
           "-translate-x-[200%]": $showLyrics && hasLyrics,
@@ -545,17 +554,13 @@
         {/if}
       </button>
       <button
-        onclick={() => (showVisualizer = !showVisualizer)}
+        onclick={() => ($showVisualizer = !$showVisualizer)}
         class={cn("interactive p-2 transition-all hover:opacity-80", {
-          "text-secondary-400": showVisualizer,
+          "text-secondary-400": $showVisualizer,
           hidden: $showQueue || ($showLyrics && hasLyrics),
         })}
       >
-        <AudioLines
-          class={cn({
-            "audio-lines-icon animate": showVisualizer && !$isPaused,
-          })}
-        />
+        <AudioLines animated={$showVisualizer && !$isPaused} />
       </button>
     </div>
   </div>
@@ -607,7 +612,7 @@
         </button>
       </div>
       <div
-        class="ms-2 mb-auto flex flex-grow flex-col justify-center overflow-hidden"
+        class="ms-2 mb-auto flex grow flex-col justify-center overflow-hidden"
       >
         <div class="flex flex-row items-center gap-2 pe-1">
           <span
