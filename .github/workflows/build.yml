@@ -65,6 +65,12 @@ jobs:
           sudo apt update
           sudo apt install -y --install-recommends winehq-stable
 
+      - name: Install linux deps
+        if: matrix.build == 'linux'
+        run: |
+          sudo apt update
+          sudo apt install -y --install-recommends bsdtar
+
       - name: Install Dependencies and sync svelte-kit
         shell: bash
         run: |

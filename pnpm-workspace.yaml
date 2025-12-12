@@ -1,0 +1,16 @@
+packages:
+  - .
+  - "src/renderer"
+
+onlyBuiltDependencies:
+  - "@tailwindcss/oxide"
+  - "esbuild"
+  - "sharp"
+  - "@biomejs/biome"
+  - "abstract-socket"
+  - "core-js"
+  - "electron"
+  - "electron-vibrancy"
+  - "esbuild"
+  - "sharp"
+  - "usocket"
