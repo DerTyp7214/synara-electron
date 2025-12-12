@@ -1,5 +1,5 @@
-import { MediaInfo } from "../models/mediaInfo";
-import { MediaPlayerInfo } from "../models/mediaPlayerInfo";
+import type { MediaInfo } from "../models/mediaInfo";
+import type { MediaPlayerInfo } from "../models/mediaPlayerInfo";
 import { RepeatMode } from "../models/repeatMode";
 import type { Service } from "bonjour-service";
 

@@ -1,4 +1,4 @@
-import { MediaPlayerInfo } from "./mediaPlayerInfo";
+import type { MediaPlayerInfo } from "./mediaPlayerInfo";
 
 export interface MediaInfo {
   title: string;

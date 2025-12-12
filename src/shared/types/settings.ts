@@ -1,6 +1,6 @@
 import type { Song } from "./beApi";
 import type { RepeatMode } from "../models/repeatMode";
-import { UUID } from "node:crypto";
+import type { UUID } from "node:crypto";
 
 export enum PlayingSourceType {
   Playlist = "playlist",

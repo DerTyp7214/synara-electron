@@ -29,7 +29,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -44,7 +44,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Cache APT Packages
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         if: matrix.build == 'win'
         with:
           path: /var/cache/apt/archives/!(lock|partial)
@@ -101,7 +101,7 @@ jobs:
           mv dist/*.dmg upload/synara-desktop.dmg
 
       - name: Upload Selective Build Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ matrix.build }}-release-assets
           overwrite: 'true'
@@ -117,7 +117,7 @@ jobs:
 
     steps:
       - name: Download all build artifacts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           pattern: '*-release-assets'
           merge-multiple: 'true'

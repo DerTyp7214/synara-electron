@@ -1,9 +1,9 @@
 import {
-  AppSettings,
-  MediaSettings,
+  type AppSettings,
+  type MediaSettings,
   PlayingSourceType,
-  QueueSettings,
-  TokenSettings,
+  type QueueSettings,
+  type TokenSettings,
 } from "./types/settings";
 import { RepeatMode } from "./models/repeatMode";
 
