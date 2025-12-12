@@ -1,4 +1,4 @@
-import { PlaybackStatus } from "$shared/models/playbackStatus";
+import { type PlaybackStatus } from "$shared/models/playbackStatus";
 
 export function createCurve(
   manipulator: Array<number>,
@@ -58,9 +58,9 @@ export function playBackStateToMediaSessionState(
   playbackState: PlaybackStatus,
 ): MediaSessionPlaybackState {
   switch (playbackState) {
-    case PlaybackStatus.Paused:
+    case "Paused":
       return "paused";
-    case PlaybackStatus.Playing:
+    case "Playing":
       return "playing";
     default:
       return "none";

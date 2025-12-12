@@ -46,16 +46,14 @@
   import Spinner from "$lib/components/Spinner.svelte";
   import { setLiked, type Song } from "$lib/api/songs";
   import { MEDIA_PLAYER_CONTEXT_KEY } from "$lib/consts";
-  import {
-    getColorCssVars,
-    imageColors as derivedImageColors,
-  } from "$lib/color/utils";
+  import { getColorCssVars } from "$lib/color/utils";
   import { debugLog } from "$lib/utils/logger";
   import type { SongLikedEventData } from "$lib/audio/queue";
   import lastFM from "$lib/audio/lastFM";
   import { settings } from "$lib/utils/settings";
   import PartivleEmitter from "$lib/components/PartivleEmitter.svelte";
   import { windowDimensions } from "$lib/utils/windowStore";
+  import { imageColors as derivedImageColors } from "$lib/color/imageUtils";
 
   let {
     isOpen = writable(false),
@@ -242,6 +240,10 @@
     if ($showQueue) setTimeout(scrollIntoActiveSong, 100);
   });
 
+  $effect(() => {
+    mediaSession.updateColors($imageColors);
+  });
+
   function handleLikedSongEvent({ detail }: CustomEvent<SongLikedEventData>) {
     if (!detail) return;
 
@@ -254,7 +256,12 @@
   onMount(() => {
     const animationFrame = mediaSession.drawVisualizer(visualizerCanvas!);
 
-    const cleanupResizeListener = createResizeListener(visualizerCanvas!);
+    const cleanupResizeListener = createResizeListener(
+      visualizerCanvas!,
+      (width, height) => {
+        mediaSession.updateSize(width, height);
+      },
+    );
 
     const removeSongLikedListener = window.listenCustomEvent(
       "songLiked",
@@ -266,6 +273,7 @@
       cleanupResizeListener();
       cancelAnimationFrame(get(animationFrame));
       removeSongLikedListener();
+      mediaSession.terminate();
     };
   });
 

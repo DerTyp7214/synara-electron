@@ -1,6 +1,6 @@
 import { audioSession } from "$lib/audio/audioSession";
 import { getContentLength, type Song } from "$lib/api/songs";
-import { getStreamUrl, roundRect } from "$lib/utils/utils";
+import { getStreamUrl } from "$lib/utils/utils";
 import {
   derived,
   get,
@@ -10,7 +10,6 @@ import {
   type Unsubscriber,
   writable,
 } from "svelte/store";
-import { createCurve } from "$lib/audio/utils";
 import { electronController } from "$lib/audio/electronController";
 import { RepeatMode } from "$shared/models/repeatMode";
 import { PlaybackStatus } from "$shared/models/playbackStatus";
@@ -21,7 +20,7 @@ import { Queue } from "$lib/audio/queue";
 import type { UUID } from "node:crypto";
 import { nullSong } from "$shared/types/settings";
 import type { SongWithPosition } from "$shared/types/beApi";
-import { colorMix, sortedByLightness } from "$lib/color/converters";
+import type { RGBColor } from "colorthief";
 
 // noinspection JSUnusedGlobalSymbols
 export class MediaSession {
@@ -33,6 +32,8 @@ export class MediaSession {
   private dataArray: Uint8Array<ArrayBuffer> | undefined;
 
   private queue = writable<Queue>();
+
+  private worker: Worker | null = null;
 
   playingSourceType = settings.playingSourceType;
   playingSourceId = settings.playingSourceId;
@@ -293,6 +294,13 @@ export class MediaSession {
     distortion.connect(biquadFilter);
     biquadFilter.connect(this.audioAnalyser);
     convolver.connect(this.audioAnalyser);
+
+    this.worker = new Worker(
+      new URL("../workers/bars-worker.js", import.meta.url),
+      {
+        type: "module",
+      },
+    );
   }
 
   private async playUrl(url: string, start: boolean = false) {
@@ -339,9 +347,6 @@ export class MediaSession {
     });
   }
 
-  private frameCount = 0;
-  private lastTime = performance.now();
-
   private fps = writable(0);
 
   getFps(): Readable<number> {
@@ -350,87 +355,79 @@ export class MediaSession {
 
   private currentAnimationFrame = writable(0);
 
-  drawVisualizer(canvas: HTMLCanvasElement, time: number = performance.now()) {
-    const deltaTime = time - this.lastTime;
-    this.frameCount++;
+  updateSize(width: number, height: number) {
+    this.worker?.postMessage({
+      type: "resize",
+      width,
+      height,
+    });
+  }
 
-    if (deltaTime >= 1000) {
-      this.fps.set(this.frameCount / (deltaTime / 1000));
+  private colors: RGBColor[] = [
+    [255, 255, 255],
+    [255, 255, 255],
+  ];
 
-      this.frameCount = 0;
-      this.lastTime = time;
-    }
+  updateColors(colors: RGBColor[]) {
+    this.colors = colors;
 
+    this.worker?.postMessage({
+      type: "updateColors",
+      colors,
+    });
+  }
+
+  terminate() {
+    this.worker?.terminate();
+  }
+
+  private FRAME_INTERVAL = 1000 / 80;
+  private lastTime = performance.now();
+  private canvas: HTMLCanvasElement | undefined;
+
+  drawVisualizer(canvas?: HTMLCanvasElement, time: number = performance.now()) {
     this.currentAnimationFrame.set(
       requestAnimationFrame((time) => this.drawVisualizer(canvas, time)),
     );
+
+    const deltaTime = time - this.lastTime;
+
+    if (deltaTime < this.FRAME_INTERVAL) {
+      return readonly(this.currentAnimationFrame);
+    }
+
+    this.lastTime = time - (deltaTime % this.FRAME_INTERVAL);
+
+    if (!canvas && !this.canvas) return readonly(this.currentAnimationFrame);
+
     if (!this.dataArray || !this.audioAnalyser)
       return readonly(this.currentAnimationFrame);
 
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return readonly(this.currentAnimationFrame);
-
     this.audioAnalyser.getByteFrequencyData(this.dataArray);
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (!this.canvas) {
+      this.canvas = canvas;
 
-    const PADDING = 20;
+      const offscreenCanvas = this.canvas!.transferControlToOffscreen();
 
-    const WIDTH = canvas.width - PADDING;
-    const HEIGHT = canvas.height;
-
-    if (WIDTH === 0 || HEIGHT === 0)
-      return readonly(this.currentAnimationFrame);
-
-    const styles = window.getComputedStyle(canvas);
-    const secondary300 = styles
-      .getPropertyValue("--color-secondary-300")
-      .trim();
-    const tertiary300 = styles.getPropertyValue("--color-tertiary-300").trim();
-
-    const [colorA, colorB] = sortedByLightness(secondary300, tertiary300);
-
-    ctx.shadowColor = secondary300;
-    ctx.shadowBlur = 0;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 0;
-
-    const dataArray = createCurve(
-      [...this.dataArray].slice(0, -Math.floor(this.dataArray.length / 8)),
-      WIDTH / 5 / 2,
-    );
-
-    const data = [...dataArray.toReversed(), ...dataArray];
-
-    const multiplier = 0.9;
-    const barSpacing = 1;
-    const barWidth = WIDTH / data.length - 1;
-    const barRadius = 5;
-
-    for (let i = 0; i < data.length; i++) {
-      const barHeight = Math.min(
-        Math.max(((data[i] * HEIGHT) / 256) * multiplier, 0) + 5,
-        HEIGHT,
-      );
-
-      const color = colorMix(
-        colorA,
-        colorB,
-        Math.min((barHeight * 1.25) / HEIGHT, 1),
-      );
-      ctx.shadowColor = color;
-      ctx.shadowBlur = Math.min((barHeight * 1.25) / HEIGHT, 1) * 10;
-      ctx.fillStyle = color;
-
-      roundRect(
-        ctx,
-        PADDING / 2 + i * (barWidth + barSpacing),
-        HEIGHT / 2 - barHeight / 2,
-        Math.max(barWidth, 1),
-        barHeight,
-        barRadius,
+      this.worker?.postMessage(
+        {
+          type: "init",
+          canvas: offscreenCanvas,
+          width: this.canvas!.width,
+          height: this.canvas!.height,
+          colors: this.colors,
+          dataArrayBuffer: this.dataArray?.buffer ?? new ArrayBuffer(),
+        },
+        [offscreenCanvas],
       );
     }
+
+    this.worker?.postMessage({
+      type: "update",
+      colors: this.colors,
+      dataArrayBuffer: this.dataArray.buffer,
+    });
 
     return readonly(this.currentAnimationFrame);
   }

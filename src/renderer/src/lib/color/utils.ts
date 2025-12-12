@@ -1,7 +1,4 @@
 import ColorThief, { type RGBColor } from "colorthief";
-import type { Song } from "$shared/types/beApi";
-import { derived, type Readable } from "svelte/store";
-import { getImageUrl } from "$lib/utils/utils";
 import { oklchToRgb, rgbToOklch } from "$lib/color/converters";
 
 export async function getColorPalette(imageUrl?: string) {
@@ -20,19 +17,6 @@ export async function getColorPalette(imageUrl?: string) {
   img.src = imageUrl;
 
   return await palette;
-}
-
-export function imageColors(song: Readable<Song>): Readable<Array<RGBColor>> {
-  return derived(
-    song,
-    (song, set) => {
-      getColorPalette(getImageUrl(song.coverId)).then((colors) => set(colors));
-    },
-    [
-      [-1, -1, -1],
-      [-1, -1, -1],
-    ],
-  );
 }
 
 type IntervalType = Record<
@@ -74,6 +58,10 @@ export function transformColor(
   const H = baseH + targetScaleIntervals[shade].H_shift * (baseH / H_800_ref);
 
   return oklchToRgb([L, C, H]);
+}
+
+export function oklchToString([L, C, H]: OKLCHColor): string {
+  return `oklch(${L}% ${C} ${H}deg)`;
 }
 
 export function generateOklchScale(
