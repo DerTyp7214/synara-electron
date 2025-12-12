@@ -71,8 +71,7 @@ publish:
   - provider: github
     owner: DerTyp7214
     repo: synara
-    private: true
-    vPrefixedTagName: false
+    private: false
 protocols:
   name: "synara"
   role: "Viewer"
