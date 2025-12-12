@@ -449,7 +449,7 @@
         <PartivleEmitter
           class={cn("absolute top-0 left-0 z-20 h-screen w-screen")}
           colors={$imageColors}
-          yOffset={-($windowDimensions.height * 0.0475)}
+          yOffset={-($windowDimensions.height * 0.044)}
           velocityMultiplier={Math.exp(
             ($bassAmplitude / 255) *
               $audioVisualizerSettings.velocityMultiplier,
