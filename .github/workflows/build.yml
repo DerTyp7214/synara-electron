@@ -151,7 +151,7 @@ jobs:
           prerelease: ${{ env.PRE_RELEASE }}
           target_commitish: desktop
           files: |
-            dist/${{ env.CHANNEL_NAME }}
+            dist/${{ env.CHANNEL_NAME }}.yml
             dist/synara-*
         env:
           GITHUB_TOKEN: ${{ secrets.SYNARA_GITHUB_TOKEN }}
@@ -167,7 +167,7 @@ jobs:
           prerelease: ${{ env.PRE_RELEASE }}
           target_commitish: desktop
           files: |
-            dist/${{ env.CHANNEL_NAME }}
+            dist/${{ env.CHANNEL_NAME }}.yml
             dist/synara-*
         env:
           GITHUB_TOKEN: ${{ secrets.SYNARA_GITHUB_TOKEN }}
