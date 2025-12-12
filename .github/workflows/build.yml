@@ -127,7 +127,7 @@ jobs:
         id: collect_final_assets
         shell: bash
         run: |
-          PKG_FILE=$(find . -type f -name 'package.json' | head -n 1)
+          PKG_FILE=$(find . -type f -name 'package.json' -not -path '*/node_modules/*' -not -path '*/src/*' -not -path '*/dist/*' | head -n 1)
 
           if [ -z "$PKG_FILE" ]; then
             echo "::error::package.json not found in artifacts."
