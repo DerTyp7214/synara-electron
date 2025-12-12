@@ -79,7 +79,7 @@ jobs:
           MAIN_VITE_LAST_FM_SHARED_SECRET: ${{ secrets.LAST_FM_SHARED_SECRET }}
 
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: synara-build-${{ matrix.build }}
           path: |
@@ -98,7 +98,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Download all build artifacts
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           merge-multiple: 'true'
           path: dist
@@ -122,18 +122,18 @@ jobs:
 
       - name: Publish
         shell: bash
-        run: npx electron-builder --releaseTag $TAG --publish onTag
+        run: npx electron-builder publish --publish onTag -c.publish.channel=${{ env.CHANNEL_NAME }}
         env:
-          TAG: v${{ steps.collect_final_assets.outputs.RELEASE_VERSION }}${{ github.ref_name == 'master' && '-dev' || '' }}-desktop
-          EP_CUSTOM_CHANNEL: ${{ github.ref_name == 'master' && 'dev-desktop' || 'desktop' }}
+          GH_TAG_NAME: v${{ steps.collect_final_assets.outputs.RELEASE_VERSION }}${{ github.ref_name == 'master' && '-dev' || '' }}-desktop
+          CHANNEL_NAME: ${{ github.ref_name == 'master' && 'dev-desktop' || 'desktop' }}
           EP_PRE_RELEASE: ${{ github.ref_name == 'master' }}
           GH_TOKEN: ${{ secrets.SYNARA_GITHUB_TOKEN }}
 
       - name: Publish Latest
         shell: bash
-        run: npx electron-builder --releaseTag $TAG --publish onTag
+        run: npx electron-builder publish --publish onTag -c.publish.channel=${{ env.CHANNEL_NAME }}
         env:
-          TAG: latest${{ github.ref_name == 'master' && '-dev' || '' }}-desktop
-          EP_CUSTOM_CHANNEL: ${{ github.ref_name == 'master' && 'dev-desktop' || 'desktop' }}
+          GH_TAG_NAME: latest${{ github.ref_name == 'master' && '-dev' || '' }}-desktop
+          CHANNEL_NAME: ${{ github.ref_name == 'master' && 'dev-desktop' || 'desktop' }}
           EP_PRE_RELEASE: ${{ github.ref_name == 'master' }}
           GH_TOKEN: ${{ secrets.SYNARA_GITHUB_TOKEN }}
