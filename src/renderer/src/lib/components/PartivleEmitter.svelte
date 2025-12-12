@@ -71,9 +71,12 @@
     canvasElement.width = canvasElement.clientWidth;
     canvasElement.height = canvasElement.clientHeight;
 
-    worker = new Worker(new URL("../../particle-worker.js", import.meta.url), {
-      type: "module",
-    });
+    worker = new Worker(
+      new URL("../workers/particle-worker.js", import.meta.url),
+      {
+        type: "module",
+      },
+    );
 
     const offscreenCanvas = canvasElement.transferControlToOffscreen();
 
