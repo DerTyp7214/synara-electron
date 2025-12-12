@@ -199,6 +199,7 @@ class LastFM {
   private songTimeoutEndTime: number = 0;
 
   private scrobbled: Writable<boolean> = writable(false);
+  private targetScrobbledTime: Writable<number> = writable(Date.now());
 
   private songTimer(song: Song, paused: boolean = get(mediaSession.paused)) {
     if (!song || paused) {
@@ -254,6 +255,7 @@ class LastFM {
       this.songTimeout,
     );
     this.scrobbled.set(false);
+    this.targetScrobbledTime.set(Date.now() + runTime);
     this.songTimeout = setTimeout(
       (song) => {
         if (song.id === get(this.currentSong)?.id) {
@@ -271,6 +273,10 @@ class LastFM {
 
   public hasScrobbled() {
     return readonly(this.scrobbled);
+  }
+
+  public targetScrobbledSysTime() {
+    return readonly(this.targetScrobbledTime);
   }
 
   private async runScrobbleQueue() {

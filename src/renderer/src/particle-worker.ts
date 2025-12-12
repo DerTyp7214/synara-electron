@@ -48,11 +48,14 @@ class Particle {
     this.y += this.vy;
   }
 
-  update() {
+  update(width: number, height: number) {
     this.x += this.vx;
     this.y += this.vy;
     this.life++;
-    return this.life < this.maxLife;
+    return (
+      this.life < this.maxLife &&
+      !(this.x < -5 || this.y < -5 || this.x > width + 5 || this.y > height + 5)
+    );
   }
 }
 
@@ -117,7 +120,7 @@ function animate(time: number) {
 
   const [r, g, b] = state.color;
 
-  particles = particles.filter((p) => p.update());
+  particles = particles.filter((p) => p.update(width, height));
 
   particles.forEach((p) => {
     if (!ctx) return;
@@ -128,7 +131,7 @@ function animate(time: number) {
     ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha * 0.5 + 0.5})`;
 
     ctx.beginPath();
-    ctx.arc(p.x, p.y, 0.5 + alpha, 0, Math.PI * 2);
+    ctx.arc(p.x, p.y, 0.7 + alpha, 0, Math.PI * 2);
     ctx.fill();
   });
 }
@@ -174,6 +177,8 @@ self.onmessage = (
       if (ctx && ctx.canvas) {
         ctx.canvas.width = data.width;
         ctx.canvas.height = data.height;
+
+        particles = [];
       }
       break;
 

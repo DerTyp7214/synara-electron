@@ -38,6 +38,8 @@ export interface AppSettings {
     minDecibels: number;
     maxDecibels: number;
     smoothingTimeConstant: number;
+    particleMultiplier: number;
+    velocityMultiplier: number;
   };
 }
 

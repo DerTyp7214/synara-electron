@@ -23,6 +23,7 @@
   import { onMount, setContext } from "svelte";
   import {
     createResizeListener,
+    currentTime,
     fullscreen,
     getImageUrl,
     globalKeydown,
@@ -46,7 +47,6 @@
   import { setLiked, type Song } from "$lib/api/songs";
   import { MEDIA_PLAYER_CONTEXT_KEY } from "$lib/consts";
   import {
-    generateOklchScale,
     getColorCssVars,
     imageColors as derivedImageColors,
   } from "$lib/color/utils";
@@ -75,7 +75,9 @@
   let visualizerCanvas = $state<HTMLCanvasElement>();
   let queueElement = $state<HTMLElement>();
 
+  const targetScrobbledSysTime = $derived(lastFM.targetScrobbledSysTime());
   const bassAmplitude = $derived(mediaSession.bassAmplitude(0, 1, 2));
+  const audioVisualizerSettings = $derived(settings.audioVisualizer);
   const playingSourceId = $derived(mediaSession.playingSourceId);
   const currentPosition = $derived(mediaSession.currentPosition);
   const currentBuffer = $derived(mediaSession.currentBuffer);
@@ -435,16 +437,24 @@
         },
       )}
     >
-      {#if $isOpen}
+      {#if $isOpen && $audioVisualizerSettings.particleMultiplier > 0}
         <PartivleEmitter
           class={cn("absolute top-0 left-0 z-20 h-screen w-screen")}
           colors={$imageColors}
           yOffset={-($windowDimensions.height * 0.0475)}
-          velocityMultiplier={Math.exp(($bassAmplitude / 255) * 1.2)}
+          velocityMultiplier={Math.exp(
+            ($bassAmplitude / 255) *
+              $audioVisualizerSettings.velocityMultiplier,
+          )}
           emissionRate={Math.exp(
             ($bassAmplitude / 255) *
-              (($windowDimensions.width * $windowDimensions.height) /
-                (1080 * 1080)),
+              Math.min(
+                ($windowDimensions.width * $windowDimensions.height) /
+                  (1920 * 1920),
+                0.6,
+              ) *
+              $audioVisualizerSettings.particleMultiplier *
+              5,
           ) - 1}
           startOffset={Math.min(
             $windowDimensions.width * 0.8,
@@ -778,10 +788,17 @@
       />
     </div>
     {#if $lastFmEnabled}
-      <div class="absolute right-2 bottom-2">
+      <div class="absolute right-2 bottom-2 flex items-end gap-1">
         {#if $hasScrobbled}
           <CircleCheck class="text-success-700-300" size="12" />
         {:else}
+          {#if !$isPaused && $targetScrobbledSysTime - $currentTime > 0}
+            <span class="text-2xs tabular-nums opacity-50">
+              {millisecondsToHumanReadable(
+                $targetScrobbledSysTime - $currentTime,
+              )}
+            </span>
+          {/if}
           <CircleDivide class="text-surface-contrast-300-700" size="12" />
         {/if}
       </div>

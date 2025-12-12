@@ -20,6 +20,8 @@ export const DEFAULT_SETTINGS: AppSettings &
     minDecibels: -90,
     maxDecibels: -20,
     smoothingTimeConstant: 0.75,
+    particleMultiplier: 1.2,
+    velocityMultiplier: 2.2,
   },
   downloadDir: "",
   lastFm: false,

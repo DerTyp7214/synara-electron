@@ -338,6 +338,16 @@ export function removeUndefined<T extends Record<string, unknown>>(
   }, {} as Partial<T>);
 }
 
+export const currentTime = readable(Date.now(), function start(set) {
+  const interval = setInterval(() => {
+    set(Date.now());
+  }, 100);
+
+  return function stop() {
+    clearInterval(interval);
+  };
+});
+
 export const { isMac, isLinux, isWindows } = window.api ?? {
   isMac: () => false,
   isLinux: () => true,
