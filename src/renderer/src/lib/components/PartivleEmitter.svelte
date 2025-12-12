@@ -42,6 +42,8 @@
     velocityMultiplier;
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     emissionRate;
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    startOffset;
 
     worker?.postMessage({
       type: "updateProps",

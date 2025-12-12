@@ -444,8 +444,8 @@
           emissionRate={Math.exp(
             ($bassAmplitude / 255) *
               (($windowDimensions.width * $windowDimensions.height) /
-                (1920 * 1080)),
-          )}
+                (1080 * 1080)),
+          ) - 1}
           startOffset={Math.min(
             $windowDimensions.width * 0.8,
             $windowDimensions.height * 0.4,
