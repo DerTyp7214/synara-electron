@@ -77,7 +77,6 @@ jobs:
         env:
           MAIN_VITE_LAST_FM_API_KEY: ${{ secrets.LAST_FM_API_KEY }}
           MAIN_VITE_LAST_FM_SHARED_SECRET: ${{ secrets.LAST_FM_SHARED_SECRET }}
-          GH_TOKEN: ${{ secrets.SYNARA_GITHUB_TOKEN }}
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v6
@@ -133,13 +132,7 @@ jobs:
           WIN_YML="dist/latest.yml"
           OUTPUT_FILE="dist/${{ env.CHANNEL_NAME }}.yml"
 
-          CORE_DATA=$(yq '. |
-                         {
-                           version: .version,
-                           path: .path,
-                           sha512: .sha512,
-                           releaseDate: .releaseDate
-                         }' "$LINUX_YML" | jq -sR . )
+          CORE_DATA=$(yq -j '. | {version: .version, path: .path, sha512: .sha512, releaseDate: .releaseDate}' "$LINUX_YML" | jq -sR .)
 
           ALL_FILES=$(yq -o=json '.files' "$LINUX_YML" "$MAC_YML" "$WIN_YML" | jq -s 'flatten')
           FINAL_JSON=$(echo "$CORE_DATA" | jq -s '.[0] | fromjson | .files = ('"$ALL_FILES"')')
