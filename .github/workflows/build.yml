@@ -78,10 +78,6 @@ jobs:
           MAIN_VITE_LAST_FM_API_KEY: ${{ secrets.LAST_FM_API_KEY }}
           MAIN_VITE_LAST_FM_SHARED_SECRET: ${{ secrets.LAST_FM_SHARED_SECRET }}
 
-      - name: LS
-        shell: bash
-        run: ls -la dist
-
       - name: Upload Artifacts
         uses: actions/upload-artifact@v5
         with:
@@ -107,14 +103,6 @@ jobs:
           merge-multiple: 'true'
           path: artifacts-from-build
 
-      - name: LS
-        shell: bash
-        run: ls -la artifacts-from-build
-
-      - name: LS2
-        shell: bash
-        run: ls -la artifacts-from-build/**
-
       - name: Install jq
         run: sudo snap install jq
 
@@ -134,7 +122,7 @@ jobs:
 
       - name: Publish
         shell: bash
-        run: npx electron-builder --dir artifacts-from-build/**/dist --releaseTag $TAG --publish onTag
+        run: npx electron-builder --dir artifacts-from-build --releaseTag $TAG --publish onTag
         env:
           TAG: v${{ steps.collect_final_assets.outputs.RELEASE_VERSION }}${{ github.ref_name == 'master' && '-dev' || '' }}-desktop
           EP_CUSTOM_CHANNEL: ${{ github.ref_name == 'master' && 'dev-desktop' || 'desktop' }}
@@ -143,7 +131,7 @@ jobs:
 
       - name: Publish Latest
         shell: bash
-        run: npx electron-builder --dir artifacts-from-build/**/dist --releaseTag $TAG --publish onTag
+        run: npx electron-builder --dir artifacts-from-build --releaseTag $TAG --publish onTag
         env:
           TAG: latest${{ github.ref_name == 'master' && '-dev' || '' }}-desktop
           EP_CUSTOM_CHANNEL: ${{ github.ref_name == 'master' && 'dev-desktop' || 'desktop' }}
