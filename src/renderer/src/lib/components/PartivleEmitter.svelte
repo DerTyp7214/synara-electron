@@ -28,81 +28,6 @@
     class?: string;
   } = $props();
 
-  class Particle {
-    x = 0;
-    y = 0;
-    vx = 0;
-    vy = 0;
-    life = 0;
-    maxLife = 0;
-
-    constructor(centerX: number, centerY: number, size: number, speed: number) {
-      this.maxLife = Math.floor(Math.random() * 120) + 240;
-
-      const halfSize = size / 2;
-      const perimeter = size * 4;
-
-      const randomLength = Math.random() * perimeter;
-
-      if (randomLength < size) {
-        this.x = centerX - halfSize + randomLength;
-        this.y = centerY - halfSize;
-      } else if (randomLength < size * 2) {
-        this.x = centerX + halfSize;
-        this.y = centerY - halfSize + (randomLength - size);
-      } else if (randomLength < size * 3) {
-        this.x = centerX + halfSize - (randomLength - size * 2);
-        this.y = centerY + halfSize;
-      } else {
-        this.x = centerX - halfSize;
-        this.y = centerY + halfSize - (randomLength - size * 3);
-      }
-
-      const dx = this.x - centerX;
-      const dy = this.y - centerY;
-
-      let radialAngle = Math.atan2(dy, dx);
-
-      const spreadFactor = 0.3;
-      const spread = (Math.random() - 0.5) * spreadFactor;
-
-      let angle = radialAngle + spread;
-
-      const baseSpeed = (Math.random() * 1.5 + 0.5) * speed;
-
-      this.vx = Math.cos(angle) * baseSpeed;
-      this.vy = Math.sin(angle) * baseSpeed;
-
-      this.x += this.vx;
-      this.y += this.vy;
-    }
-
-    update() {
-      this.x += this.vx;
-      this.y += this.vy;
-      this.life++;
-      return this.life < this.maxLife;
-    }
-  }
-
-  let particles: Particle[] = [];
-  let canvasElement: HTMLCanvasElement | null = $state(null);
-  let ctx: CanvasRenderingContext2D | null = null;
-  let animationFrameId = 0;
-
-  function emitParticles(
-    centerX: number,
-    centerY: number,
-    emissionSpeed: number,
-  ) {
-    const count = Math.ceil(emissionRate);
-
-    for (let i = 0; i < count; i++) {
-      particles.push(
-        new Particle(centerX, centerY, startOffset, emissionSpeed),
-      );
-    }
-  }
   const color = $derived(
     oklchToRgb(
       sortedByLightnessOklch(
@@ -112,57 +37,78 @@
     ),
   );
 
-  let lastTime = 0;
+  $effect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    velocityMultiplier;
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    emissionRate;
 
-  const FRAME_INTERVAL = 1000 / 60;
-
-  function animate(time: number) {
-    animationFrameId = requestAnimationFrame(animate);
-
-    const deltaTime = time - lastTime;
-
-    if (deltaTime < FRAME_INTERVAL) {
-      return;
-    }
-
-    lastTime = time - (deltaTime % FRAME_INTERVAL);
-
-    if (!canvasElement) return;
-
-    if (!ctx) ctx = canvasElement.getContext("2d");
-    if (!ctx) return;
-
-    const width = canvasElement.width;
-    const height = canvasElement.height;
-    const centerX = width / 2 + xOffset;
-    const centerY = height / 2 + yOffset;
-
-    ctx.clearRect(0, 0, width, height);
-
-    emitParticles(centerX, centerY, velocityMultiplier);
-
-    particles = particles.filter((p) => p.update());
-    particles.forEach((p) => {
-      if (!ctx) return;
-
-      const alpha = 1 - p.life / p.maxLife;
-      //ctx.shadowBlur = alpha * 5;
-      //ctx.shadowColor = `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${alpha * 0.5 + 0.5})`;
-      ctx.fillStyle = `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${alpha * 0.5 + 0.5})`;
-
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, 0.5 + alpha, 0, Math.PI * 2.5);
-      ctx.fill();
+    worker?.postMessage({
+      type: "updateProps",
+      velocityMultiplier,
+      emissionRate,
+      startOffset,
     });
-  }
+  });
+
+  $effect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    color;
+
+    worker?.postMessage({
+      type: "updateColor",
+      color: color,
+    });
+  });
+
+  let canvasElement: HTMLCanvasElement | null = $state(null);
+  let worker: Worker | null = null;
 
   onMount(() => {
-    const cleanupResizeListener = createResizeListener(canvasElement!);
-    animationFrameId = requestAnimationFrame(animate);
+    if (!canvasElement) return;
+    canvasElement.width = canvasElement.clientWidth;
+    canvasElement.height = canvasElement.clientHeight;
+
+    worker = new Worker(new URL("../../particle-worker.js", import.meta.url), {
+      type: "module",
+    });
+
+    const offscreenCanvas = canvasElement.transferControlToOffscreen();
+
+    worker.postMessage(
+      {
+        type: "init",
+        canvas: offscreenCanvas,
+        width: canvasElement.width,
+        height: canvasElement.height,
+        initialState: {
+          velocityMultiplier,
+          emissionRate,
+          xOffset,
+          yOffset,
+          startOffset,
+          color: color,
+        },
+      },
+      [offscreenCanvas],
+    );
+
+    const cleanupResizeListener = createResizeListener(
+      canvasElement!,
+      (width, height) => {
+        if (worker) {
+          worker.postMessage({
+            type: "resize",
+            width,
+            height,
+          });
+        }
+      },
+    );
 
     return () => {
       cleanupResizeListener();
-      cancelAnimationFrame(animationFrameId);
+      worker?.terminate();
     };
   });
 </script>

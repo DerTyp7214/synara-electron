@@ -440,8 +440,12 @@
           class={cn("absolute top-0 left-0 z-20 h-screen w-screen")}
           colors={$imageColors}
           yOffset={-($windowDimensions.height * 0.0475)}
-          velocityMultiplier={($bassAmplitude / 255) * 2}
-          emissionRate={Math.exp($bassAmplitude / 255) * 1.2}
+          velocityMultiplier={Math.exp(($bassAmplitude / 255) * 1.2)}
+          emissionRate={Math.exp(
+            ($bassAmplitude / 255) *
+              (($windowDimensions.width * $windowDimensions.height) /
+                (1920 * 1080)),
+          )}
           startOffset={Math.min(
             $windowDimensions.width * 0.8,
             $windowDimensions.height * 0.4,

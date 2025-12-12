@@ -123,12 +123,18 @@ export function roundRect(
   ctx.fill();
 }
 
-export function createResizeListener(canvas: HTMLCanvasElement): () => void {
+export function createResizeListener(
+  canvas: HTMLCanvasElement,
+  callback: ((width: number, height: number) => void) | undefined = undefined,
+): () => void {
   const setResolution = (entry: ResizeObserverEntry) => {
     const { clientWidth, clientHeight } = entry.target as HTMLCanvasElement;
 
-    canvas.width = clientWidth;
-    canvas.height = clientHeight;
+    if (callback) callback(clientWidth, clientHeight);
+    else {
+      canvas.width = clientWidth;
+      canvas.height = clientHeight;
+    }
   };
 
   const observer = new ResizeObserver((entries) => {

@@ -41,9 +41,20 @@ const levelColors: Record<LogLevel, string> = {
 export const scopeStyle = (background: string, color: string = "white") =>
   `color: ${color}; background: ${background}; padding: 2px 4px; border-radius: 2px; font-weight: bold;`;
 
-const shouldLog = localStorage.getItem("logDebug") === "true";
-const logDebugLevel = (localStorage.getItem("logDebugLevel") ??
-  "error") as LogLevel;
+const shouldLog = () => {
+  try {
+    return localStorage.getItem("logDebug") === "true";
+  } catch (_) {
+    return true;
+  }
+};
+const logDebugLevel = () => {
+  try {
+    return (localStorage.getItem("logDebugLevel") ?? "error") as LogLevel;
+  } catch (_) {
+    return "log" as LogLevel;
+  }
+};
 
 const synaraPrefix = (logLevel: LogLevel) => [
   `%c[SYNARA]%c %c[${logLevel}]`,
@@ -72,7 +83,12 @@ export function debugLog(
   ...logs: Array<{ promise: true; data: () => Promise<any> }> | Array<any>
 ) {
   (async () => {
-    if (shouldLog && levelMap[logDebugLevel] <= levelMap[logLevel]) {
+    if (
+      // @ts-expect-error works
+      shouldLog.bind(this)() &&
+      // @ts-expect-error works
+      levelMap[logDebugLevel.bind(this)()] <= levelMap[logLevel]
+    ) {
       // eslint-disable-next-line no-console
       console.groupCollapsed(
         ...synaraPrefix(logLevel),
@@ -93,7 +109,12 @@ export function scopedDebugLog(
   ...logs: Array<{ promise: true; data: () => Promise<any> }> | Array<any>
 ) {
   (async () => {
-    if (shouldLog && levelMap[logDebugLevel] <= levelMap[logLevel]) {
+    if (
+      // @ts-expect-error works
+      shouldLog.bind(this)() &&
+      // @ts-expect-error works
+      levelMap[logDebugLevel.bind(this)()] <= levelMap[logLevel]
+    ) {
       // eslint-disable-next-line no-console
       console.groupCollapsed(
         ...synaraScopedPrefix(
@@ -111,13 +132,15 @@ export function scopedDebugLog(
   })();
 }
 
-// @ts-expect-error it works
-window.setLogLevel = function (level?: false | LogLevel) {
-  if (level === undefined)
-    return `Allowed levels: false (to disable), ${Object.entries(levelMap)
-      .map(([k, v]) => `${k} (${v})`)
-      .join(", ")}`;
-  if (!level) return localStorage.setItem("logDebug", "false");
-  localStorage.setItem("logDebug", "true");
-  localStorage.setItem("logDebugLevel", level);
-};
+if (Object.prototype.hasOwnProperty.call(this ?? {}, "window")) {
+  // @ts-expect-error it works
+  window.setLogLevel = function (level?: false | LogLevel) {
+    if (level === undefined)
+      return `Allowed levels: false (to disable), ${Object.entries(levelMap)
+        .map(([k, v]) => `${k} (${v})`)
+        .join(", ")}`;
+    if (!level) return localStorage.setItem("logDebug", "false");
+    localStorage.setItem("logDebug", "true");
+    localStorage.setItem("logDebugLevel", level);
+  };
+}
