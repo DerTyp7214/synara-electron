@@ -1,9 +1,9 @@
 appId: dev.dertyp.synara
 productName: synara
-electronVersion: 39.2.4+wvcus
+electronVersion: 39.2.4
 electronDownload:
-  custom:
-    url: 'https://github.com/castlabs/electron-releases/releases/download/v{1}/{2}'
+  version: 39.2.4+wvcus
+  mirror: https://github.com/castlabs/electron-releases/releases/download/v
 directories:
   buildResources: build
 files:
