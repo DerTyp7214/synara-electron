@@ -122,7 +122,7 @@ jobs:
 
       - name: Publish
         shell: bash
-        run: npx electron-builder publish --publish onTag -c.publish.channel=${{ env.CHANNEL_NAME }}
+        run: npx electron-builder --publish onTag -c.publish.channel=${{ env.CHANNEL_NAME }}
         env:
           GH_TAG_NAME: v${{ steps.collect_final_assets.outputs.RELEASE_VERSION }}${{ github.ref_name == 'master' && '-dev' || '' }}-desktop
           CHANNEL_NAME: ${{ github.ref_name == 'master' && 'dev-desktop' || 'desktop' }}
@@ -131,7 +131,7 @@ jobs:
 
       - name: Publish Latest
         shell: bash
-        run: npx electron-builder publish --publish onTag -c.publish.channel=${{ env.CHANNEL_NAME }}
+        run: npx electron-builder --publish onTag -c.publish.channel=${{ env.CHANNEL_NAME }}
         env:
           GH_TAG_NAME: latest${{ github.ref_name == 'master' && '-dev' || '' }}-desktop
           CHANNEL_NAME: ${{ github.ref_name == 'master' && 'dev-desktop' || 'desktop' }}
