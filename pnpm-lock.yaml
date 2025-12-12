@@ -4,6 +4,105 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+catalogs:
+  default:
+    '@electron-toolkit/eslint-config-prettier':
+      specifier: ^3.0.0
+      version: 3.0.0
+    '@electron-toolkit/eslint-config-ts':
+      specifier: ^3.1.0
+      version: 3.1.0
+    '@electron-toolkit/preload':
+      specifier: ^3.0.2
+      version: 3.0.2
+    '@electron-toolkit/tsconfig':
+      specifier: ^2.0.0
+      version: 2.0.0
+    '@electron-toolkit/utils':
+      specifier: ^4.0.0
+      version: 4.0.0
+    '@electron/notarize':
+      specifier: ^3.1.1
+      version: 3.1.1
+    '@eslint/compat':
+      specifier: ^2.0.0
+      version: 2.0.0
+    '@eslint/js':
+      specifier: ^9.39.1
+      version: 9.39.1
+    '@types/node':
+      specifier: ^25.0.1
+      version: 25.0.1
+    '@xhayper/discord-rpc':
+      specifier: ^1.3.0
+      version: 1.3.0
+    bonjour-service:
+      specifier: ^1.3.0
+      version: 1.3.0
+    concurrently:
+      specifier: ^9.2.1
+      version: 9.2.1
+    electron-builder:
+      specifier: ^26.3.6
+      version: 26.3.6
+    electron-liquid-glass:
+      specifier: ^1.1.1
+      version: 1.1.1
+    electron-serve:
+      specifier: ^3.0.0
+      version: 3.0.0
+    electron-store:
+      specifier: ^11.0.2
+      version: 11.0.2
+    electron-vite:
+      specifier: ^5.0.0
+      version: 5.0.0
+    eslint:
+      specifier: ^9.39.1
+      version: 9.39.1
+    eslint-config-prettier:
+      specifier: ^10.1.8
+      version: 10.1.8
+    eslint-plugin-prettier:
+      specifier: ^5.5.4
+      version: 5.5.4
+    eslint-plugin-svelte:
+      specifier: ^3.13.1
+      version: 3.13.1
+    file-type:
+      specifier: ^21.1.1
+      version: 21.1.1
+    flow-bin:
+      specifier: ^0.294.0
+      version: 0.294.0
+    globals:
+      specifier: ^16.5.0
+      version: 16.5.0
+    mpris-service:
+      specifier: ^2.1.2
+      version: 2.1.2
+    prettier:
+      specifier: ^3.7.4
+      version: 3.7.4
+    prettier-plugin-svelte:
+      specifier: ^3.4.0
+      version: 3.4.0
+    prettier-plugin-tailwindcss:
+      specifier: ^0.7.2
+      version: 0.7.2
+    typescript:
+      specifier: ^5.9.3
+      version: 5.9.3
+    typescript-eslint:
+      specifier: ^8.49.0
+      version: 8.49.0
+    vite:
+      specifier: ^7.2.7
+      version: 7.2.7
+    x11:
+      specifier: ^2.3.0
+      version: 2.3.0
+
 patchedDependencies:
   mpris-service:
     hash: 8258126e87f0be7115dfa5539cbe1628770b6dd300b4dd4fa779a5f5f111f78c
@@ -14,175 +113,175 @@ importers:
   .:
     dependencies:
       '@electron-toolkit/preload':
-        specifier: ^3.0.2
+        specifier: 'catalog:'
         version: 3.0.2(electron@https://codeload.github.com/castlabs/electron-releases/tar.gz/7cb662d6bc5d6c87a4bbb8a31885e0a54974025e)
       '@electron-toolkit/utils':
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.0.0(electron@https://codeload.github.com/castlabs/electron-releases/tar.gz/7cb662d6bc5d6c87a4bbb8a31885e0a54974025e)
       '@xhayper/discord-rpc':
-        specifier: ^1.3.0
+        specifier: 'catalog:'
         version: 1.3.0
       electron-liquid-glass:
-        specifier: ^1.1.1
+        specifier: 'catalog:'
         version: 1.1.1
     devDependencies:
       '@electron-toolkit/eslint-config-prettier':
-        specifier: ^3.0.0
+        specifier: 'catalog:'
         version: 3.0.0(eslint@9.39.1(jiti@2.6.1))(prettier@3.7.4)
       '@electron-toolkit/eslint-config-ts':
-        specifier: ^3.1.0
+        specifier: 'catalog:'
         version: 3.1.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
       '@electron-toolkit/tsconfig':
-        specifier: ^2.0.0
+        specifier: 'catalog:'
         version: 2.0.0(@types/node@25.0.1)
       '@electron/notarize':
-        specifier: ^3.1.1
+        specifier: 'catalog:'
         version: 3.1.1
       '@eslint/compat':
-        specifier: ^2.0.0
+        specifier: 'catalog:'
         version: 2.0.0(eslint@9.39.1(jiti@2.6.1))
       '@eslint/js':
-        specifier: ^9.39.1
+        specifier: 'catalog:'
         version: 9.39.1
       '@types/node':
-        specifier: ^25.0.1
+        specifier: 'catalog:'
         version: 25.0.1
       bonjour-service:
-        specifier: ^1.3.0
+        specifier: 'catalog:'
         version: 1.3.0
       concurrently:
-        specifier: ^9.2.1
+        specifier: 'catalog:'
         version: 9.2.1
       electron:
         specifier: github:castlabs/electron-releases#v39.2.4+wvcus
         version: https://codeload.github.com/castlabs/electron-releases/tar.gz/7cb662d6bc5d6c87a4bbb8a31885e0a54974025e
       electron-builder:
-        specifier: ^26.3.6
+        specifier: 'catalog:'
         version: 26.3.6(electron-builder-squirrel-windows@25.1.8)
       electron-serve:
-        specifier: ^3.0.0
+        specifier: 'catalog:'
         version: 3.0.0
       electron-store:
-        specifier: ^11.0.2
+        specifier: 'catalog:'
         version: 11.0.2
       electron-vite:
-        specifier: ^5.0.0
+        specifier: 'catalog:'
         version: 5.0.0(vite@7.2.7(@types/node@25.0.1)(jiti@2.6.1)(lightningcss@1.30.2))
       eslint:
-        specifier: ^9.39.1
+        specifier: 'catalog:'
         version: 9.39.1(jiti@2.6.1)
       eslint-config-prettier:
-        specifier: ^10.1.8
+        specifier: 'catalog:'
         version: 10.1.8(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-prettier:
-        specifier: ^5.5.4
+        specifier: 'catalog:'
         version: 5.5.4(eslint-config-prettier@10.1.8(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1))(prettier@3.7.4)
       eslint-plugin-svelte:
-        specifier: ^3.13.1
+        specifier: 'catalog:'
         version: 3.13.1(eslint@9.39.1(jiti@2.6.1))(svelte@5.45.10)
       file-type:
-        specifier: ^21.1.1
+        specifier: 'catalog:'
         version: 21.1.1
       flow-bin:
-        specifier: ^0.294.0
+        specifier: 'catalog:'
         version: 0.294.0
       globals:
-        specifier: ^16.5.0
+        specifier: 'catalog:'
         version: 16.5.0
       mpris-service:
-        specifier: ^2.1.2
+        specifier: 'catalog:'
         version: 2.1.2(patch_hash=8258126e87f0be7115dfa5539cbe1628770b6dd300b4dd4fa779a5f5f111f78c)
       prettier:
-        specifier: ^3.7.4
+        specifier: 'catalog:'
         version: 3.7.4
       prettier-plugin-svelte:
-        specifier: ^3.4.0
+        specifier: 'catalog:'
         version: 3.4.0(prettier@3.7.4)(svelte@5.45.10)
       prettier-plugin-tailwindcss:
-        specifier: ^0.7.2
+        specifier: 'catalog:'
         version: 0.7.2(prettier-plugin-svelte@3.4.0(prettier@3.7.4)(svelte@5.45.10))(prettier@3.7.4)
-      ts-md5:
-        specifier: ^2.0.1
-        version: 2.0.1
       typescript:
-        specifier: ^5.9.3
+        specifier: 'catalog:'
         version: 5.9.3
       typescript-eslint:
-        specifier: ^8.49.0
+        specifier: 'catalog:'
         version: 8.49.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
       vite:
-        specifier: ^7.2.7
+        specifier: 'catalog:'
         version: 7.2.7(@types/node@25.0.1)(jiti@2.6.1)(lightningcss@1.30.2)
       x11:
-        specifier: ^2.3.0
+        specifier: 'catalog:'
         version: 2.3.0
 
   src/renderer:
     dependencies:
       dayjs:
-        specifier: ^1.11.19
+        specifier: 'catalog:'
         version: 1.11.19
     devDependencies:
       '@fontsource/major-mono-display':
-        specifier: ^5.2.8
+        specifier: 'catalog:'
         version: 5.2.8
       '@humanspeak/svelte-virtual-list':
-        specifier: ^0.3.6
+        specifier: 'catalog:'
         version: 0.3.6(svelte@5.45.10)
       '@jis3r/icons':
-        specifier: ^1.22.0
+        specifier: 'catalog:'
         version: 1.22.0
       '@lucide/svelte':
-        specifier: ^0.561.0
+        specifier: 'catalog:'
         version: 0.561.0(svelte@5.45.10)
       '@skeletonlabs/skeleton':
-        specifier: ^4.7.4
+        specifier: 'catalog:'
         version: 4.7.4(tailwindcss@4.1.18)
       '@skeletonlabs/skeleton-svelte':
-        specifier: ^4.7.4
+        specifier: 'catalog:'
         version: 4.7.4(svelte@5.45.10)
       '@sveltejs/adapter-static':
-        specifier: ^3.0.10
+        specifier: 'catalog:'
         version: 3.0.10(@sveltejs/kit@2.49.2(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.45.10)(vite@7.2.7(@types/node@25.0.1)(jiti@2.6.1)(lightningcss@1.30.2)))(svelte@5.45.10)(vite@7.2.7(@types/node@25.0.1)(jiti@2.6.1)(lightningcss@1.30.2)))
       '@sveltejs/kit':
-        specifier: ^2.49.2
+        specifier: 'catalog:'
         version: 2.49.2(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.45.10)(vite@7.2.7(@types/node@25.0.1)(jiti@2.6.1)(lightningcss@1.30.2)))(svelte@5.45.10)(vite@7.2.7(@types/node@25.0.1)(jiti@2.6.1)(lightningcss@1.30.2))
       '@sveltejs/vite-plugin-svelte':
-        specifier: ^6.2.1
+        specifier: 'catalog:'
         version: 6.2.1(svelte@5.45.10)(vite@7.2.7(@types/node@25.0.1)(jiti@2.6.1)(lightningcss@1.30.2))
       '@tailwindcss/forms':
-        specifier: ^0.5.10
+        specifier: 'catalog:'
         version: 0.5.10(tailwindcss@4.1.18)
       '@tailwindcss/typography':
-        specifier: ^0.5.18
+        specifier: 'catalog:'
         version: 0.5.19(tailwindcss@4.1.18)
       '@tailwindcss/vite':
-        specifier: ^4.1.18
+        specifier: 'catalog:'
         version: 4.1.18(vite@7.2.7(@types/node@25.0.1)(jiti@2.6.1)(lightningcss@1.30.2))
       '@types/colorthief':
-        specifier: ^2.6.0
+        specifier: 'catalog:'
         version: 2.6.0
       classnames:
-        specifier: ^2.5.1
+        specifier: 'catalog:'
         version: 2.5.1
       colorthief:
-        specifier: ^2.6.0
+        specifier: 'catalog:'
         version: 2.6.0
       globals:
-        specifier: ^16.5.0
+        specifier: 'catalog:'
         version: 16.5.0
       musicbrainz-api:
-        specifier: ^0.27.0
+        specifier: 'catalog:'
         version: 0.27.0
       svelte:
-        specifier: ^5.45.10
+        specifier: 'catalog:'
         version: 5.45.10
       svelte-check:
-        specifier: ^4.3.4
+        specifier: 'catalog:'
         version: 4.3.4(picomatch@4.0.3)(svelte@5.45.10)(typescript@5.9.3)
       tailwindcss:
-        specifier: ^4.1.18
+        specifier: 'catalog:'
         version: 4.1.18
+      ts-md5:
+        specifier: 'catalog:'
+        version: 2.0.1
 
 packages:
 
@@ -1919,9 +2018,6 @@ packages:
 
   detect-node@2.1.0:
     resolution: {integrity: sha512-T0NIuQpnTvFDATNuHN5roPwSBG83rFsuO+MXXH9/3N1eFbn4wcPjttvjMLEPWJ0RGUYgQE7cGgS3tNxbqCGM7g==}
-
-  devalue@5.4.2:
-    resolution: {integrity: sha512-MwPZTKEPK2k8Qgfmqrd48ZKVvzSQjgW0lXLxiIBA8dQjtf/6mw6pggHNLcyDKyf+fI6eXxlQwPsfaCMTU5U+Bw==}
 
   devalue@5.6.1:
     resolution: {integrity: sha512-jDwizj+IlEZBunHcOuuFVBnIMPAEHvTsJj0BcIp94xYguLRVBcXO853px/MyIJvbVzWdsGvrRweIUWJw8hBP7A==}
@@ -4756,7 +4852,7 @@ snapshots:
       '@types/cookie': 0.6.0
       acorn: 8.15.0
       cookie: 0.6.0
-      devalue: 5.4.2
+      devalue: 5.6.1
       esm-env: 1.2.2
       kleur: 4.1.5
       magic-string: 0.30.21
@@ -6011,8 +6107,6 @@ snapshots:
 
   detect-node@2.1.0:
     optional: true
-
-  devalue@5.4.2: {}
 
   devalue@5.6.1: {}
 
