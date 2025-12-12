@@ -78,43 +78,6 @@ jobs:
           MAIN_VITE_LAST_FM_API_KEY: ${{ secrets.LAST_FM_API_KEY }}
           MAIN_VITE_LAST_FM_SHARED_SECRET: ${{ secrets.LAST_FM_SHARED_SECRET }}
 
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v6
-        with:
-          name: synara-build-${{ matrix.build }}
-          path: |
-            dist/
-            !dist/builder-debug.yml
-            !dist/builder-effective-config.yaml
-          retention-days: 1
-
-  release:
-    name: Create GitHub Release
-    needs: [build]
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v6
-
-      - name: Download all build artifacts
-        uses: actions/download-artifact@v7
-        with:
-          merge-multiple: 'true'
-          path: dist
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
-          run_install: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 22
-          cache: 'pnpm'
-
       - name: Install Dependencies
         shell: bash
         run: |
