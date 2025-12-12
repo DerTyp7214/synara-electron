@@ -18,7 +18,6 @@ asarUnpack:
   - resources/**
 afterSign: build/notarize.js
 win:
-  target: msi
   artifactName: "synara"
   executableName: synara
 nsis:
