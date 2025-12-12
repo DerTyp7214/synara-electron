@@ -101,7 +101,7 @@ jobs:
         uses: actions/download-artifact@v6
         with:
           merge-multiple: 'true'
-          path: artifacts-from-build
+          path: dist
 
       - name: Install jq
         run: sudo snap install jq
@@ -122,7 +122,7 @@ jobs:
 
       - name: Publish
         shell: bash
-        run: npx electron-builder --dir artifacts-from-build --releaseTag $TAG --publish onTag
+        run: npx electron-builder --releaseTag $TAG --publish onTag
         env:
           TAG: v${{ steps.collect_final_assets.outputs.RELEASE_VERSION }}${{ github.ref_name == 'master' && '-dev' || '' }}-desktop
           EP_CUSTOM_CHANNEL: ${{ github.ref_name == 'master' && 'dev-desktop' || 'desktop' }}
@@ -131,7 +131,7 @@ jobs:
 
       - name: Publish Latest
         shell: bash
-        run: npx electron-builder --dir artifacts-from-build --releaseTag $TAG --publish onTag
+        run: npx electron-builder --releaseTag $TAG --publish onTag
         env:
           TAG: latest${{ github.ref_name == 'master' && '-dev' || '' }}-desktop
           EP_CUSTOM_CHANNEL: ${{ github.ref_name == 'master' && 'dev-desktop' || 'desktop' }}
