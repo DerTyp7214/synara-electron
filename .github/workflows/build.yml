@@ -95,11 +95,11 @@ jobs:
 
       - name: Build for ${{ matrix.build }}
         shell: bash
-        run: pnpm run build:${{ matrix.build }} -c.publish.channel=${{ env.CHANNEL_NAME }}
+        run: pnpm run build:${{ matrix.build }} --publish always -c.publish.channel=${{ env.CHANNEL_NAME }} -c.publish.tagNamePrefix=${{ env.TAG_PREFIX }}
         env:
           MAIN_VITE_LAST_FM_API_KEY: ${{ secrets.LAST_FM_API_KEY }}
           MAIN_VITE_LAST_FM_SHARED_SECRET: ${{ secrets.LAST_FM_SHARED_SECRET }}
-          GH_TAG_NAME: v${{ steps.collect_final_assets.outputs.RELEASE_VERSION }}${{ github.ref_name == 'master' && '-dev' || '' }}-desktop
+          TAG_PREFIX: desktop${{ github.ref_name == 'master' && '-dev' || '' }}-v
           CHANNEL_NAME: ${{ github.ref_name == 'master' && 'dev-desktop' || 'desktop' }}
           EP_PRE_RELEASE: ${{ github.ref_name == 'master' }}
           GH_TOKEN: ${{ secrets.SYNARA_GITHUB_TOKEN }}
