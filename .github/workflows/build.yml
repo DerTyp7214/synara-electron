@@ -96,6 +96,7 @@ jobs:
       CHANNEL_NAME: ${{ github.ref_name == 'master' && 'dev-desktop' || 'desktop' }}
       PRE_RELEASE: ${{ github.ref_name == 'master' }}
       TAG_SUFFIX: ${{ github.ref_name == 'master' && '-dev' || '' }}-desktop
+      RELEASE_SUFFIX: ${{ github.ref_name == 'master' && ' (Development Build)' || '' }}
 
     steps:
       - name: Checkout Repository
@@ -140,6 +141,33 @@ jobs:
           echo "$FINAL_JSON" | yq -P > "$OUTPUT_FILE"
           echo "✅ Consolidated metadata saved to $OUTPUT_FILE"
 
-      - name: Ls
-        shell: bash
-        run: ls -la dist
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.collect_final_assets.outputs.RELEASE_VERSION }}${{ env.TAG_SUFFIX }}
+          name: Release v${{ steps.collect_final_assets.outputs.RELEASE_VERSION }}${{ env.RELEASE_SUFFIX }}
+          repository: DerTyp7214/synara
+          generate_release_notes: false
+          prerelease: ${{ env.PRE_RELEASE }}
+          target_commitish: desktop
+          files: |
+            dist/${{ env.CHANNEL_NAME }}
+            dist/synara-*
+        env:
+          GITHUB_TOKEN: ${{ secrets.SYNARA_GITHUB_TOKEN }}
+
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest${{ env.TAG_SUFFIX }}
+          name: Release v${{ steps.collect_final_assets.outputs.RELEASE_VERSION }}${{ env.RELEASE_SUFFIX }}
+          repository: DerTyp7214/synara
+          generate_release_notes: false
+          prerelease: ${{ env.PRE_RELEASE }}
+          target_commitish: desktop
+          files: |
+            dist/${{ env.CHANNEL_NAME }}
+            dist/synara-*
+        env:
+          GITHUB_TOKEN: ${{ secrets.SYNARA_GITHUB_TOKEN }}
