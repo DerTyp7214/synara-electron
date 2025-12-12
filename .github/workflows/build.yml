@@ -65,13 +65,51 @@ jobs:
           sudo apt update
           sudo apt install -y --install-recommends winehq-stable
 
-      - name: Install jq
-        if: matrix.build != 'mac'
-        run: sudo snap install jq
+      - name: Install Dependencies and sync svelte-kit
+        shell: bash
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm sync:sveltekit
+
+      - name: Build for ${{ matrix.build }}
+        shell: bash
+        run: pnpm run build:${{ matrix.build }} --publish never
+        env:
+          MAIN_VITE_LAST_FM_API_KEY: ${{ secrets.LAST_FM_API_KEY }}
+          MAIN_VITE_LAST_FM_SHARED_SECRET: ${{ secrets.LAST_FM_SHARED_SECRET }}
+          GH_TOKEN: ${{ secrets.SYNARA_GITHUB_TOKEN }}
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: synara-build-${{ matrix.build }}
+          path: |
+              dist/
+              !dist/builder-debug.yml
+              !dist/builder-effective-config.yaml
+          retention-days: 1
+
+  release:
+    name: Create GitHub Release
+    needs: [build]
+    runs-on: ubuntu-latest
+    env:
+      CHANNEL_NAME: ${{ github.ref_name == 'master' && 'dev-desktop' || 'desktop' }}
+      PRE_RELEASE: ${{ github.ref_name == 'master' }}
+      TAG_SUFFIX: ${{ github.ref_name == 'master' && '-dev' || '' }}-desktop
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v7
+        with:
+          merge-multiple: 'true'
+          path: dist
 
       - name: Install jq
-        if: matrix.build == 'mac'
-        run: brew install jq
+        run: sudo snap install jq yq
 
       - name: Collect Assets and Version
         id: collect_final_assets
@@ -87,19 +125,28 @@ jobs:
           RELEASE_VERSION=$(cat "$PKG_FILE" | jq -r '.version')
           echo "RELEASE_VERSION=$RELEASE_VERSION" >> $GITHUB_OUTPUT
 
-      - name: Install Dependencies and sync svelte-kit
+      - name: Merge yml files
         shell: bash
         run: |
-          pnpm install --frozen-lockfile
-          pnpm sync:sveltekit
+          LINUX_YML="dist/latest-linux.yml"
+          MAC_YML="dist/latest-mac.yml"
+          WIN_YML="dist/latest.yml"
+          OUTPUT_FILE="dist/${{ env.CHANNEL_NAME }}.yml"
 
-      - name: Build for ${{ matrix.build }}
+          CORE_DATA=$(yq '. |
+                         {
+                           version: .version,
+                           path: .path,
+                           sha512: .sha512,
+                           releaseDate: .releaseDate
+                         }' "$LINUX_YML" | jq -sR . )
+
+          ALL_FILES=$(yq -o=json '.files' "$LINUX_YML" "$MAC_YML" "$WIN_YML" | jq -s 'flatten')
+          FINAL_JSON=$(echo "$CORE_DATA" | jq -s '.[0] | fromjson | .files = ('"$ALL_FILES"')')
+
+          echo "$FINAL_JSON" | yq -y > "$OUTPUT_FILE"
+          echo "✅ Consolidated metadata saved to $OUTPUT_FILE"
+
+      - name: Ls
         shell: bash
-        run: pnpm run build:${{ matrix.build }} --publish always -c.publish.channel=${{ env.CHANNEL_NAME }} -c.publish.tagNamePrefix=${{ env.TAG_PREFIX }}
-        env:
-          MAIN_VITE_LAST_FM_API_KEY: ${{ secrets.LAST_FM_API_KEY }}
-          MAIN_VITE_LAST_FM_SHARED_SECRET: ${{ secrets.LAST_FM_SHARED_SECRET }}
-          TAG_PREFIX: desktop${{ github.ref_name == 'master' && '-dev' || '' }}-v
-          CHANNEL_NAME: ${{ github.ref_name == 'master' && 'dev-desktop' || 'desktop' }}
-          EP_PRE_RELEASE: ${{ github.ref_name == 'master' }}
-          GH_TOKEN: ${{ secrets.SYNARA_GITHUB_TOKEN }}
+        run: ls -la dist
