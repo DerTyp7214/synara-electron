@@ -9,7 +9,11 @@ import {
 } from "../shared/types/api";
 import { MediaInfo } from "../shared/models/mediaInfo";
 import type { Service } from "bonjour-service";
-import { Settings, SettingsAPI } from "../shared/types/settings";
+import {
+  Settings,
+  SettingsAPI,
+  TypedArrayBuffer,
+} from "../shared/types/settings";
 
 // Custom APIs for renderer
 const api: CustomApi & SettingsAPI = {
@@ -60,11 +64,13 @@ const api: CustomApi & SettingsAPI = {
     return () => ipcRenderer.removeListener("bonjour-event", ipcListener);
   },
 
-  get<K extends keyof Settings>(key: K): Promise<Settings[K]> {
+  get<K extends keyof Settings>(
+    key: K,
+  ): Promise<TypedArrayBuffer<Settings[K]>> {
     return ipcRenderer.invoke("settings:get", key);
   },
-  async set<K extends keyof Settings>(key: K, value: Settings[K]) {
-    await ipcRenderer.invoke("settings:set", key, value);
+  set<K extends keyof Settings>(key: K, value: TypedArrayBuffer<Settings[K]>) {
+    ipcRenderer.send("settings:set", key, value);
   },
   openExternal: (url: string) => ipcRenderer.send("lastfm:open-external", url),
 };

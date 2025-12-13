@@ -149,6 +149,11 @@ export const SETTINGS_KEYS: Array<keyof Settings> = [
 ];
 
 export interface SettingsAPI {
-  get<K extends keyof Settings>(key: K): Promise<Settings[K]>;
-  set<K extends keyof Settings>(key: K, value: Settings[K]): void;
+  get<K extends keyof Settings>(key: K): Promise<TypedArrayBuffer<Settings[K]>>;
+  set<K extends keyof Settings>(
+    key: K,
+    value: TypedArrayBuffer<Settings[K]>,
+  ): void;
 }
+
+export type TypedArrayBuffer<_V> = ArrayBuffer;

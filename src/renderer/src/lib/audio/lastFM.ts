@@ -188,7 +188,8 @@ class LastFM {
 
     try {
       const track = await this.songToLastFmSong(song, chosenByUser);
-      this.scrobbleQueue.update((queue) => [...queue, track]);
+      if (get(this.scrobbleQueue).length > 0 || !(await scrobble(track)))
+        this.scrobbleQueue.update((queue) => [...queue, track]);
     } catch (error) {
       scopedDebugLog("error", this.logScope, error, song);
     }

@@ -87,7 +87,7 @@ export class Queue implements Readable<QueueCallbackData> {
 
     this.unsubscribers.push(
       this.queueStore.subscribe((queue) => {
-        if (this.writeToSettings) settings.queue.set(copy(queue));
+        if (this.writeToSettings) settings.queue.set(queue);
       }),
     );
 
@@ -226,7 +226,7 @@ export class Queue implements Readable<QueueCallbackData> {
     if (index !== -1) {
       q[index] = song;
       if (refresh) this.queueStore.set(q);
-      else if (this.writeToSettings) settings.queue.set(copy(q));
+      else if (this.writeToSettings) settings.queue.set(q);
     }
   }
 

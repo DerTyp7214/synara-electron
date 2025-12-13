@@ -8,6 +8,7 @@ import type { Song } from "$shared/types/beApi";
 import type { OnNavigate } from "@sveltejs/kit";
 import type { MaybePromise } from "$lib/types";
 import type { SongLikedEventData } from "$lib/audio/queue";
+import type { TypedArrayBuffer } from "$shared/types/settings";
 
 export function getImageUrl<K extends string | undefined>(
   imageId: K,

@@ -11,6 +11,7 @@ import {
 import { app, ipcMain } from "electron";
 import path from "node:path";
 import { DEFAULT_SETTINGS } from "../shared/settings";
+import { decodeArrayBuffer, encodeArrayBuffer } from "../shared/bufferUtils";
 
 if (process.env.NODE_ENV === "development") {
   const devPath = path.join(app.getAppPath(), "dev-config");
@@ -123,14 +124,21 @@ export const queue = new Store({ schema: queueSchema, name: "queue" });
 
 export function setupSettings() {
   ipcMain.handle("settings:get", (_, key) => {
-    if (APP_SETTINGS_KEYS.includes(key)) return store.get(key);
-    else if (QUEUE_SETTINGS_KEYS.includes(key)) return queue.get(key);
-    else if (TOKEN_SETTINGS_KEYS.includes(key)) return token.get(key);
-    else return media.get(key);
+    let data: unknown;
+
+    if (APP_SETTINGS_KEYS.includes(key)) data = store.get(key);
+    else if (QUEUE_SETTINGS_KEYS.includes(key)) data = queue.get(key);
+    else if (TOKEN_SETTINGS_KEYS.includes(key)) data = token.get(key);
+    else data = media.get(key);
+
+    return encodeArrayBuffer(data);
   });
 
-  ipcMain.handle("settings:set", (_, key, value) => {
-    if (value === undefined) return;
+  ipcMain.on("settings:set", (_, key, data) => {
+    if (data === undefined) return;
+
+    const value = decodeArrayBuffer(data);
+
     if (APP_SETTINGS_KEYS.includes(key)) return store.set(key, value);
     else if (QUEUE_SETTINGS_KEYS.includes(key)) return queue.set(key, value);
     else if (TOKEN_SETTINGS_KEYS.includes(key)) return token.set(key, value);
