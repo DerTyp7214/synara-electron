@@ -39,7 +39,7 @@
     "@types/node": "catalog:",
     "bonjour-service": "catalog:",
     "concurrently": "catalog:",
-    "electron": "github:castlabs/electron-releases#v39.2.4+wvcus",
+    "electron": "catalog:",
     "electron-builder": "catalog:",
     "electron-serve": "catalog:",
     "electron-store": "catalog:",

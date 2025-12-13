@@ -10,7 +10,8 @@ class Particle {
   maxLife = 0;
 
   constructor(centerX: number, centerY: number, size: number, speed: number) {
-    this.maxLife = Math.floor(Math.random() * 240) + 120;
+    this.maxLife =
+      (Math.floor(Math.random() * 240) + 60) * Math.min(1, 6 / speed);
 
     const halfSize = size / 2;
     const perimeter = size * 4;
@@ -120,7 +121,10 @@ function animate(time: number) {
 
   const [r, g, b] = state.color;
 
-  particles = particles.filter((p) => p.update(width, height));
+  particles = particles
+    .filter((p) => p.update(width, height))
+    .toSorted((a, b) => a.life - b.life)
+    .slice(0, 1200);
 
   particles.forEach((p) => {
     if (!ctx) return;

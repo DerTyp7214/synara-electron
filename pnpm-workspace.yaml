@@ -31,6 +31,7 @@ catalog:
   colorthief: ^2.6.0
   concurrently: ^9.2.1
   dayjs: ^1.11.19
+  electron: github:castlabs/electron-releases#v39.2.4+wvcus
   electron-builder: ^26.3.6
   electron-liquid-glass: ^1.1.1
   electron-serve: ^3.0.0

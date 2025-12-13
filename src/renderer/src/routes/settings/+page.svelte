@@ -379,7 +379,7 @@
     {@render rangeValue(
       "particleMultiplier",
       0,
-      5,
+      3,
       DEFAULT_SETTINGS.audioVisualizer.particleMultiplier,
       $t("settings.particleMultiplier"),
     )}
