@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ExternalDependencies">
+    <plugin id="HtmlTools" />
+    <plugin id="JavaScript" />
+    <plugin id="NodeJS" />
+    <plugin id="com.intellij.css" />
+    <plugin id="com.intellij.modules.json" />
+    <plugin id="com.intellij.tailwindcss" />
+    <plugin id="dev.blachut.svelte.lang" />
+    <plugin id="intellij.prettierJS" />
+    <plugin id="intellij.vitejs" />
+    <plugin id="org.intellij.plugins.markdown" />
+    <plugin id="org.intellij.plugins.postcss" />
+    <plugin id="tailwind.fold.tailwind-fold" />
+  </component>
+</project>
