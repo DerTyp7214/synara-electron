@@ -1,7 +1,7 @@
 {
   "name": "synara-desktop",
   "version": "1.0.0",
-  "description": "An Electron application with Svelte and TypeScript",
+  "description": "Synara Desktop Music-Player",
   "main": "./out/main/index.js",
   "author": "example.com",
   "homepage": "https://electron-vite.org",
