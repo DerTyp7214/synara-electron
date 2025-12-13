@@ -80,23 +80,26 @@
 
     const offscreenCanvas = canvasElement.transferControlToOffscreen();
 
-    worker.postMessage(
-      {
-        type: "init",
-        canvas: offscreenCanvas,
-        width: canvasElement.width,
-        height: canvasElement.height,
-        initialState: {
-          velocityMultiplier,
-          emissionRate,
-          xOffset,
-          yOffset,
-          startOffset,
-          color: color,
+    setTimeout(() => {
+      if (!canvasElement) return;
+      worker?.postMessage(
+        {
+          type: "init",
+          canvas: offscreenCanvas,
+          width: canvasElement.width,
+          height: canvasElement.height,
+          initialState: {
+            velocityMultiplier,
+            emissionRate,
+            xOffset,
+            yOffset,
+            startOffset,
+            color: color,
+          },
         },
-      },
-      [offscreenCanvas],
-    );
+        [offscreenCanvas],
+      );
+    }, 150);
 
     const cleanupResizeListener = createResizeListener(
       canvasElement!,

@@ -130,12 +130,12 @@ function animate(time: number) {
     if (!ctx) return;
     const alpha = 1 - p.life / p.maxLife;
 
-    ctx.shadowBlur = alpha * 5;
-    ctx.shadowColor = `rgba(${r}, ${g}, ${b}, ${alpha * 0.5 + 0.5})`;
+    //ctx.shadowBlur = alpha * 5;
+    //ctx.shadowColor = `rgba(${r}, ${g}, ${b}, ${alpha * 0.5 + 0.5})`;
     ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha * 0.5 + 0.5})`;
 
     ctx.beginPath();
-    ctx.arc(p.x, p.y, 0.7 + alpha, 0, Math.PI * 2);
+    ctx.arc(p.x, p.y, 1 + alpha, 0, Math.PI * 2);
     ctx.fill();
   });
 }

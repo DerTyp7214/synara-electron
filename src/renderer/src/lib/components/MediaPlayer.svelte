@@ -453,30 +453,29 @@
         },
       )}
     >
-      {#if $showVisualizer && $isOpen && $audioVisualizerSettings.particleMultiplier > 0}
+      {#if $showVisualizer && $isOpen && $audioVisualizerSettings.particleMultiplier > 0 && !$showQueue && !($showLyrics && hasLyrics)}
         <PartivleEmitter
           class={cn("absolute top-0 left-0 z-20 h-screen w-screen")}
           colors={$imageColors}
           yOffset={-($windowDimensions.height * 0.044)}
           velocityMultiplier={Math.exp(
-            ($bassAmplitude / 255) *
-              $audioVisualizerSettings.velocityMultiplier *
-              ($windowDimensions.width / 1920),
+            Math.pow(
+              ($bassAmplitude / 255) *
+                $audioVisualizerSettings.velocityMultiplier,
+              1.5,
+            ),
           )}
-          emissionRate={Math.exp(
+          emissionRate={Math.pow(
             ($bassAmplitude / 255) *
-              Math.min(
-                ($windowDimensions.width * $windowDimensions.height) /
-                  (1920 * 1920),
-                0.6,
-              ) *
+              0.6 *
               $audioVisualizerSettings.particleMultiplier *
               5,
+            2,
           ) - 1}
           startOffset={Math.min(
             $windowDimensions.width * 0.8,
             $windowDimensions.height * 0.4,
-          ) - 10}
+          ) * 0.9}
         />
       {/if}
       <img
