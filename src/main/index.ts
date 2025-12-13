@@ -101,6 +101,7 @@ function createWindow(): void {
 
   mainWindow.on("ready-to-show", () => {
     mainWindow.show();
+    mainWindow.webContents.openDevTools(); // FIXME: remove at some point
   });
 
   mainWindow.on("close", (event) => {

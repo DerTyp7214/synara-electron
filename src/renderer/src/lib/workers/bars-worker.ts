@@ -82,7 +82,7 @@ function animate(time: number) {
       Math.min((barHeight * 1.25) / HEIGHT, 1),
     );
     ctx.shadowColor = color;
-    ctx.shadowBlur = Math.min((barHeight * 1.25) / HEIGHT, 1) * 10;
+    ctx.shadowBlur = Math.min((barHeight * 1.25) / HEIGHT, 1) * 5;
     ctx.fillStyle = color;
 
     roundRect(

@@ -18,7 +18,7 @@ export function addMPRIS(eventListener: MprisEventListener<MprisEventName>) {
   if (platform.isLinux) {
     try {
       player = new Player({
-        name: "synara",
+        name: process.env.NODE_ENV === "development" ? "synara-dev" : "synara",
         identity: APP_ID,
         supportedUriSchemes: ["file"],
         supportedMimeTypes: ["audio/mpeg", "audio/flac", "application/ogg"],

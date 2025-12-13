@@ -6,7 +6,7 @@
   import { Eye } from "@lucide/svelte";
   import { t } from "$lib/i18n/i18n";
   import { settings } from "$lib/utils/settings";
-  import { type Writable, writable } from "svelte/store";
+  import { get, type Writable, writable } from "svelte/store";
   import type { PartialRecord, TypedKeys } from "$lib/types";
   import { health } from "$lib/api/main";
   import cn from "classnames";
@@ -121,11 +121,16 @@
 
       switch (key) {
         case "apiBase": {
-          const { available } = await health(value as SettingsType[typeof key]);
+          if (value !== get(stores[key])) {
+            const { available } = await health(
+              value as SettingsType[typeof key],
+            );
 
-          stores[key].set(value as SettingsType[typeof key]);
-          applyState[key] = available ? "success" : "failure";
+            stores[key].set(value as SettingsType[typeof key]);
+            applyState[key] = available ? "success" : "failure";
 
+            location.reload();
+          }
           break;
         }
         case "lastFmApiKey":

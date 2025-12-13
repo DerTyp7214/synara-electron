@@ -16,7 +16,7 @@
     Volume2,
     VolumeX,
     CircleCheck,
-    CircleDivide,
+    CircleMinus,
   } from "@lucide/svelte";
   import { ChevronUp, Maximize, Minimize } from "@jis3r/icons";
   import cn from "classnames";
@@ -811,7 +811,7 @@
               )}
             </span>
           {/if}
-          <CircleDivide class="text-surface-contrast-300-700" size="12" />
+          <CircleMinus class="text-surface-contrast-300-700" size="12" />
         {/if}
       </div>
     {/if}
