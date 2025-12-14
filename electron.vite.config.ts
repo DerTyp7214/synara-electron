@@ -10,4 +10,9 @@ export default defineConfig(async () => ({
       assets: ["./node_modules/electron-vibrancy/build/Release"],
     },
   },
+  preload: {
+    build: {
+      externalizeDeps: true,
+    },
+  },
 }));

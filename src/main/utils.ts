@@ -23,6 +23,20 @@ export const flags: {
   gpuRasterization: [
     { flag: "enable-gpu-rasterization", value: undefined, handle: true },
   ],
+  highPerformanceGpe: [
+    {
+      flag: "force_high_performance_gpu",
+      value: undefined,
+      handle: true,
+    },
+  ],
+  fixGpuStuff: [
+    {
+      flag: "disable-gpu-sandbox",
+      value: undefined,
+      handle: true,
+    },
+  ],
   disableHardwareMediaKeys: [
     {
       flag: "disable-features",
@@ -38,12 +52,16 @@ export const flags: {
     },
   ],
   enableWaylandSupport: [
-    { flag: "enable-features", value: "UseOzonePlatform", handle: true },
-    { flag: "ozone-platform-hint", value: "auto", handle: true },
+    {
+      flag: "enable-features",
+      value: "UseOzonePlatform",
+      handle: platform.isLinux,
+    },
+    { flag: "ozone-platform-hint", value: "auto", handle: platform.isLinux },
     {
       flag: "enable-features",
       value: "WaylandWindowDecorations",
-      handle: true,
+      handle: platform.isLinux,
     },
   ],
 };
