@@ -1,4 +1,4 @@
-import type { TypedArrayBuffer } from "$shared/types/settings";
+import type { TypedArrayBuffer } from "./types/settings";
 
 export function decodeArrayBuffer<K>(buffer: TypedArrayBuffer<K>): K {
   const decoder = new TextDecoder();
