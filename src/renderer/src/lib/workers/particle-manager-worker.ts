@@ -48,6 +48,8 @@ function animate(time: number) {
   ctx.clearRect(0, 0, width, height);
   const [r, g, b] = state.color;
 
+  const baseColorString = `rgba(${r}, ${g}, ${b}, `;
+
   for (const buffer of particleBuffers.values()) {
     const numParticles = buffer.length / PARTICLE_SCHEMA.FLOATS_PER_PARTICLE;
 
@@ -58,7 +60,7 @@ function animate(time: number) {
       const y = buffer[baseIndex + PARTICLE_SCHEMA.y];
       const alpha = buffer[baseIndex + PARTICLE_SCHEMA.alpha];
 
-      ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha * 0.5 + 0.5})`;
+      ctx.fillStyle = baseColorString + `${alpha * 0.5 + 0.5})`;
 
       ctx.beginPath();
       ctx.arc(x, y, 1 + alpha, 0, Math.PI * 2);
