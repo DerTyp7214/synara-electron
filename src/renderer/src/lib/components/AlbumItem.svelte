@@ -13,7 +13,6 @@
   import { TOAST_CONTEXT_KEY, type ToasterContext } from "$lib/consts";
   import type { Album, Artist, Song } from "$shared/types/beApi";
   import { listSongsByAlbum } from "$lib/api/albums";
-  import { copy } from "$lib/utils/utils";
   import type { PagedResponse } from "$lib/api/apiTypes";
 
   const {
@@ -152,7 +151,7 @@
     event.stopPropagation();
     event.stopImmediatePropagation();
 
-    playAlbum(copy(albumRef));
+    playAlbum(albumRef);
   }
 </script>
 

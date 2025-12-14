@@ -1,3 +1,5 @@
+import type { RGBColor } from "colorthief";
+
 export type PartialRecord<K extends PropertyKey, T> = {
   [P in K]?: T;
 };
@@ -18,3 +20,13 @@ export type MaybePromise<T> = T | Promise<T>;
 export type TypedKeys<T, O> = {
   [K in keyof T]: T[K] extends O ? K : never;
 }[keyof T];
+
+export type ParticleState = {
+  velocityMultiplier: number;
+  currentVelocityMultiplier: number;
+  emissionRate: number;
+  xOffset: number;
+  yOffset: number;
+  startOffset: number;
+  color: RGBColor;
+};

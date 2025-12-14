@@ -41,15 +41,14 @@
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     velocityMultiplier;
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    emissionRate;
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     startOffset;
 
-    worker?.postMessage({
-      type: "updateProps",
-      velocityMultiplier,
-      emissionRate,
-      startOffset,
+    particleWorkers.forEach((worker) => {
+      worker.postMessage({
+        type: "updateProps",
+        velocityMultiplier,
+        startOffset,
+      });
     });
   });
 
@@ -63,8 +62,80 @@
     });
   });
 
+  $effect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    emissionRate;
+
+    const workerCount = Math.ceil((emissionRate * 60) / 100);
+    const newWorkerCount = workerCount - particleWorkers.length;
+
+    const realEmissionRate = emissionRate / workerCount;
+
+    if (newWorkerCount > 0) {
+      for (let i = 0; i < workerCount; i++) {
+        setupParticleWorker(realEmissionRate);
+      }
+    }
+
+    particleWorkers.slice(0, workerCount).forEach((worker) => {
+      worker.postMessage({
+        type: "updateEmissionRate",
+        emissionRate: realEmissionRate,
+      });
+    });
+  });
+
   let canvasElement: HTMLCanvasElement | null = $state(null);
+  let offscreenCanvas: OffscreenCanvas | null = $state(null);
   let worker: Worker | null = null;
+
+  const particleWorkers: Array<Worker> = [];
+  const channel = new MessageChannel();
+  const portToManager = channel.port1;
+  const portToWorkers = channel.port2;
+
+  function setupParticleWorker(emissionRate: number): Worker | undefined {
+    if (!offscreenCanvas || !canvasElement) return;
+
+    const workerChannel = new MessageChannel();
+    const portForParticle = workerChannel.port1;
+    const portForMainRelay = workerChannel.port2;
+
+    const worker = new Worker(
+      new URL("../workers/particle-worker.js", import.meta.url),
+      {
+        type: "module",
+      },
+    );
+
+    worker.postMessage(
+      {
+        type: "init",
+        id: particleWorkers.length + 1,
+        messagePort: portForParticle,
+        width: canvasElement.width,
+        height: canvasElement.height,
+        initialState: {
+          velocityMultiplier,
+          emissionRate,
+          xOffset,
+          yOffset,
+          startOffset,
+        },
+      },
+      [portForParticle],
+    );
+
+    portForMainRelay.onmessage = (
+      event: MessageEvent<{ id: number; buffer: Float32Array }>,
+    ) => {
+      const { id, buffer } = event.data;
+
+      portToWorkers.postMessage({ id, buffer }, [buffer.buffer]);
+    };
+
+    particleWorkers.push(worker);
+  }
 
   onMount(() => {
     if (!canvasElement) return;
@@ -72,38 +143,40 @@
     canvasElement.height = canvasElement.clientHeight;
 
     worker = new Worker(
-      new URL("../workers/particle-worker.js", import.meta.url),
+      new URL("../workers/particle-manager-worker.js", import.meta.url),
       {
         type: "module",
       },
     );
 
-    const offscreenCanvas = canvasElement.transferControlToOffscreen();
+    offscreenCanvas = canvasElement.transferControlToOffscreen();
 
     setTimeout(() => {
-      if (!canvasElement) return;
+      if (!offscreenCanvas || !canvasElement) return;
       worker?.postMessage(
         {
           type: "init",
+          messagePort: portToManager,
           canvas: offscreenCanvas,
           width: canvasElement.width,
           height: canvasElement.height,
-          initialState: {
-            velocityMultiplier,
-            emissionRate,
-            xOffset,
-            yOffset,
-            startOffset,
-            color: color,
-          },
+          color: color,
         },
-        [offscreenCanvas],
+        [offscreenCanvas, portToManager],
       );
     }, 150);
 
     const cleanupResizeListener = createResizeListener(
       canvasElement!,
       (width, height) => {
+        particleWorkers.forEach((worker) => {
+          worker.postMessage({
+            type: "resize",
+            width,
+            height,
+          });
+        });
+
         if (worker) {
           worker.postMessage({
             type: "resize",
@@ -117,6 +190,10 @@
     return () => {
       cleanupResizeListener();
       worker?.terminate();
+
+      while (particleWorkers.length) {
+        particleWorkers.pop()?.terminate();
+      }
     };
   });
 </script>

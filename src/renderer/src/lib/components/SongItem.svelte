@@ -243,7 +243,7 @@
       <Play />
     </button>
   </div>
-  <div class="flex flex-1 flex-grow flex-col justify-center overflow-hidden">
+  <div class="flex flex-1 grow flex-col justify-center overflow-hidden">
     <div class="flex flex-row items-center gap-2 pe-1">
       <span class="line-clamp-1 font-medium overflow-ellipsis">{title}</span>
       {#if explicit}

@@ -465,13 +465,18 @@
               1.5,
             ),
           )}
-          emissionRate={Math.pow(
-            ($bassAmplitude / 255) *
-              0.6 *
-              $audioVisualizerSettings.particleMultiplier *
-              5,
-            2,
-          ) - 1}
+          emissionRate={$isPaused
+            ? 0
+            : Math.max(
+                Math.pow(
+                  ($bassAmplitude / 255) *
+                    0.6 *
+                    $audioVisualizerSettings.particleMultiplier *
+                    5,
+                  2,
+                ) - 1,
+                1,
+              )}
           startOffset={Math.min(
             $windowDimensions.width * 0.8,
             $windowDimensions.height * 0.4,
