@@ -38,7 +38,6 @@ class ElectronController {
     style: scopeStyle("#8f6406"),
   };
 
-  private unsubscribers: Array<() => void> = [];
   private lastImageUrl: { id: string; url: string | null; loading: boolean } = {
     id: "",
     url: "",
@@ -46,7 +45,6 @@ class ElectronController {
   };
 
   constructor() {
-    this.cleanup();
     void this.initElectron();
   }
 
@@ -244,12 +242,6 @@ class ElectronController {
         ...metadata,
         image: this.lastImageUrl.url ?? undefined,
       });
-    }
-  }
-
-  cleanup() {
-    for (const unsubscriber of this.unsubscribers) {
-      unsubscriber?.();
     }
   }
 }

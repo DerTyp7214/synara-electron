@@ -28,7 +28,7 @@
 
     loading = false;
 
-    await goto(resolve("/"), { replaceState: true });
+    if (response.isOk()) await goto(resolve("/"), { replaceState: true });
   }
 
   onNavigate(defaultNavigation);
@@ -73,7 +73,7 @@
           bind:value={username}
           disabled={loading}
           oninput={() => (errorMessage = "")}
-          class="input ring-surface-500 !m-0"
+          class="input ring-surface-500 m-0!"
           type="text"
           placeholder={$t("login.username.placeholder")}
         />
@@ -84,7 +84,7 @@
           bind:value={password}
           disabled={loading}
           oninput={() => (errorMessage = "")}
-          class="input ring-surface-500 !m-0"
+          class="input ring-surface-500 m-0!"
           type="password"
           placeholder={$t("login.password.placeholder")}
         />

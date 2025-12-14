@@ -100,12 +100,6 @@
   @apply input;
 }
 
-.animate-svg {
-  svg {
-    @apply animate-bounce;
-  }
-}
-
 [data-mode="dark"] {
   color-scheme: dark;
 }

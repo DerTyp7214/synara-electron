@@ -138,7 +138,7 @@ function createWindow(): void {
   });
 
   // HMR for renderer base on electron-vite cli.
-  // Load the remote URL for development or the local html file for production.
+  // Load the remote URL for development or the local HTML file for production.
   if (is.dev) {
     loadVite();
   } else {

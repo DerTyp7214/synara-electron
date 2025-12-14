@@ -159,7 +159,7 @@ export function rotateOklchHue(
   const chroma = matches[2]; // C (e.g., "0.15")
   const hue = parseFloat(matches[3]); // H (e.g., 210.5)
 
-  // 2. Apply 180 degree rotation and wrap around 360
+  // 2. Apply 180-degree rotation and wrap around 360
   const rotatedHue = (hue + addHue) % 360;
 
   // 3. Reconstruct the new oklch string
