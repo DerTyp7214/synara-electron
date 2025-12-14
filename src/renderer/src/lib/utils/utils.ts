@@ -341,7 +341,7 @@ window.dispatchCustomEvent = function <
   K extends keyof WindowEventMap,
   T extends CustomEventType<K>,
 >(event: K, data?: T) {
-  window.dispatchEvent(new CustomEvent(event, data));
+  window.dispatchEvent(new CustomEvent(event, { detail: data }));
 };
 
 window.listenCustomEvent = function <K extends keyof WindowEventMap>(

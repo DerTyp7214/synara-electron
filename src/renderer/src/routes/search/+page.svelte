@@ -60,6 +60,7 @@
     {#each songs as song (song.id)}
       <SongItem
         {...song}
+        bind:isFavourite={song.isFavourite}
         style="view-transition-name: song-{song.id}"
         songRef={song}
         playlistRef={songs}

@@ -1,5 +1,5 @@
 import { audioSession } from "$lib/audio/audioSession";
-import { getContentLength, type Song } from "$lib/api/songs";
+import { getContentLength, type Song, songByIds } from "$lib/api/songs";
 import { getStreamUrl } from "$lib/utils/utils";
 import {
   derived,
@@ -19,7 +19,7 @@ import { settings, settingsService } from "$lib/utils/settings";
 import { Queue } from "$lib/audio/queue";
 import type { UUID } from "node:crypto";
 import { nullSong } from "$shared/types/settings";
-import type { SongWithPosition } from "$shared/types/beApi";
+import type { MinimalSong, SongWithPosition } from "$shared/types/beApi";
 import type { RGBColor } from "colorthief";
 
 // noinspection JSUnusedGlobalSymbols
@@ -78,7 +78,8 @@ export class MediaSession {
     this.audioContext = new (
       window.AudioContext ||
       // eslint-disable-next-line
-      (window as any).webkitAudioContext)();
+      (window as any).webkitAudioContext
+    )();
 
     this.setupAudioConnection();
 
@@ -166,7 +167,7 @@ export class MediaSession {
     return get(this.queue);
   }
 
-  private async _playSong(song?: SongWithPosition) {
+  private async _playSong(song?: MinimalSong) {
     if (!song || song === nullSong) return;
 
     const streamUrl = getStreamUrl(song?.id);
@@ -455,7 +456,7 @@ export class MediaSession {
   }
 
   async playSongWithPosition(
-    song: SongWithPosition,
+    song: MinimalSong,
     shuffled: boolean = get(settings.shuffle),
   ) {
     this.currentQueue().setShuffled(shuffled);
@@ -525,11 +526,27 @@ export class MediaSession {
     const startIndex = pageSize * page;
 
     const data = Array.from(queue).slice(startIndex, startIndex + pageSize);
+    const positions: Record<UUID, Array<number>> = {};
+
+    for (const d of data) {
+      if (positions[d.id]) positions[d.id].push(d.position);
+      else positions[d.id] = [d.position];
+    }
 
     return {
       page,
       pageSize,
-      data,
+      data: await songByIds(...data.map(({ id }) => id)).then(
+        (songs) =>
+          songs
+            .map((song) => ({
+              ...song,
+              position: positions[song.id]?.pop(),
+            }))
+            .filter(
+              ({ position }) => position !== undefined,
+            ) as Array<SongWithPosition>,
+      ),
       hasNextPage: data.length === pageSize,
     };
   }

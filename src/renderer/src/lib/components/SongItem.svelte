@@ -5,7 +5,6 @@
   import Tidal from "$lib/assets/Tidal.svelte";
   import { setLiked, type Song } from "$lib/api/songs";
   import {
-    copy,
     getImageUrl,
     getOrigin,
     millisecondsToHumanReadable,
@@ -26,7 +25,7 @@
     type ToasterContext,
   } from "$lib/consts";
   import { t } from "$lib/i18n/i18n";
-  import type { SongWithPosition } from "$shared/types/beApi";
+  import type { MinimalSong, SongWithPosition } from "$shared/types/beApi";
   import { goto } from "$app/navigation";
   import { get, type Writable } from "svelte/store";
   import dayjs from "$lib/utils/dayJsUtils";
@@ -61,7 +60,7 @@
     addedAt?: string;
     size?: number;
     playingSource: PlayingSource;
-    playlistRef: Array<Song>;
+    playlistRef: Array<Omit<MinimalSong, "position">>;
     songRef: Song | SongWithPosition;
     scrollIntoActive?: boolean;
   } = $props();
@@ -137,7 +136,7 @@
       const updatedSong = await setLiked(id, !isFavourite);
 
       if (updatedSong.isFavourite !== isFavourite) {
-        songRef.isFavourite = updatedSong.isFavourite;
+        isFavourite = updatedSong.isFavourite;
         window.dispatchCustomEvent("songLiked", {
           songId: updatedSong.id,
           isFavourite: updatedSong.isFavourite,
@@ -174,16 +173,13 @@
   function handleLikedSongEvent({ detail }: CustomEvent<SongLikedEventData>) {
     if (!detail) return;
 
-    const { songId, isFavourite } = detail;
+    const { songId } = detail;
 
     if (id === songId) {
-      songRef.isFavourite = isFavourite;
+      isFavourite = detail.isFavourite;
 
       if ("position" in songRef) {
-        get(mediaSession.getDerivedQueue()).updateSong({
-          ...songRef,
-          isFavourite: isFavourite,
-        });
+        get(mediaSession.getDerivedQueue()).refreshQueue();
       }
     }
   }
@@ -231,7 +227,7 @@
       >
     </Avatar>
     <button
-      onclick={() => playSong(copy(songRef), playlistRef, playingSource)}
+      onclick={() => playSong(songRef, playlistRef, playingSource)}
       class={cn(
         "bg-surface-50-950/60",
         "absolute top-0 left-0",

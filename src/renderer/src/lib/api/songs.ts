@@ -80,6 +80,18 @@ export async function songById(songId: Song["id"]) {
   return cleanSong(await response.getData());
 }
 
+export async function songByIds(...songIds: Array<Song["id"]>) {
+  // @ts-expect-error in case of binding the function
+  const response = await apiCall.bind(this)<Array<Song>>({
+    path: `/song/byIds`,
+    body: { ids: songIds },
+    method: "POST",
+    auth: true,
+  });
+
+  return await response.getData().then((res) => res.map(cleanSong));
+}
+
 export async function querySongs(
   query: string,
   page?: number,

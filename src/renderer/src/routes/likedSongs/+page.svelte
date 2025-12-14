@@ -47,6 +47,7 @@
     <SongItem
       {...item}
       {playingSource}
+      bind:isFavourite={item.isFavourite}
       songRef={item}
       playlistRef={items}
       showNumber={index + 1}

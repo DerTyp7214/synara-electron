@@ -231,6 +231,7 @@
       {#snippet renderItem({ item, index })}
         <SongItem
           {...item}
+          bind:isFavourite={item.isFavourite}
           class="mx-8"
           songRef={item}
           playlistRef={songItems}

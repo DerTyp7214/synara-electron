@@ -13,7 +13,7 @@ import type { UUID } from "node:crypto";
 import { audioSession } from "$lib/audio/audioSession";
 import { mediaSession } from "$lib/audio/mediaSession";
 import { copy, invertArray } from "$lib/utils/utils";
-import type { SongWithPosition } from "$shared/types/beApi";
+import type { MinimalSong, SongWithPosition } from "$shared/types/beApi";
 import { scopeStyle } from "$lib/utils/logger";
 
 export interface SongLikedEventData {
@@ -22,7 +22,7 @@ export interface SongLikedEventData {
 }
 
 export type QueueCallbackData = {
-  queue: Array<SongWithPosition>;
+  queue: Array<MinimalSong>;
   index: number;
 };
 type ShuffleMap = Array<number>;
@@ -37,15 +37,15 @@ export class Queue implements Readable<QueueCallbackData> {
   public readonly id: UUID | string;
   public readonly name: string;
 
-  private readonly queueStore: Writable<Array<SongWithPosition>>;
+  private readonly triggerCurrentSong: Writable<number> = writable(0);
+
+  private readonly queueStore: Writable<Array<MinimalSong>>;
   private readonly shuffledMapStore: Writable<ShuffleMap>;
   private readonly currentIndexStore: Writable<number>;
 
   private readonly unsubscribers: Array<() => void> = [];
 
-  public readonly queue: Readable<Array<SongWithPosition>>;
-  public readonly duration: Readable<number>;
-  public readonly durationLeft: Readable<number>;
+  public readonly queue: Readable<Array<MinimalSong>>;
   public readonly currentSong: Readable<SongWithPosition>;
   public readonly currentIndex: Readable<number>;
 
@@ -69,7 +69,7 @@ export class Queue implements Readable<QueueCallbackData> {
     id: string;
     name?: string;
     initialIndex?: number;
-    initialQueue?: Array<Song>;
+    initialQueue?: Array<Omit<MinimalSong, "position">>;
     initialShuffledMap?: Array<number>;
     shuffled?: boolean;
     writeToSettings?: boolean;
@@ -80,7 +80,7 @@ export class Queue implements Readable<QueueCallbackData> {
     this.writeToSettings = writeToSettings;
 
     this.queueStore = writable(
-      copy(initialQueue).map((value, index) => ({ ...value, position: index })),
+      copy(initialQueue).map(({ id }, index) => ({ id, position: index })),
     );
     this.currentIndexStore = writable(initialIndex);
     this.shuffledMapStore = writable(copy(initialShuffledMap));
@@ -113,22 +113,6 @@ export class Queue implements Readable<QueueCallbackData> {
       }),
     );
 
-    this.unsubscribers.push(
-      (() => {
-        const handler = ({ detail }: CustomEvent<SongLikedEventData>) => {
-          if (!detail) return;
-
-          const { songId, isFavourite } = detail ?? {};
-          const queue = get(this.queueStore);
-
-          const index = queue.findIndex((song) => song.id === songId);
-
-          if (index >= 0) queue[index].isFavourite = isFavourite;
-        };
-        return window.listenCustomEvent("songLiked", handler);
-      })(),
-    );
-
     this.queue = derived(
       [this.queueStore, this.shuffledMapStore],
       ([$queue, $shuffledMap]) => {
@@ -146,21 +130,6 @@ export class Queue implements Readable<QueueCallbackData> {
       get(this.queueStore),
     ) as Readable<Array<SongWithPosition>>;
 
-    this.duration = derived(this.queueStore, ($queue) =>
-      $queue.reduce((acc, cur) => acc + cur.duration, 0),
-    );
-
-    this.durationLeft = derived(
-      [this.queue, this.currentIndexStore],
-      ([$queue, $currentIndex]) => {
-        const startIndex = Math.max(0, Math.min($currentIndex, $queue.length));
-
-        return $queue
-          .slice(startIndex)
-          .reduce((acc, cur) => acc + cur.duration, 0);
-      },
-    );
-
     this.currentIndex = derived(
       [this.currentIndexStore],
       ([$index]) => {
@@ -170,7 +139,7 @@ export class Queue implements Readable<QueueCallbackData> {
     );
 
     this.currentSong = derived(
-      [this.queueStore, this.currentIndexStore],
+      [this.queueStore, this.currentIndexStore, this.triggerCurrentSong],
       ([$queue, $currentIndex], set) => {
         const song = $queue[$currentIndex];
         if (!song) return;
@@ -180,7 +149,7 @@ export class Queue implements Readable<QueueCallbackData> {
             .then((s) => set({ ...s, position: song.position }))
             .catch(() => set(nullSong));
       },
-      get(this.queue)?.[get(this.currentIndex)] ?? nullSong,
+      nullSong,
     );
 
     const mainStore = derived(
@@ -217,17 +186,11 @@ export class Queue implements Readable<QueueCallbackData> {
     }
   }
 
-  public updateSong(song: SongWithPosition, refresh: boolean = false) {
-    const q = get(this.queueStore);
-    const index = q.findIndex(
-      (s) => s.id === song.id && s.position === song.position,
-    );
-
-    if (index !== -1) {
-      q[index] = song;
-      if (refresh) this.queueStore.set(q);
-      else if (this.writeToSettings) settings.queue.set(q);
-    }
+  public refreshQueue() {
+    this.triggerCurrentSong.update((current) => {
+      if (current < 10) return current + 1;
+      return 0;
+    });
   }
 
   public removeFromQueue(...songs: Array<Song>) {
@@ -241,8 +204,12 @@ export class Queue implements Readable<QueueCallbackData> {
   public playNext(...songs: Array<Song>) {
     this.queueStore.update((q) => {
       const currentSongIndex = get(this.currentIndex);
-      const newQueue: Array<Song> = [...q];
-      newQueue.splice(currentSongIndex + 1, 0, ...copy(songs));
+      const newQueue: Array<Omit<MinimalSong, "position">> = [...q];
+      newQueue.splice(
+        currentSongIndex + 1,
+        0,
+        ...songs.map(({ id }) => ({ id })),
+      );
       return newQueue.map((song, index) => ({ ...song, position: index }));
     });
 

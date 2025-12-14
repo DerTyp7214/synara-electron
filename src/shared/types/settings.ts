@@ -1,4 +1,4 @@
-import type { Song } from "./beApi";
+import type { MinimalSong, Song } from "./beApi";
 import type { RepeatMode } from "../models/repeatMode";
 import type { UUID } from "node:crypto";
 
@@ -85,7 +85,7 @@ export interface LastFmSong {
 }
 
 export interface QueueSettings {
-  queue: Array<Song>;
+  queue: Array<MinimalSong>;
   shuffleMap: Array<number>;
   lastFmScrobbleQueue: Array<LastFmSong>;
 }

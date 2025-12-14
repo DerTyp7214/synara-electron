@@ -14,7 +14,11 @@ import { type PlayingSource, PlayingSourceType } from "$shared/types/settings";
 import { Queue } from "$lib/audio/queue";
 import { get } from "svelte/store";
 import { settings } from "$lib/utils/settings";
-import type { Artist, SongWithPosition } from "$shared/types/beApi";
+import type {
+  Artist,
+  MinimalSong,
+  SongWithPosition,
+} from "$shared/types/beApi";
 import { listSongsByArtist } from "$lib/api/artists";
 
 export async function playSongById(id: Song["id"]) {
@@ -58,7 +62,7 @@ export async function playPlaylistById(id: Playlist["id"]) {
 
 export async function playSong(
   song: Song | SongWithPosition,
-  playlist: Array<Song> = [song],
+  playlist: Array<Omit<MinimalSong, "position">> = [song],
   source: PlayingSource,
   shuffle: boolean = get(settings.shuffle),
 ): Promise<void> {

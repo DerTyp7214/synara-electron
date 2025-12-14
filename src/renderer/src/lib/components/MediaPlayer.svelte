@@ -193,13 +193,7 @@
       );
 
       if (updatedSong.isFavourite !== $currentSong.isFavourite) {
-        get(mediaSession.getDerivedQueue()).updateSong(
-          {
-            ...$currentSong,
-            isFavourite: updatedSong.isFavourite,
-          },
-          true,
-        );
+        get(mediaSession.getDerivedQueue()).refreshQueue();
         window.dispatchCustomEvent("songLiked", {
           songId: updatedSong.id,
           isFavourite: updatedSong.isFavourite,
@@ -255,10 +249,8 @@
   function handleLikedSongEvent({ detail }: CustomEvent<SongLikedEventData>) {
     if (!detail) return;
 
-    const { songId, isFavourite } = detail;
-
-    if ($currentSong.id === songId)
-      $currentQueue.updateSong({ ...$currentSong, isFavourite }, true);
+    const { songId } = detail;
+    if ($currentSong.id === songId) $currentQueue.refreshQueue();
   }
 
   onMount(() => {
@@ -416,6 +408,7 @@
             {#snippet renderItem({ item, index })}
               <SongItem
                 {...item}
+                bind:isFavourite={item.isFavourite}
                 playingSource={{
                   type: get(mediaSession.playingSourceType),
                   id: $playingSourceId,
