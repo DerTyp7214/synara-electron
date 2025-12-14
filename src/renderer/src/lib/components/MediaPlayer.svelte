@@ -475,7 +475,7 @@
                     5,
                   2,
                 ) - 1,
-                1,
+                0.1,
               )}
           startOffset={Math.min(
             $windowDimensions.width * 0.8,

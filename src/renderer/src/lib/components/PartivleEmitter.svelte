@@ -77,10 +77,10 @@
       }
     }
 
-    particleWorkers.slice(0, workerCount).forEach((worker) => {
+    particleWorkers.forEach((worker, index) => {
       worker.postMessage({
         type: "updateEmissionRate",
-        emissionRate: realEmissionRate,
+        emissionRate: index < workerCount ? realEmissionRate : 0,
       });
     });
   });
@@ -108,10 +108,12 @@
       },
     );
 
+    particleWorkers.push(worker);
+
     worker.postMessage(
       {
         type: "init",
-        id: particleWorkers.length + 1,
+        id: particleWorkers.length,
         messagePort: portForParticle,
         width: canvasElement.width,
         height: canvasElement.height,
@@ -133,8 +135,6 @@
 
       portToWorkers.postMessage({ id, buffer }, [buffer.buffer]);
     };
-
-    particleWorkers.push(worker);
   }
 
   onMount(() => {
