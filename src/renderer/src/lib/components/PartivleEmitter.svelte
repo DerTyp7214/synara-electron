@@ -66,7 +66,7 @@
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     emissionRate;
 
-    const workerCount = Math.ceil((emissionRate * 60) / 100);
+    const workerCount = Math.ceil(Math.max(emissionRate / (100 / 60), 1));
     const newWorkerCount = workerCount - particleWorkers.length;
 
     const realEmissionRate = emissionRate / workerCount;
