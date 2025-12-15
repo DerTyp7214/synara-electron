@@ -9,6 +9,9 @@ import type { OnNavigate } from "@sveltejs/kit";
 import type { MaybePromise } from "$lib/types";
 import type { SongLikedEventData } from "$lib/audio/queue";
 
+export const blackSvg =
+  "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9ImJsYWNrIi8+PC9zdmc+";
+
 export function getImageUrl<K extends string | undefined>(
   imageId: K,
   size?: number,

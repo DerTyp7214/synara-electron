@@ -31,7 +31,16 @@ export class MediaSession {
   private bufferLength: number = 0;
   private dataArray: Uint8Array<ArrayBuffer> | undefined;
 
-  private queue = writable<Queue>();
+  private queue = writable<Queue>(
+    new Queue({
+      id: "",
+      shuffled: false,
+      initialIndex: -2,
+      initialQueue: [],
+      initialShuffledMap: [],
+      writeToSettings: false,
+    }),
+  );
 
   private worker: Worker | null = null;
 
@@ -83,18 +92,22 @@ export class MediaSession {
 
     this.setupAudioConnection();
 
-    this.setQueue(
-      new Queue({
-        id: get(settings.playingSourceId),
-        shuffled: get(settings.shuffle),
-        initialIndex: get(settings.currentIndex),
-        initialQueue: get(settings.queue),
-        initialShuffledMap: get(settings.shuffleMap),
-        writeToSettings: true,
-      }),
-    );
+    songByIds(...get(settings.queue).map((q) => q.id)).then((songs) => {
+      this.setQueue(
+        new Queue({
+          id: get(settings.playingSourceId),
+          shuffled: get(settings.shuffle),
+          initialIndex: get(settings.currentIndex),
+          initialQueue: songs,
+          initialShuffledMap: get(settings.shuffleMap),
+          writeToSettings: true,
+        }),
+      );
+    });
 
     this.queue.subscribe((queue) => {
+      if (!queue) return;
+
       queue.setWriteToSettings(true);
       this.playingSourceId.set(queue.id as UUID);
 

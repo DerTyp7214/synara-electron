@@ -8,7 +8,13 @@ export function imageColors(song: Readable<Song>): Readable<Array<RGBColor>> {
   return derived(
     song,
     (song, set) => {
-      getColorPalette(getImageUrl(song.coverId)).then((colors) => set(colors));
+      const url = getImageUrl(song.coverId);
+      if (!url)
+        return set([
+          [-1, -1, -1],
+          [-1, -1, -1],
+        ]);
+      getColorPalette(url).then((colors) => set(colors));
     },
     [
       [-1, -1, -1],

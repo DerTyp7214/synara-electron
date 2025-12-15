@@ -106,6 +106,15 @@ export const nullSong: Song & { position: number } = {
   duration: 0,
   artists: [],
   position: 0,
+  album: {
+    id: "00000000-0000-4000-a000-000000000000".replaceAll("-", "") as UUID,
+    artists: [],
+    name: "",
+    songCount: 0,
+    releaseDate: Date.now(),
+    totalDuration: 0,
+    totalSize: 0,
+  },
   isFavourite: false,
 };
 

@@ -21,20 +21,24 @@ export const flags: {
   [key: string]: { flag: string; value?: string; handle: boolean }[];
 } = {
   gpuRasterization: [
-    { flag: "enable-gpu-rasterization", value: undefined, handle: true },
+    {
+      flag: "enable-gpu-rasterization",
+      value: undefined,
+      handle: platform.isLinux,
+    },
   ],
   highPerformanceGpe: [
     {
       flag: "force_high_performance_gpu",
       value: undefined,
-      handle: true,
+      handle: platform.isLinux,
     },
   ],
   fixGpuStuff: [
     {
       flag: "disable-gpu-sandbox",
       value: undefined,
-      handle: true,
+      handle: platform.isLinux,
     },
   ],
   disableHardwareMediaKeys: [

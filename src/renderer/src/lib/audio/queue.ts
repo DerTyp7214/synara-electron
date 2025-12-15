@@ -147,7 +147,7 @@ export class Queue implements Readable<QueueCallbackData> {
           songById
             .bind(this)(song.id)
             .then((s) => set({ ...s, position: song.position }))
-            .catch(() => set(nullSong));
+            .catch(() => this.nextSong());
       },
       nullSong,
     );

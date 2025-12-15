@@ -22,6 +22,7 @@
   import cn from "classnames";
   import { onMount, setContext } from "svelte";
   import {
+    blackSvg,
     createResizeListener,
     currentTime,
     fullscreen,
@@ -477,7 +478,7 @@
         />
       {/if}
       <img
-        src={getImageUrl($currentSong.coverId)}
+        src={getImageUrl($currentSong.coverId) ?? blackSvg}
         alt="cover"
         style="width: min(80vw, 40vh); height: min(80vw, 40vh);"
         class={cn(
