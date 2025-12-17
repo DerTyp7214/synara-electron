@@ -38,6 +38,7 @@ class ElectronController {
     style: scopeStyle("#8f6406"),
   };
 
+  private clearTimeout: NodeJS.Timeout | undefined;
   private lastImageUrl: { id: string; url: string | null; loading: boolean } = {
     id: "",
     url: "",
@@ -238,10 +239,20 @@ class ElectronController {
         this.lastImageUrl.url = imageUrl;
       }
 
+      if (this.clearTimeout) clearTimeout(this.clearTimeout);
+
       window.api.updateDiscordRPC({
         ...metadata,
         image: this.lastImageUrl.url ?? undefined,
       });
+
+      if (metadata.player?.status !== PlaybackStatus.Playing) {
+        this.clearTimeout = setTimeout(() => {
+          window.api.updateDiscordRPC({
+            player: { status: metadata.player?.status },
+          });
+        }, 120);
+      }
     }
   }
 }

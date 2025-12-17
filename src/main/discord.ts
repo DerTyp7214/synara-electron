@@ -24,10 +24,12 @@ const defaultPresence = {
 };
 
 const updateActivity = (mediaInfo?: MediaInfo) => {
-  const activity = getActivity(mediaInfo);
   if (mediaInfo?.player?.status !== PlaybackStatus.Playing)
     rpc?.user?.clearActivity();
-  else if (activity) rpc?.user?.setActivity(activity);
+  else {
+    const activity = getActivity(mediaInfo);
+    if (activity) rpc?.user?.setActivity(activity);
+  }
 };
 
 const pad = (input: string) => input?.padEnd(2, " ");
