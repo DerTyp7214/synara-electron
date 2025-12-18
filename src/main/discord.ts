@@ -23,12 +23,23 @@ const defaultPresence = {
   type: ACTIVITY_LISTENING,
 };
 
+let interval: NodeJS.Timeout | undefined;
+
+let currentMediaInfo: MediaInfo | undefined;
+
 const updateActivity = (mediaInfo?: MediaInfo) => {
-  if (mediaInfo?.player?.status !== PlaybackStatus.Playing)
+  if (mediaInfo?.player?.status !== PlaybackStatus.Playing) {
+    if (interval) clearInterval(interval);
+    interval = undefined;
     rpc?.user?.clearActivity();
-  else {
-    const activity = getActivity(mediaInfo);
-    if (activity) rpc?.user?.setActivity(activity);
+  } else {
+    currentMediaInfo = mediaInfo;
+    if (!interval) {
+      interval = setInterval(() => {
+        const activity = getActivity(currentMediaInfo);
+        if (activity) rpc?.user?.setActivity(activity);
+      }, 1000);
+    }
   }
 };
 
