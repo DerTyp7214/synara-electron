@@ -10,7 +10,7 @@ import {
 } from "svelte/store";
 import { mediaSession, MediaSession } from "$lib/audio/mediaSession";
 import { scopedDebugLog, scopeStyle } from "$lib/utils/logger";
-import { sleep } from "$lib/utils/utils";
+import { openUrl, sleep } from "$lib/utils/utils";
 import {
   getRequestToken,
   getSessionKey,
@@ -137,7 +137,7 @@ class LastFM {
     url.searchParams.append("token", token);
     url.searchParams.append("api_key", apiKey);
 
-    window.api?.openExternal(url.toString());
+    openUrl(url.toString());
 
     confirm(get(t)("lastFm.confirmToken"));
 

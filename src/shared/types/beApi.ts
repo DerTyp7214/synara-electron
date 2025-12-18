@@ -59,3 +59,35 @@ export interface Playlist {
   songs: Array<string>;
   totalDuration: number;
 }
+
+export type DownloadQueueEntryType = "track" | "album" | "playlist" | "artist";
+export type TdnFavouriteType = "tracks" | "artists" | "albums" | "videos";
+
+export interface DownloadQueueEntry {
+  byUser: UUID;
+  type: DownloadQueueEntryType;
+}
+
+export interface UrlDownloadQueueEntry extends DownloadQueueEntry {
+  urls: Array<string>;
+  ids: Array<string>;
+}
+
+export interface FavouriteDownloadQueueEntry extends DownloadQueueEntry {
+  tdnFavouriteType: TdnFavouriteType;
+}
+
+export interface MetadataTrack {
+  id: string;
+  title: string;
+  artists: Array<string>;
+  duration: string;
+  createdAt: string;
+  images: Array<MetadataImage>;
+}
+
+export interface MetadataImage {
+  url: string;
+  width: number;
+  height: number;
+}

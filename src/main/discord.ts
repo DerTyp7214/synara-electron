@@ -4,7 +4,7 @@ import { store } from "./settings";
 import { MediaInfo } from "../shared/models/mediaInfo";
 import { PlaybackStatus } from "../shared/models/playbackStatus";
 
-const clientId = "1435589125301600356";
+const clientId = import.meta.env.MAIN_VITE_DISCORD_CLIENT_ID;
 
 export let rpc: Client | null;
 

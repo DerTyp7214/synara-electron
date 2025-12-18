@@ -30,6 +30,14 @@ export default {
     "settings.check": "Check",
     "settings.apply": "Apply",
 
+    "settings.main": "Main",
+    "settings.tidalSync": "Tidal Sync",
+    "settings.audioVisualizer": "Audio Visualizer",
+
+    "settings.tidalSync.login": "Login with Tidal",
+    "settings.tidalSync.confirm": "Confirm when authenticated with Tidal.",
+    "settings.tidalSync.authorized": "Tidal is authorized",
+
     "settings.synara.session": "Session",
     "settings.default": "Default: {{value}}",
     "settings.apiBase": "API Base",
@@ -45,6 +53,11 @@ export default {
     "settings.downloadDir": "Download Directory",
     "settings.particleMultiplier": "Particle Multiplier (0 = disabled)",
     "settings.velocityMultiplier": "Velocity Multiplier",
+
+    "downloads.queue": "Download queue",
+    "downloads.notAuthenticated": "TDN is not authenticated.",
+    "downloads.login": "Login TDN",
+    "downloads.noLogs": "No logs.",
 
     "login.title": "Login",
     "login.submit": "Login",

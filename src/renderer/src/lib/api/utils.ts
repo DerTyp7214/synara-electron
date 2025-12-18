@@ -1,3 +1,5 @@
+// noinspection DuplicatedCode
+
 import { get } from "svelte/store";
 import { isJwtValid } from "$lib/api/jwt";
 import {
@@ -86,7 +88,7 @@ export async function refreshJwt() {
 
 function buildUrl(
   path: string,
-  query: Record<string, PropertyKey | undefined>,
+  query: Record<string, PropertyKey | boolean | undefined>,
   host?: string | null,
 ): URL {
   const url = new URL(path, getApiUrl(host));
@@ -130,8 +132,8 @@ export async function apiCall<T>(options: {
   auth?: boolean;
   host?: string | null;
   headers?: Record<string, string>;
-  query?: Record<string, PropertyKey | undefined>;
-  body?: Record<string, unknown>;
+  query?: Record<string, PropertyKey | boolean | undefined>;
+  body?: Record<string, unknown> | Array<unknown>;
   formBody?: URLSearchParams;
   expectedStatus?: number;
   expectedErrorStatus?: number;
@@ -180,6 +182,111 @@ export async function apiCall<T>(options: {
 
   switch (response.status) {
     case expectedStatus: {
+      return new ApiResponse<T>(response, logScope);
+    }
+    case expectedErrorStatus: {
+      return new ApiResponse<T>(response, logScope);
+    }
+    case 401: {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      if (path === "/refresh-token")
+        return new ApiResponse<T>(response, logScope);
+      if (await refreshJwt()) return apiCall(options);
+      if (await checkLogin()) return apiCall(options);
+      throw new Error("Unauthorized");
+    }
+    default: {
+      throw new Error(
+        `Unexpected status ${response.status} ${await response.text()}`,
+      );
+    }
+  }
+}
+
+export async function apiStream<T>(
+  options: {
+    path?: string;
+    method: string;
+    auth?: boolean;
+    host?: string | null;
+    headers?: Record<string, string>;
+    query?: Record<string, PropertyKey | undefined>;
+    body?: Record<string, unknown>;
+    formBody?: URLSearchParams;
+    expectedStatus?: number;
+    expectedErrorStatus?: number;
+  },
+  callback: (line: string) => void,
+): Promise<ApiResponse<T>> {
+  const {
+    path,
+    method,
+    auth,
+    query,
+    body,
+    formBody,
+    host,
+    expectedStatus,
+    expectedErrorStatus,
+    headers,
+  } = Object.assign(
+    {
+      path: "",
+      query: {},
+      expectedStatus: 200,
+    },
+    options,
+  );
+
+  // @ts-expect-error in case of binding the function
+  const logScope = this?.logScope ?? apiLogScope;
+
+  scopedDebugLog(
+    "info",
+    logScope,
+    ">",
+    formBody?.get("method") ?? path,
+    method,
+    query,
+    formBody ? Object.fromEntries([...formBody]) : body,
+    expectedStatus,
+  );
+
+  const response = await fetch(buildUrl(path, query, host), {
+    method: method,
+    headers: await getHeaders(auth, headers),
+    body: formBody?.toString() ?? (body ? JSON.stringify(body) : undefined),
+  });
+
+  switch (response.status) {
+    case expectedStatus: {
+      const reader = response.body
+        ?.pipeThrough(new TextDecoderStream())
+        .getReader();
+
+      if (!reader) return new ApiResponse<T>(response, logScope);
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) {
+          scopedDebugLog("info", logScope, "Stream finished.");
+          break;
+        }
+
+        const events = value?.split("\n\n");
+        for (const event of events) {
+          let fullLine = "";
+          for (const line of event.split("\n")) {
+            if (line.startsWith("event:")) {
+              fullLine += line.slice(6).trim() + " ";
+            } else if (line.startsWith("data:")) {
+              fullLine += line.slice(5).trim() + " ";
+            }
+          }
+          if (fullLine.trim().length) callback(fullLine.trim());
+        }
+      }
+
       return new ApiResponse<T>(response, logScope);
     }
     case expectedErrorStatus: {

@@ -3,7 +3,7 @@
   import Logo from "$lib/components/Logo.svelte";
   import cn from "classnames";
   import { Menu } from "@lucide/svelte";
-  import { ChevronLeft, Cog } from "@jis3r/icons";
+  import { ChevronLeft, Cog, Download } from "@jis3r/icons";
   import MediaPlayer from "$lib/components/MediaPlayer.svelte";
   import PlaylistList from "$lib/components/PlaylistList.svelte";
   import { t } from "$lib/i18n/i18n";
@@ -43,7 +43,7 @@
   <div
     class={cn(
       "m-2 mb-28",
-      "flex flex-grow",
+      "flex grow",
       "gap-2 overflow-hidden",
       "transition-opacity",
       {
@@ -55,7 +55,7 @@
     <aside
       class={cn(
         "flex-col",
-        "bg-surface-400-600 rounded-container flex-shrink-0 overflow-hidden md:bg-transparent",
+        "bg-surface-400-600 rounded-container shrink-0 overflow-hidden md:bg-transparent",
         "max-w-3xs transition-all lg:max-w-xs",
         "z-30 md:translate-x-0",
         {
@@ -81,7 +81,7 @@
       <div
         class={cn(
           "bg-surface-50-950/40 flex-col",
-          "flex-shrink-0 overflow-y-auto",
+          "shrink-0 overflow-y-auto",
           "app-card flex w-full flex-1",
           "rounded-container shadow-md",
           "max-h-full transition-colors",
@@ -146,7 +146,7 @@
         <div
           class={cn(
             "bg-surface-50-950/40 flex-1",
-            "flex-shrink-0 overflow-y-auto p-4",
+            "shrink-0 overflow-y-auto p-4",
             "rounded-container shadow-md",
             "app-card transition-colors",
             "flex items-center gap-2",
@@ -168,9 +168,21 @@
           </button>
           <LightSwitch />
           <button
+            onclick={() => goto(resolve("/downloads"))}
+            class={cn(
+              "ms-2",
+              "flex items-center justify-center",
+              "rounded-md p-2",
+              "transition-colors",
+              "hover:bg-surface-950-50/20",
+            )}
+          >
+            <Download />
+          </button>
+          <button
             onclick={() => goto(resolve("/settings"))}
             class={cn(
-              "ms-2 me-2",
+              "me-2",
               "flex items-center justify-center",
               "rounded-md p-2",
               "transition-colors",

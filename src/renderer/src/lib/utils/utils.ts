@@ -4,7 +4,7 @@ import { getApiUrl } from "$lib/api/utils";
 import { readable } from "svelte/store";
 import { debugLog } from "$lib/utils/logger";
 import type { UUID } from "node:crypto";
-import type { Song } from "$shared/types/beApi";
+import type { MetadataImage, Song } from "$shared/types/beApi";
 import type { OnNavigate } from "@sveltejs/kit";
 import type { MaybePromise } from "$lib/types";
 import type { SongLikedEventData } from "$lib/audio/queue";
@@ -38,6 +38,24 @@ export function getStreamUrl<K extends string | undefined>(
   const url = new URL(`/stream/${songId}`, apiBase);
   if (targetBitrate) url.searchParams.set("bitrate", targetBitrate.toString());
   return url.toString() as K;
+}
+
+export function getMetadataImage(
+  images: Array<MetadataImage>,
+  targetSize?: number,
+): MetadataImage | undefined {
+  if (images.length === 0) return undefined;
+
+  const sorted = [...images].sort((a, b) => a.width - b.width);
+  if (targetSize === undefined) return sorted[sorted.length - 1];
+
+  const match = sorted.find((img) => img.width >= targetSize);
+  return match ?? sorted[sorted.length - 1];
+}
+
+export function openUrl(url: string) {
+  if (window.api) window.api.openExternal(url);
+  else window.open(url, "_blank");
 }
 
 export enum SongOrigin {

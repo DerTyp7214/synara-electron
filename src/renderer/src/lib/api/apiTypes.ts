@@ -33,6 +33,10 @@ export class ApiResponse<T> {
     return this.response.ok;
   }
 
+  getHeaders(): HeadersIterator<[string, string]> {
+    return this.response.headers.entries();
+  }
+
   getStatus(): number {
     return this.status;
   }

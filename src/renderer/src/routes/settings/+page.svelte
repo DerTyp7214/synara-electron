@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Avatar } from "@skeletonlabs/skeleton-svelte";
   import { onNavigate } from "$app/navigation";
-  import { copy, defaultNavigation } from "$lib/utils/utils";
+  import { copy, defaultNavigation, openUrl } from "$lib/utils/utils";
   import { Check, TriangleAlert, EyeOff } from "@jis3r/icons";
   import { Eye } from "@lucide/svelte";
   import { t } from "$lib/i18n/i18n";
@@ -17,6 +17,7 @@
   import { userInfo } from "$lib/api/auth";
   import { DEFAULT_SETTINGS } from "$shared/settings";
   import { objectPropertyStore } from "$lib/utils/storeUtils";
+  import { checkTidalSyncAuth, tidalSyncAuth } from "$lib/api/sync";
 
   const stores = {
     apiBase: settings.apiBase,
@@ -170,6 +171,28 @@
     $settingsValues[key] = originalData[key] as never;
   }
 
+  let tidalAuthorized = $state(false);
+  let tidalAuthorizedLoading = $state(true);
+
+  async function checkTidalAuth() {
+    tidalAuthorized = false;
+    tidalAuthorizedLoading = true;
+
+    tidalAuthorized = await checkTidalSyncAuth();
+    tidalAuthorizedLoading = false;
+  }
+
+  async function authenticateTidalSync() {
+    tidalAuthorizedLoading = true;
+    const url = await tidalSyncAuth();
+
+    openUrl(url);
+
+    confirm($t("settings.tidalSync.confirm"));
+
+    await checkTidalAuth();
+  }
+
   onNavigate(defaultNavigation);
 
   onMount(() => {
@@ -178,6 +201,8 @@
     >) {
       $settingsValues[key] = value;
     }
+
+    void checkTidalAuth();
 
     for (const state of [
       applyEnabled,
@@ -367,7 +392,7 @@
   <div class="border-secondary-800-200 mt-6 w-full border-t-2"></div>
 
   <div class="mt-6 flex flex-col gap-3">
-    <span class="h2">Main</span>
+    <span class="h2">{$t("settings.main")}</span>
     {@render textValue("apiBase", true)}
 
     {@render booleanValue("hideOnClose", $t("settings.hideOnClose"))}
@@ -380,7 +405,24 @@
   <div class="border-secondary-800-200 mt-6 w-full border-t-2"></div>
 
   <div class="mt-6 flex flex-col gap-3">
-    <span class="h2">Audio Visualizer</span>
+    <span class="h2">{$t("settings.tidalSync")}</span>
+    {#if tidalAuthorized}
+      <span>{$t("settings.tidalSync.authorized")}</span>
+    {:else if tidalAuthorizedLoading}
+      <div class="flex w-full flex-col items-center">
+        <Spinner size={45} />
+      </div>
+    {:else}
+      <button onclick={authenticateTidalSync} class="btn preset-filled">
+        {$t("settings.tidalSync.login")}
+      </button>
+    {/if}
+  </div>
+
+  <div class="border-secondary-800-200 mt-6 w-full border-t-2"></div>
+
+  <div class="mt-6 flex flex-col gap-3">
+    <span class="h2">{$t("settings.audioVisualizer")}</span>
     {@render rangeValue(
       "particleMultiplier",
       0,
