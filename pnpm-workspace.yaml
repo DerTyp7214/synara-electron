@@ -10,7 +10,7 @@ catalog:
   '@electron-toolkit/utils': ^4.0.0
   '@electron/notarize': ^3.1.1
   '@eslint/compat': ^2.0.0
-  '@eslint/js': ^9.39.1
+  '@eslint/js': ^9.39.2
   '@fontsource/major-mono-display': ^5.2.8
   '@humanspeak/svelte-virtual-list': ^0.3.6
   '@jis3r/icons': ^1.22.0
