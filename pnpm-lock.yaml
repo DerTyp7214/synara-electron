@@ -40,8 +40,8 @@ catalogs:
       specifier: ^1.22.0
       version: 1.22.0
     '@lucide/svelte':
-      specifier: ^0.561.0
-      version: 0.561.0
+      specifier: ^0.562.0
+      version: 0.562.0
     '@skeletonlabs/skeleton':
       specifier: ^4.7.4
       version: 4.7.4
@@ -296,7 +296,7 @@ importers:
         version: 1.22.0
       '@lucide/svelte':
         specifier: 'catalog:'
-        version: 0.561.0(svelte@5.45.10)
+        version: 0.562.0(svelte@5.45.10)
       '@skeletonlabs/skeleton':
         specifier: 'catalog:'
         version: 4.7.4(tailwindcss@4.1.18)
@@ -983,8 +983,8 @@ packages:
   '@lokesh.dhakar/quantize@1.4.0':
     resolution: {integrity: sha512-+//cqVWKis//t0YH62EDtwaFSPG/CDtYNg4CZmzNmG2d5W17Iu3fuDAdpQXCDHUDrrU9q0veze4A7tPZXlR/mg==}
 
-  '@lucide/svelte@0.561.0':
-    resolution: {integrity: sha512-vofKV2UFVrKE6I4ewKJ3dfCXSV6iP6nWVmiM83MLjsU91EeJcEg7LoWUABLp/aOTxj1HQNbJD1f3g3L0JQgH9A==}
+  '@lucide/svelte@0.562.0':
+    resolution: {integrity: sha512-wDMULwtTFN2Sc/TFBm6gfuVCNb4Y5P9LDrwxNnUbV52+IEU7NXZmvxwXoz+vrrpad6Xupq+Hw5eUlqIHEGhouw==}
     peerDependencies:
       svelte: ^5
 
@@ -4732,7 +4732,7 @@ snapshots:
 
   '@lokesh.dhakar/quantize@1.4.0': {}
 
-  '@lucide/svelte@0.561.0(svelte@5.45.10)':
+  '@lucide/svelte@0.562.0(svelte@5.45.10)':
     dependencies:
       svelte: 5.45.10
 
