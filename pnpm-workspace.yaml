@@ -15,7 +15,7 @@ catalog:
   '@humanspeak/svelte-virtual-list': ^0.3.6
   '@jis3r/icons': ^1.22.0
   '@lucide/svelte': ^0.561.0
-  '@skeletonlabs/skeleton': ^4.7.4
+  '@skeletonlabs/skeleton': ^4.8.0
   '@skeletonlabs/skeleton-svelte': ^4.7.4
   '@sveltejs/adapter-static': ^3.0.10
   '@sveltejs/kit': ^2.49.2
