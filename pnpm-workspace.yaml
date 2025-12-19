@@ -42,7 +42,7 @@ catalog:
   eslint-plugin-prettier: ^5.5.4
   eslint-plugin-svelte: ^3.13.1
   file-type: ^21.1.1
-  flow-bin: ^0.294.0
+  flow-bin: ^0.295.0
   globals: ^16.5.0
   mpris-service: ^2.1.2
   musicbrainz-api: ^0.27.0

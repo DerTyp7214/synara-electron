@@ -124,8 +124,8 @@ catalogs:
       specifier: ^21.1.1
       version: 21.1.1
     flow-bin:
-      specifier: ^0.294.0
-      version: 0.294.0
+      specifier: ^0.295.0
+      version: 0.295.0
     globals:
       specifier: ^16.5.0
       version: 16.5.0
@@ -250,7 +250,7 @@ importers:
         version: 21.1.1
       flow-bin:
         specifier: 'catalog:'
-        version: 0.294.0
+        version: 0.295.0
       globals:
         specifier: 'catalog:'
         version: 16.5.0
@@ -2403,8 +2403,8 @@ packages:
   flatted@3.3.3:
     resolution: {integrity: sha512-GX+ysw4PBCz0PzosHDepZGANEuFCMLrnRTiEy9McGjmkCQYwRq4A/X786G/fjM/+OjsWSU1ZrY5qyARZmO/uwg==}
 
-  flow-bin@0.294.0:
-    resolution: {integrity: sha512-ICR6mSDil2Y4B5YtCKlA+WvDn5TgvBwDOheMrdU61Gwx6ZtWFnHP1SOgll7Fw9JqpHrbet6dww2RA734lum45g==}
+  flow-bin@0.295.0:
+    resolution: {integrity: sha512-r5DHHyygFvMKGIV92elp5R8qzO5EbpBuXd6gMNxWc7W9i1ph4hLqpNnGaJbA6KycppP+hNdN3n0D43vNtIfkoA==}
     engines: {node: '>=0.10.0'}
     hasBin: true
 
@@ -6594,7 +6594,7 @@ snapshots:
 
   flatted@3.3.3: {}
 
-  flow-bin@0.294.0: {}
+  flow-bin@0.295.0: {}
 
   foreground-child@3.3.1:
     dependencies:
