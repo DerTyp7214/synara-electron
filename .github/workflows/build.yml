@@ -13,8 +13,10 @@ on:
       - resources/**
       - package.json
       - tsconfig.json
+      - pnpm-lock.yaml
       - tsconfig.web.json
       - tsconfig.node.json
+      - pnpm-workspace.yaml
       - electron-builder.yml
       - electron.vite.config.ts
     branches: [ master, release ]
