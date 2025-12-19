@@ -6,9 +6,18 @@ concurrency:
 
 on:
   push:
-    branches:
-      - master
-      - release
+    paths:
+      - .github/workflows/build.yml
+      - src/**
+      - patches/**
+      - resources/**
+      - package.json
+      - tsconfig.json
+      - tsconfig.web.json
+      - tsconfig.node.json
+      - electron-builder.yml
+      - electron.vite.config.ts
+    branches: [ master, release ]
   workflow_dispatch:
 
 jobs:
