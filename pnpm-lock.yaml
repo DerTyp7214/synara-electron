@@ -46,8 +46,8 @@ catalogs:
       specifier: ^4.7.4
       version: 4.7.4
     '@skeletonlabs/skeleton-svelte':
-      specifier: ^4.7.4
-      version: 4.7.4
+      specifier: ^4.8.0
+      version: 4.8.0
     '@sveltejs/adapter-static':
       specifier: ^3.0.10
       version: 3.0.10
@@ -302,7 +302,7 @@ importers:
         version: 4.7.4(tailwindcss@4.1.18)
       '@skeletonlabs/skeleton-svelte':
         specifier: 'catalog:'
-        version: 4.7.4(svelte@5.45.10)
+        version: 4.8.0(svelte@5.45.10)
       '@sveltejs/adapter-static':
         specifier: 'catalog:'
         version: 3.0.10(@sveltejs/kit@2.49.2(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.45.10)(vite@7.2.7(@types/node@25.0.1)(jiti@2.6.1)(lightningcss@1.30.2)))(svelte@5.45.10)(vite@7.2.7(@types/node@25.0.1)(jiti@2.6.1)(lightningcss@1.30.2)))
@@ -1158,11 +1158,11 @@ packages:
     resolution: {integrity: sha512-t09vSN3MdfsyCHoFcTRCH/iUtG7OJ0CsjzB8cjAmKc/va/kIgeDI/TxsigdncE/4be734m0cvIYwNaV4i2XqAw==}
     engines: {node: '>=10'}
 
-  '@skeletonlabs/skeleton-common@4.7.4':
-    resolution: {integrity: sha512-xxngr40ZWc978K3+ZIb3kylE+mzYMcNwEloGCuCtNU96I8koqTo8Ow67lW4sD31OyhxhCG0nmUO45B4UDBsySw==}
+  '@skeletonlabs/skeleton-common@4.8.0':
+    resolution: {integrity: sha512-kVnvwJ9NNtNKmCo0Y6Iz0+46tX7yxl5++xLxGMVy9Ujefyjsva67fC7Byrhxo8BHnmczagjBSPvbZYqwQbSwIw==}
 
-  '@skeletonlabs/skeleton-svelte@4.7.4':
-    resolution: {integrity: sha512-yiRtG6enLphKcH9mvlfOMXPUzgCDbG5SdyRBoa4rfI/Vd/odeEhsiEjo4+1xiLFTvSJyeDK8f0CfJg+QMYpu4Q==}
+  '@skeletonlabs/skeleton-svelte@4.8.0':
+    resolution: {integrity: sha512-tIdu0xSrtl28MRufKoyCSZh/uSR4f8tu2+wfqAnHwrNU1rxnDfmtLfsqxALVkoOxMtiw9puxOc2ycvzaB8vEYQ==}
     peerDependencies:
       svelte: ^5.29.0
 
@@ -4862,12 +4862,12 @@ snapshots:
 
   '@sindresorhus/is@4.6.0': {}
 
-  '@skeletonlabs/skeleton-common@4.7.4': {}
+  '@skeletonlabs/skeleton-common@4.8.0': {}
 
-  '@skeletonlabs/skeleton-svelte@4.7.4(svelte@5.45.10)':
+  '@skeletonlabs/skeleton-svelte@4.8.0(svelte@5.45.10)':
     dependencies:
       '@internationalized/date': 3.10.0
-      '@skeletonlabs/skeleton-common': 4.7.4
+      '@skeletonlabs/skeleton-common': 4.8.0
       '@zag-js/accordion': 1.31.0
       '@zag-js/avatar': 1.31.0
       '@zag-js/collapsible': 1.31.0
