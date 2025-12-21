@@ -33,6 +33,7 @@ catalog:
   dayjs: ^1.11.19
   electron: github:castlabs/electron-releases#v39.2.4+wvcus
   electron-builder: ^26.3.6
+  electron-icon-builder: ^2.0.1
   electron-liquid-glass: ^1.1.1
   electron-serve: ^3.0.0
   electron-store: ^11.0.2
@@ -49,6 +50,7 @@ catalog:
   prettier: ^3.7.4
   prettier-plugin-svelte: ^3.4.1
   prettier-plugin-tailwindcss: ^0.7.2
+  sharp: ^0.34.5
   svelte: ^5.46.0
   svelte-check: ^4.3.4
   tailwindcss: ^4.1.18

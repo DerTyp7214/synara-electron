@@ -1,5 +1,3 @@
-// @ts-expect-error works though
-import icon from "../../resources/icon.png?asset";
 import {
   app,
   shell,
@@ -8,6 +6,7 @@ import {
   ipcMain,
   components,
   Menu,
+  nativeImage,
 } from "electron";
 import { join } from "path";
 import { electronApp, optimizer, is, platform } from "@electron-toolkit/utils";
@@ -21,6 +20,23 @@ import { MprisEventData, MprisEventName } from "../shared/types/api";
 import { setupSettings, store } from "./settings";
 import { initRPC } from "./discord";
 import { registerProtocol } from "./protocol";
+import { readFileSync } from "fs";
+import sharp from "sharp";
+
+const svgIconBuffer = readFileSync(
+  join(__dirname, "..", "..", "resources", "icon.svg"),
+);
+const svgTrayBuffer = readFileSync(
+  join(__dirname, "..", "..", "resources", "tray.svg"),
+);
+
+async function getIcon(tray: boolean = false) {
+  return nativeImage.createFromBuffer(
+    await sharp(tray ? svgTrayBuffer : svgIconBuffer)
+      .resize(512, 512)
+      .toBuffer(),
+  );
+}
 
 if (process.env.NODE_ENV === "development") {
   const devPath = path.join(app.getAppPath(), "dev-config");
@@ -64,14 +80,14 @@ ipcMain.on("lastfm:open-external", (_, url: string) => {
   void shell.openExternal(url);
 });
 
-function createWindow(): void {
+async function createWindow() {
   // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
     show: false,
     transparent: true,
-    ...(platform.isLinux ? { icon } : {}),
+    ...(platform.isLinux ? { icon: await getIcon() } : {}),
     ...(platform.isMacOS
       ? {
           trafficLightPosition: {
@@ -158,8 +174,8 @@ function loadVite(): void {
     });
 }
 
-function setupTray() {
-  tray = new Tray(icon);
+async function setupTray() {
+  tray = new Tray(await getIcon(true));
   tray.setTitle("Synara");
   tray.setToolTip("Synara");
 
@@ -191,8 +207,8 @@ else {
       optimizer.watchWindowShortcuts(window);
     });
 
-    setupTray();
-    createWindow();
+    void setupTray();
+    void createWindow();
 
     app.on("activate", function () {
       if (BrowserWindow.getAllWindows().length === 0) createWindow();
