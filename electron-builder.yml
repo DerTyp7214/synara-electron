@@ -59,7 +59,7 @@ linux:
       Name: "Synara"
       GenericName: "Synara"
       Comment: "Synara Desktop application."
-      Icon: "synara"
+      Icon: "synara-desktop"
       StartupNotify: "true"
       Terminal: "false"
       Type: "Application"

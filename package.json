@@ -28,8 +28,7 @@
     "@electron-toolkit/preload": "catalog:",
     "@electron-toolkit/utils": "catalog:",
     "@xhayper/discord-rpc": "catalog:",
-    "electron-liquid-glass": "catalog:",
-    "sharp": "catalog:"
+    "electron-liquid-glass": "catalog:"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-prettier": "catalog:",
