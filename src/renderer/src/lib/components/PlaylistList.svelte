@@ -1,23 +1,24 @@
 <script lang="ts">
-  import { listPlaylists, type Playlist } from "$lib/api/playlists.js";
-  import PlaylistItem from "$lib/components/PlaylistItem.svelte";
   import { t } from "$lib/i18n/i18n.js";
   import { debugLog } from "$lib/utils/logger";
   import { onMount } from "svelte";
   import Spinner from "$lib/components/Spinner.svelte";
   import { getImageUrl } from "$lib/utils/utils";
+  import type { UserPlaylist } from "$shared/types/beApi";
+  import { listUserPlaylists } from "$lib/api/userPlaylists";
+  import UserPlaylistItem from "$lib/components/UserPlaylistItem.svelte";
 
   let isLoading = $state(false);
   let hasNextPage = $state(true);
   let playlistPage = $state(0);
-  let allPlaylists = $state<Array<Playlist>>([]);
+  let allPlaylists = $state<Array<UserPlaylist>>([]);
 
   async function loadPlaylistPage() {
     if (isLoading || !hasNextPage) return;
 
     isLoading = true;
     try {
-      const response = await listPlaylists(playlistPage);
+      const response = await listUserPlaylists(playlistPage);
 
       hasNextPage = response.hasNextPage;
       allPlaylists = [...allPlaylists, ...response.data];
@@ -37,7 +38,7 @@
 </script>
 
 {#each allPlaylists as playlist (playlist.id)}
-  <PlaylistItem
+  <UserPlaylistItem
     playlistRef={playlist}
     name={playlist.name}
     imageUrl={getImageUrl(playlist.imageId, size)}

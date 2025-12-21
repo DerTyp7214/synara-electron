@@ -60,6 +60,16 @@ export interface Playlist {
   totalDuration: number;
 }
 
+export interface UserPlaylist {
+  id: UUID;
+  imageId: UUID;
+  name: string;
+  description: string;
+  songs: Array<string>;
+  totalDuration: number;
+  creator: UUID;
+}
+
 export type DownloadQueueEntryType = "track" | "album" | "playlist" | "artist";
 export type TdnFavouriteType = "tracks" | "artists" | "albums" | "videos";
 

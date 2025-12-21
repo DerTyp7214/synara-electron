@@ -20,6 +20,7 @@ import type {
   SongWithPosition,
 } from "$shared/types/beApi";
 import { listSongsByArtist } from "$lib/api/artists";
+import { listSongsByUserPlaylist } from "$lib/api/userPlaylists";
 
 export async function playSongById(id: Song["id"]) {
   if (!mediaSession.getQueue().find((s) => s.id === id)) {
@@ -113,6 +114,30 @@ export async function playPlaylist(
     response.data,
     {
       type: PlayingSourceType.Playlist,
+      id: playlist.id,
+    },
+    shuffle,
+  );
+}
+
+export async function playUserPlaylist(
+  playlist: Playlist,
+  shuffle: boolean = false,
+): Promise<void> {
+  const response = await listSongsByUserPlaylist(
+    playlist.id,
+    0,
+    Number.MAX_SAFE_INTEGER,
+  );
+
+  const index = shuffle ? Math.floor(Math.random() * playlist.songs.length) : 0;
+
+  mediaSession.shuffled.set(shuffle);
+  await playSong(
+    response.data[index],
+    response.data,
+    {
+      type: PlayingSourceType.UserPlaylist,
       id: playlist.id,
     },
     shuffle,

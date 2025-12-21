@@ -6,7 +6,6 @@
   import cn from "classnames";
   import { resolve } from "$app/paths";
   import { goto } from "$app/navigation";
-  import { listSongsByPlaylist, type Playlist } from "$lib/api/playlists";
   import { mediaSession } from "$lib/audio/mediaSession";
   import { PlayingSourceType } from "$shared/types/settings";
   import { openContextMenu } from "$lib/contextMenu/store.svelte";
@@ -15,6 +14,10 @@
   import { TOAST_CONTEXT_KEY, type ToasterContext } from "$lib/consts";
   import type { Song } from "$shared/types/beApi";
   import type { PagedResponse } from "$lib/api/apiTypes";
+  import {
+    listSongsByUserPlaylist,
+    type UserPlaylist,
+  } from "$lib/api/userPlaylists";
 
   type PlaylistOrigin = "tidal" | "spotify";
 
@@ -28,7 +31,7 @@
     size = 64,
     style = "",
   }: {
-    playlistRef: Playlist;
+    playlistRef: UserPlaylist;
     name: string;
     by?: string;
     songCount: number;
@@ -44,7 +47,7 @@
   const toastContext = getContext<ToasterContext>(TOAST_CONTEXT_KEY);
 
   const isSameSource = $derived(
-    $playingSourceType === PlayingSourceType.Playlist &&
+    $playingSourceType === PlayingSourceType.UserPlaylist &&
       $playingSourceId === playlistRef.id,
   );
 
@@ -60,9 +63,9 @@
     action: (...songs: Array<Song>) => Promise<void>,
   ) {
     const promise = new Promise<
-      Awaited<ReturnType<typeof listSongsByPlaylist>>
+      Awaited<ReturnType<typeof listSongsByUserPlaylist>>
     >((resolve, reject) => {
-      listSongsByPlaylist(playlistRef.id, 0, Number.MAX_SAFE_INTEGER)
+      listSongsByUserPlaylist(playlistRef.id, 0, Number.MAX_SAFE_INTEGER)
         .then((response) => {
           action(...response.data)
             .then(() => resolve(response))
@@ -165,7 +168,7 @@
   oncontextmenu={handleContextMenu}
   onclick={() => {
     // eslint-disable-next-line svelte/no-navigation-without-resolve
-    goto(`${resolve("/playlists")}?playlistId=${playlistRef.id}`);
+    goto(`${resolve("/userPlaylists")}?playlistId=${playlistRef.id}`);
   }}
 >
   <Avatar

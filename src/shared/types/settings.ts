@@ -4,6 +4,7 @@ import type { UUID } from "node:crypto";
 
 export enum PlayingSourceType {
   Playlist = "playlist",
+  UserPlaylist = "userPlaylist",
   Album = "album",
   Artist = "artist",
   LikedSongs = "likedSongs",
