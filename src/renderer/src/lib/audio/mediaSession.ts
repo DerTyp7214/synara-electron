@@ -92,17 +92,21 @@ export class MediaSession {
 
     this.setupAudioConnection();
 
-    songByIds(...get(settings.queue).map((q) => q.id)).then((songs) => {
-      this.setQueue(
-        new Queue({
-          id: get(settings.playingSourceId),
-          shuffled: get(settings.shuffle),
-          initialIndex: get(settings.currentIndex),
-          initialQueue: songs,
-          initialShuffledMap: get(settings.shuffleMap),
-          writeToSettings: true,
-        }),
-      );
+    loggedIn.subscribe((loggedIn) => {
+      if (loggedIn) {
+        songByIds(...get(settings.queue).map((q) => q.id)).then((songs) => {
+          this.setQueue(
+            new Queue({
+              id: get(settings.playingSourceId),
+              shuffled: get(settings.shuffle),
+              initialIndex: get(settings.currentIndex),
+              initialQueue: songs,
+              initialShuffledMap: get(settings.shuffleMap),
+              writeToSettings: true,
+            }),
+          );
+        });
+      }
     });
 
     this.queue.subscribe((queue) => {

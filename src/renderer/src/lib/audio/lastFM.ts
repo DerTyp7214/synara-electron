@@ -40,6 +40,9 @@ class LastFM {
   private queueUnsubscribers: Array<Unsubscriber> = [];
 
   constructor() {
+    const scrobbledBadgeColor = "#87f487";
+    const neutralBadgeColor = "#b3b3b3";
+
     this.unsubscribers.push(
       settingsService.isLoaded().subscribe((loaded) => {
         if (!loaded) return;
@@ -57,14 +60,23 @@ class LastFM {
         this.resetScrobbler();
       }),
       this.scrobbled.subscribe((scrobbled) => {
-        if (scrobbled) window.api?.setBadgeColor("#87f487");
-        else window.api?.setBadgeColor("#b3b3b3");
+        if (!get(settings.lastFm)) return;
+
+        if (scrobbled) window.api?.setBadgeColor(scrobbledBadgeColor);
+        else window.api?.setBadgeColor(neutralBadgeColor);
       }),
       mediaSession.paused.subscribe((paused) => {
         if (paused) window.api?.clearBadge();
         else
           window.api?.setBadgeColor(
-            get(this.scrobbled) ? "#87f487" : "#b3b3b3",
+            get(this.scrobbled) ? scrobbledBadgeColor : neutralBadgeColor,
+          );
+      }),
+      settings.lastFm.subscribe((enabled) => {
+        if (!enabled) window.api?.clearBadge();
+        else
+          window.api?.setBadgeColor(
+            get(this.scrobbled) ? scrobbledBadgeColor : neutralBadgeColor,
           );
       }),
     );
