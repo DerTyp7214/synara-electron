@@ -127,6 +127,7 @@
           <Looper
             interval={60000}
             size={12}
+            disabled={$mediaPlayerOpen}
             onInterval={() => playlists?.reload()}
           />
         </div>

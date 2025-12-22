@@ -10,6 +10,7 @@
     trackClass = "",
     rangeClass = "",
     interval,
+    disabled = false,
     onInterval,
   }: {
     size?: number;
@@ -17,6 +18,7 @@
     trackClass?: string;
     rangeClass?: string;
     interval: number;
+    disabled?: boolean;
     onInterval: () => void;
   } = $props();
 
@@ -29,7 +31,7 @@
     if (currentProgressInterval) clearInterval(currentProgressInterval);
 
     currentInterval = setInterval(() => {
-      onInterval();
+      if (!disabled) onInterval();
     }, interval);
 
     currentProgressInterval = setInterval(() => {
