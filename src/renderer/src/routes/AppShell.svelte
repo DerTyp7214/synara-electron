@@ -15,6 +15,7 @@
   import { onMount, type Snippet } from "svelte";
   import Search from "$lib/components/Search.svelte";
   import { type Writable, writable } from "svelte/store";
+  import Looper from "$lib/components/Looper.svelte";
 
   const {
     children,
@@ -25,6 +26,7 @@
   } = $props();
 
   let sidebarOpen = $state(false);
+  let playlists = $state<PlaylistList>();
 
   function handleKeyDown(event: KeyboardEvent) {
     if (event.key === "Escape") {
@@ -116,12 +118,19 @@
 
         <div class="bg-surface-600-400 ms-4 me-4 h-1 rounded-full"></div>
 
-        <span class="text-surface-700-300 text-md ms-4 me-4 mt-4 font-bold"
-          >{$t("playlists.title")}</span
-        >
+        <div class="flex flex-row items-center justify-between p-4 pb-0">
+          <span class="text-surface-700-300 text-md font-bold">
+            {$t("playlists.title")}
+          </span>
+          <Looper
+            interval={60000}
+            size={12}
+            onInterval={() => playlists?.reload()}
+          />
+        </div>
 
         <div class="flex h-full w-full flex-col gap-2 overflow-auto p-4">
-          <PlaylistList />
+          <PlaylistList bind:this={playlists} />
         </div>
       </div>
     </aside>

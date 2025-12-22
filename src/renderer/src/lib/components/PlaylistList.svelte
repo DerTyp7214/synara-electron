@@ -13,6 +13,15 @@
   let playlistPage = $state(0);
   let allPlaylists = $state<Array<UserPlaylist>>([]);
 
+  export async function reload() {
+    playlistPage = 0;
+    allPlaylists = [];
+    hasNextPage = true;
+    isLoading = false;
+
+    await loadPlaylistPage();
+  }
+
   async function loadPlaylistPage() {
     if (isLoading || !hasNextPage) return;
 

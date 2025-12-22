@@ -23,6 +23,7 @@
   import cn from "classnames";
   import { t } from "$lib/i18n/i18n";
   import Spinner from "$lib/components/Spinner.svelte";
+  import Looper from "$lib/components/Looper.svelte";
 
   let isActive = $state(false);
   let isAuthenticated = $state(false);
@@ -34,9 +35,6 @@
   let queue: Array<CustomMetadataTrack> = $state([]);
   let currentDownload: Array<CustomMetadataTrack> = $state([]);
 
-  let logTimeout: NodeJS.Timeout | undefined;
-  let queueTimeout: NodeJS.Timeout | undefined;
-
   function scrollLogsToBottom() {
     if (logsContainer) {
       logsContainer.scrollTo({
@@ -46,7 +44,7 @@
     }
   }
 
-  async function logLoop() {
+  async function fetchLogs() {
     if (!isActive) return;
 
     let scrollTimeout: NodeJS.Timeout | undefined;
@@ -61,11 +59,9 @@
       }
       scrollTimeout = setTimeout(scrollLogsToBottom, 100);
     });
-
-    logTimeout = setTimeout(logLoop, 10000);
   }
 
-  async function queueLoop() {
+  async function fetchQueue() {
     if (!isActive) return;
 
     currentDownload = await currentDl().then((response) =>
@@ -84,20 +80,16 @@
         ),
       )
       .then((tracks) => tracks.flat());
-
-    queueTimeout = setTimeout(queueLoop, 10000);
   }
 
-  function startLoops() {
-    void logLoop();
-    void queueLoop();
+  function fetch() {
+    void fetchLogs();
+    void fetchQueue();
   }
 
   async function checkAuth() {
     isAuthenticated = await authenticated();
     isActive = true;
-
-    if (isAuthenticated) startLoops();
   }
 
   async function authenticate() {
@@ -128,9 +120,6 @@
 
     return () => {
       isActive = false;
-
-      clearTimeout(logTimeout);
-      clearTimeout(queueTimeout);
     };
   });
 
@@ -215,7 +204,10 @@
       {/if}
     </div>
     <div class={cn("m-3 flex grow flex-col p-2")}>
-      <span class="text-xl">{$t("downloads.queue")}</span>
+      <div class="flew-row flex items-center justify-between">
+        <span class="text-xl">{$t("downloads.queue")}</span>
+        <Looper interval={10000} onInterval={fetch} />
+      </div>
       <div class="flex flex-col gap-2">
         {#each currentDownload as track, i (i)}
           {@render trackSnippet(track, true)}
