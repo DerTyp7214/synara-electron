@@ -3,7 +3,7 @@
   import { Play, HeartPlus, Heart } from "@lucide/svelte";
   import Spotify from "$lib/assets/Spotify.svelte";
   import Tidal from "$lib/assets/Tidal.svelte";
-  import { setLiked, type Song } from "$lib/api/songs";
+  import { deleteSong, setLiked, type Song } from "$lib/api/songs";
   import {
     getImageUrl,
     getOrigin,
@@ -112,6 +112,13 @@
     });
   }
 
+  async function handleDelete() {
+    const confirmed = confirm(
+      $t("delete.song.confirm", { title: songRef.title }),
+    );
+    if (confirmed) await deleteSong(songRef.id);
+  }
+
   function handleContextMenu(event: MouseEvent) {
     openContextMenu(event, [
       {
@@ -123,6 +130,10 @@
         label: $t("play.addToQueue"),
         action: handleAddToQueue,
         args: songRef,
+      },
+      {
+        label: $t("delete.song"),
+        action: handleDelete,
       },
     ]);
   }

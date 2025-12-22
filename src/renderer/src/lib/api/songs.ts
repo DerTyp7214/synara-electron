@@ -106,3 +106,14 @@ export async function getContentLength(streamUrl: string): Promise<number> {
   if (!contentLength) return 0;
   return parseInt(contentLength, 10);
 }
+
+export async function deleteSong(...songIds: Array<Song["id"]>) {
+  const response = await apiCall<void>({
+    path: `/song`,
+    body: songIds,
+    method: "DELETE",
+    auth: true,
+  });
+
+  return response.getData();
+}

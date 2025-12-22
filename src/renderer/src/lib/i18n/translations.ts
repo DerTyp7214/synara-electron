@@ -75,6 +75,13 @@ export default {
     "play.addToQueue.success": "Added <b>{{songCount}}</b> songs to queue.",
     "play.addToQueue.error": "Error adding songs: {{message}}",
 
+    "delete.song": "Delete Song",
+    "delete.song.confirm":
+      "Are you sure you want to delete this song ({{title}})?",
+    "delete.album": "Delete Album",
+    "delete.album.confirm":
+      "Are you sure you want to delete this album ({{name}})?",
+
     "search.placeholder": "Search",
   },
 } as const;

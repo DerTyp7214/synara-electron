@@ -53,3 +53,14 @@ export async function byArtistId(
 
   return response.getData();
 }
+
+export async function deleteAlbum(...albumIds: Array<Album["id"]>) {
+  const response = await apiCall<void>({
+    path: `/album`,
+    body: albumIds,
+    method: "DELETE",
+    auth: true,
+  });
+
+  return response.getData();
+}

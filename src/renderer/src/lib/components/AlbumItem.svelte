@@ -12,7 +12,7 @@
   import { getContext } from "svelte";
   import { TOAST_CONTEXT_KEY, type ToasterContext } from "$lib/consts";
   import type { Album, Artist, Song } from "$shared/types/beApi";
-  import { listSongsByAlbum } from "$lib/api/albums";
+  import { deleteAlbum, listSongsByAlbum } from "$lib/api/albums";
   import type { PagedResponse } from "$lib/api/apiTypes";
 
   const {
@@ -134,6 +134,13 @@
     );
   }
 
+  async function handleDelete() {
+    const confirmed = confirm(
+      $t("delete.album.confirm", { name: albumRef.name }),
+    );
+    if (confirmed) await deleteAlbum(albumRef.id);
+  }
+
   function handleContextMenu(event: MouseEvent) {
     openContextMenu(event, [
       {
@@ -143,6 +150,10 @@
       {
         label: $t("play.addToQueue"),
         action: handleAddToQueue,
+      },
+      {
+        label: $t("delete.album"),
+        action: handleDelete,
       },
     ]);
   }
