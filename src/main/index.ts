@@ -192,9 +192,9 @@ async function getTrayIconWithBadge(badgeColor: string) {
   const img = await loadImage(base.toDataURL());
   ctx.drawImage(img, 0, 0, width, height);
 
-  const dotRadius = width * 0.18;
-  const centerX = width - dotRadius - width * 0.05;
-  const centerY = dotRadius + height * 0.05;
+  const dotRadius = width * 0.14;
+  const centerX = width - dotRadius;
+  const centerY = dotRadius;
 
   ctx.beginPath();
   ctx.arc(centerX, centerY, dotRadius, 0, 2 * Math.PI);
@@ -214,7 +214,6 @@ async function reloadTrayIcon() {
     : getTrayIcon();
 
   tray.setImage(trayIcon);
-  tray.setTitle("Synara");
 }
 
 function clearBadge() {
