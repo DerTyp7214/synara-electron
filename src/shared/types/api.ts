@@ -60,4 +60,6 @@ export interface CustomApi {
   registerListener(listener: MprisEventListener<MprisEventName>): void;
   registerBonjourListener(listener: BonjourEventListener): () => void;
   openExternal(url: string): void;
+  setBadgeColor(color: string): void;
+  clearBadge(): void;
 }

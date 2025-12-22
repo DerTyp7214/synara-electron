@@ -28,6 +28,7 @@
     "@electron-toolkit/preload": "catalog:",
     "@electron-toolkit/utils": "catalog:",
     "@xhayper/discord-rpc": "catalog:",
+    "canvas": "catalog:",
     "electron-liquid-glass": "catalog:"
   },
   "devDependencies": {
@@ -69,11 +70,11 @@
       "@biomejs/biome",
       "@tailwindcss/oxide",
       "abstract-socket",
+      "canvas",
       "core-js",
       "electron",
       "electron-vibrancy",
       "esbuild",
-      "puppeteer",
       "sharp",
       "usocket"
     ]

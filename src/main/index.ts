@@ -2,6 +2,10 @@
 import icon from "../../resources/icon.png?asset";
 // @ts-expect-error works though
 import trayIcon from "../../resources/tray.png?asset";
+// @ts-expect-error works though
+import trayIconBlack from "../../resources/tray-black.png?asset";
+// @ts-expect-error works though
+import trayIconWhite from "../../resources/tray-white.png?asset";
 import {
   app,
   shell,
@@ -10,6 +14,8 @@ import {
   ipcMain,
   components,
   Menu,
+  nativeImage,
+  nativeTheme,
 } from "electron";
 import { join } from "path";
 import { electronApp, optimizer, is, platform } from "@electron-toolkit/utils";
@@ -23,6 +29,7 @@ import { MprisEventData, MprisEventName } from "../shared/types/api";
 import { setupSettings, store } from "./settings";
 import { initRPC } from "./discord";
 import { registerProtocol } from "./protocol";
+import { createCanvas, loadImage } from "canvas";
 
 if (process.env.NODE_ENV === "development") {
   const devPath = path.join(app.getAppPath(), "dev-config");
@@ -160,8 +167,76 @@ function loadVite(): void {
     });
 }
 
-function setupTray() {
-  tray = new Tray(trayIcon);
+function getTrayIcon() {
+  const trayImage = nativeImage.createFromPath(
+    platform.isMacOS
+      ? nativeTheme.shouldUseDarkColors
+        ? trayIconWhite
+        : trayIconBlack
+      : trayIcon,
+  );
+  trayImage.setTemplateImage(platform.isMacOS);
+  return trayImage;
+}
+
+let currentBadgeColor: string | null = null;
+async function getTrayIconWithBadge(badgeColor: string) {
+  currentBadgeColor = badgeColor;
+
+  const base = getTrayIcon();
+  const { width, height } = base.getSize();
+
+  const canvas = createCanvas(width, height);
+  const ctx = canvas.getContext("2d");
+
+  const img = await loadImage(base.toDataURL());
+  ctx.drawImage(img, 0, 0, width, height);
+
+  const dotRadius = width * 0.18;
+  const centerX = width - dotRadius - width * 0.05;
+  const centerY = dotRadius + height * 0.05;
+
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, dotRadius, 0, 2 * Math.PI);
+  ctx.fillStyle = badgeColor;
+  ctx.fill();
+
+  const image = nativeImage.createFromBuffer(canvas.toBuffer("image/png"));
+
+  image.setTemplateImage(false);
+
+  return image;
+}
+
+async function reloadTrayIcon() {
+  const trayIcon = currentBadgeColor
+    ? await getTrayIconWithBadge(currentBadgeColor)
+    : getTrayIcon();
+
+  tray.setImage(trayIcon);
+  tray.setTitle("Synara");
+}
+
+function clearBadge() {
+  currentBadgeColor = null;
+  void reloadTrayIcon();
+}
+
+nativeTheme.on("updated", () => {
+  void reloadTrayIcon();
+});
+
+ipcMain.on("set-badge-color", (_, color: string) => {
+  currentBadgeColor = color;
+  void reloadTrayIcon();
+});
+
+ipcMain.on("clear-badge", () => {
+  clearBadge();
+});
+
+async function setupTray() {
+  tray = new Tray(getTrayIcon());
   tray.setTitle("Synara");
   tray.setToolTip("Synara");
 
@@ -193,7 +268,7 @@ else {
       optimizer.watchWindowShortcuts(window);
     });
 
-    setupTray();
+    void setupTray();
     createWindow();
 
     app.on("activate", function () {

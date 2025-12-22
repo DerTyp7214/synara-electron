@@ -56,6 +56,17 @@ class LastFM {
       window.listenCustomEvent("replaySong", () => {
         this.resetScrobbler();
       }),
+      this.scrobbled.subscribe((scrobbled) => {
+        if (scrobbled) window.api?.setBadgeColor("#87f487");
+        else window.api?.setBadgeColor("#b3b3b3");
+      }),
+      mediaSession.paused.subscribe((paused) => {
+        if (paused) window.api?.clearBadge();
+        else
+          window.api?.setBadgeColor(
+            get(this.scrobbled) ? "#87f487" : "#b3b3b3",
+          );
+      }),
     );
   }
 
