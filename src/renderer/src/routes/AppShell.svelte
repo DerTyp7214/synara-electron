@@ -59,6 +59,7 @@
         "flex-col",
         "bg-surface-400-600 rounded-container shrink-0 overflow-hidden md:bg-transparent",
         "max-w-3xs transition-all lg:max-w-xs",
+        "h-full w-full",
         "z-30 md:translate-x-0",
         {
           "-translate-x-full": !sidebarOpen,
@@ -84,7 +85,8 @@
         class={cn(
           "bg-surface-50-950/40 flex-col",
           "shrink-0 overflow-y-auto",
-          "app-card flex w-full flex-1",
+          "h-full w-full",
+          "app-card flex flex-1",
           "rounded-container shadow-md",
           "max-h-full transition-colors",
         )}
