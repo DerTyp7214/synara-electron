@@ -2,6 +2,7 @@
   import { timecodeToMilliseconds } from "$lib/utils/utils";
   import cn from "classnames";
   import { onMount } from "svelte";
+  import { audioSession } from "$lib/audio/audioSession";
 
   let lyricsView: HTMLDivElement;
 
@@ -124,19 +125,25 @@
   bind:this={lyricsView}
   onscroll={handleScroll}
 >
-  <div class="flex-shrink-0" style="height: 45%;"></div>
-
+  <div class="shrink-0" style="height: 45%;"></div>
   {#each lyricsArray as [timestamp, line] (timestamp)}
-    <span
+    <button
+      onclick={() => audioSession.seekToMilliseconds(Number(timestamp))}
       data-timestamp={timestamp.toString()}
-      class={cn("h2 text-center transition-all", {
-        "text-secondary-100 my-2 !scale-100":
-          timestamp.toString() === activeLine,
-        "my-0.5 text-white": timestamp.toString() !== activeLine,
-      })}
+      class={cn(
+        "h2 cursor-pointer text-center transition-all",
+        "mx-0 rounded-md hover:bg-white/20",
+        {
+          "text-secondary-100 my-2 scale-100! px-2 py-1":
+            timestamp.toString() === activeLine,
+          "my-0.5 px-1.5 py-0.5 text-white hover:opacity-50!":
+            timestamp.toString() !== activeLine,
+        },
+      )}
       style={`opacity: ${getFactor(timestamp)}; scale: ${60 + getFactor(timestamp) * 30}%`}
-      >{line}</span
     >
+      {line}
+    </button>
   {/each}
-  <div class="flex-shrink-0" style="height: 45%;"></div>
+  <div class="shrink-0" style="height: 45%;"></div>
 </div>
