@@ -53,6 +53,9 @@ class LastFM {
 
         if (get(settings.lastFm)) void this.checkAuth();
       }),
+      window.listenCustomEvent("replaySong", () => {
+        this.resetScrobbler();
+      }),
     );
   }
 
@@ -108,6 +111,13 @@ class LastFM {
         for (const unsubscriber of this.queueUnsubscribers) unsubscriber?.();
       },
     );
+  }
+
+  private resetScrobbler() {
+    this.songTimeoutStartTime = Date.now();
+    this.songTimeoutEndTime = this.songTimeoutStartTime;
+
+    this.songTimer(get(this.currentSong));
   }
 
   public disconnect() {

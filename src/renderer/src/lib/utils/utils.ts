@@ -392,5 +392,6 @@ declare global {
   interface WindowEventMap {
     songLiked: CustomEvent<SongLikedEventData>;
     focusSearch: CustomEvent<Event>;
+    replaySong: CustomEvent<Event>;
   }
 }

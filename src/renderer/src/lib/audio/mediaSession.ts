@@ -448,6 +448,7 @@ export class MediaSession {
   }
 
   async reset() {
+    window.dispatchCustomEvent("replaySong");
     audioSession.seekToSeconds(0);
     await this.play();
   }
