@@ -12,18 +12,26 @@ import type { SongLikedEventData } from "$lib/audio/queue";
 export const blackSvg =
   "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9ImJsYWNrIi8+PC9zdmc+";
 
+export function getProxyUrl(url: string): string {
+  const apiBase = getApiUrl();
+  if (!apiBase) return undefined as never;
+
+  const proxyUrl = new URL(`/metadata/tidal/proxy/${btoa(url)}`, apiBase);
+  return proxyUrl.toString();
+}
+
 export function getImageUrl<K extends string | undefined>(
   imageId: K,
   size?: number,
-): K {
-  if (!imageId) return undefined as K;
+): K extends undefined ? undefined : string {
+  if (!imageId) return undefined as never;
 
   const apiBase = getApiUrl();
-  if (!apiBase) return undefined as K;
+  if (!apiBase) return undefined as never;
 
   const url = new URL(`/image/byId/${imageId}`, apiBase);
   if (size) url.searchParams.set("size", size.toString());
-  return url.toString() as K;
+  return url.toString() as never;
 }
 
 export function getStreamUrl<K extends string | undefined>(

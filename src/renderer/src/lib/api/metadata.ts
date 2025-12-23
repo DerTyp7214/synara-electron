@@ -1,6 +1,12 @@
 import type { Song } from "$shared/types/beApi";
 import { apiCall } from "$lib/api/utils";
-import { getOrigin, getOriginalTrackId } from "$lib/utils/utils";
+import {
+  blackSvg,
+  getImageUrl,
+  getOrigin,
+  getOriginalTrackId,
+  getProxyUrl,
+} from "$lib/utils/utils";
 
 export async function getImageUrlBySong<K extends Song>(song: K) {
   if (await supportsImageCache()) {
@@ -33,6 +39,32 @@ export async function getImageUrlBySong<K extends Song>(song: K) {
   });
 
   return response.getData();
+}
+
+export async function getAnimatedCoverBySong<K extends Song>(song: K) {
+  const response = await apiCall<{
+    url?: string;
+    fallbackUrl: string;
+    animated: boolean;
+  }>({
+    path: `/metadata/tidal/imageUrl/animatedByTrack/${song.id}`,
+    method: "GET",
+    auth: true,
+  });
+
+  const data = await response.getData();
+
+  if (!data.animated || !data.url)
+    return { url: getImageUrl(song.coverId) ?? blackSvg, animated: false };
+
+  const headResponse = await fetch(getProxyUrl(data.url), {
+    method: "HEAD",
+  });
+
+  if (!headResponse.ok)
+    return { url: getImageUrl(song.coverId) ?? blackSvg, animated: false };
+
+  return { url: getProxyUrl(data.url), animated: true };
 }
 
 const lastSupportedCheck = 0;

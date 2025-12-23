@@ -62,6 +62,7 @@
   import { windowDimensions } from "$lib/utils/windowStore";
   import { imageColors as derivedImageColors } from "$lib/color/imageUtils";
   import { objectPropertyStore } from "$lib/utils/storeUtils";
+  import { getAnimatedCoverBySong } from "$lib/api/metadata";
 
   let {
     isOpen = writable(false),
@@ -100,6 +101,24 @@
   const isPaused = $derived(mediaSession.paused);
   const bitrate = $derived(mediaSession.bitrate);
   const muted = $derived(mediaSession.muted);
+
+  let bigCover = $state({
+    url: getImageUrl($currentSong.coverId) ?? blackSvg,
+    animated: false,
+  });
+
+  $effect(() => {
+    $currentSong;
+
+    bigCover = {
+      url: getImageUrl($currentSong.coverId) ?? blackSvg,
+      animated: false,
+    };
+
+    getAnimatedCoverBySong($currentSong).then((cover) => {
+      bigCover = cover;
+    });
+  });
 
   const imageColors = $derived(derivedImageColors($currentQueue?.currentSong));
 
@@ -477,8 +496,12 @@
           ) * 0.9}
         />
       {/if}
-      <img
-        src={getImageUrl($currentSong.coverId) ?? blackSvg}
+      <svelte:element
+        this={bigCover.animated ? "video" : "img"}
+        poster={getImageUrl($currentSong.coverId)}
+        autoplay
+        loop
+        src={bigCover.url}
         alt="cover"
         style="width: min(80vw, 40vh); height: min(80vw, 40vh);"
         class={cn(
@@ -490,7 +513,8 @@
             "max-h-[40vh] opacity-100": $isOpen,
           },
         )}
-      />
+      >
+      </svelte:element>
       <canvas
         class={cn(
           "h-[20vh] w-11/12 transition-all",

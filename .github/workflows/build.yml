@@ -32,7 +32,7 @@ jobs:
             build: "linux"
           - os: macos-latest
             build: "mac"
-          - os: ubuntu-latest
+          - os: windows-latest
             build: "win"
 
     runs-on: ${{ matrix.os }}
@@ -55,7 +55,7 @@ jobs:
 
       - name: Cache APT Packages
         uses: actions/cache@v5
-        if: matrix.build == 'win'
+        if: false #matrix.build == 'win'
         with:
           path: /var/cache/apt/archives/!(lock|partial)
           key: ${{ matrix.build }}-apt-cache-winehq-noble
@@ -63,7 +63,7 @@ jobs:
             ${{ matrix.build }}-apt-cache-
 
       - name: Install WineHQ (Stable for Noble)
-        if: matrix.build == 'win'
+        if: false #matrix.build == 'win'
         run: |
           sudo dpkg --add-architecture i386
 
@@ -82,13 +82,11 @@ jobs:
           sudo apt install -y --install-recommends libarchive-tools
 
       - name: Install Dependencies and sync svelte-kit
-        shell: bash
         run: |
           pnpm install --frozen-lockfile
           pnpm sync:sveltekit
 
       - name: Build for ${{ matrix.build }}
-        shell: bash
         run: pnpm run build:${{ matrix.build }} --publish never
         env:
           MAIN_VITE_LAST_FM_API_KEY: ${{ secrets.LAST_FM_API_KEY }}
