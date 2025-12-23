@@ -19,9 +19,9 @@
     "build:win": "pnpm run build && electron-builder --win --x64 --arm64",
     "build:mac": "pnpm run build && electron-builder --mac",
     "build:linux": "npm run build && electron-builder --linux",
-    "dev:sveltekit": "cd src/renderer; pnpm run dev",
-    "sync:sveltekit": "cd src/renderer; pnpm svelte-kit sync",
-    "build:sveltekit": "cd src/renderer; pnpm run build",
+    "dev:sveltekit": "cd src; cd renderer; pnpm run dev",
+    "sync:sveltekit": "cd src; cd renderer; pnpm svelte-kit sync",
+    "build:sveltekit": "cd src; cd renderer; pnpm run build",
     "build:icons": "pnpx electron-icon-builder --input=resources/icon.png --output=build/ --flatten"
   },
   "dependencies": {
