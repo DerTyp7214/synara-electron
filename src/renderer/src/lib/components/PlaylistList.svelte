@@ -15,14 +15,13 @@
 
   export async function reload() {
     playlistPage = 0;
-    allPlaylists = [];
     hasNextPage = true;
     isLoading = false;
 
-    await loadPlaylistPage();
+    await loadPlaylistPage([]);
   }
 
-  async function loadPlaylistPage() {
+  async function loadPlaylistPage(initialList = allPlaylists) {
     if (isLoading || !hasNextPage) return;
 
     isLoading = true;
@@ -30,7 +29,7 @@
       const response = await listUserPlaylists(playlistPage);
 
       hasNextPage = response.hasNextPage;
-      allPlaylists = [...allPlaylists, ...response.data];
+      allPlaylists = [...initialList, ...response.data];
       playlistPage = response.page + 1;
     } catch (e) {
       debugLog("error", e);
@@ -60,7 +59,7 @@
     disabled={isLoading}
     type="button"
     class="btn btn-sm preset-outlined-surface-700-300 mt-2"
-    onclick={loadPlaylistPage}
+    onclick={() => loadPlaylistPage()}
   >
     {#if isLoading}
       <Spinner size={12} />
