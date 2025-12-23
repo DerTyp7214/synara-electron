@@ -13,7 +13,7 @@
     "typecheck": "pnpm run typecheck:node && pnpm run svelte-check",
     "start": "electron-vite preview",
     "dev": "concurrently -p \"[{time}] [{name}]\" -n=electron,sveltekit -c=red,blue \"electron-vite dev\" \"pnpm run dev:sveltekit\"",
-    "build": "pnpm run build:sveltekit; npm run typecheck && electron-vite build",
+    "build": "pnpm run build:sveltekit && npm run typecheck && electron-vite build",
     "postinstall": "electron-builder install-app-deps",
     "build:unpack": "pnpm run build && electron-builder --dir",
     "build:win": "pnpm run build && electron-builder --win --x64 --arm64",
