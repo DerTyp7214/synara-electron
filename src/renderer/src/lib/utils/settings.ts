@@ -1,4 +1,4 @@
-import { writable, type Writable } from "svelte/store";
+import { get, writable, type Writable } from "svelte/store";
 import {
   type Settings as AppSettings,
   SETTINGS_KEYS,
@@ -124,6 +124,8 @@ class Settings {
   }
 
   private set<K extends keyof AppSettings>(key: K, value: AppSettings[K]) {
+    if (!get(this.loaded)) return;
+    scopedDebugLog("info", this.logScope, "Settings", "set", key, "to", value);
     if (window.api) this.setApi(key, value);
     else this.setLocalStorage(key, value);
   }

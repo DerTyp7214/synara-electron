@@ -14,7 +14,7 @@ import { audioSession } from "$lib/audio/audioSession";
 import { mediaSession } from "$lib/audio/mediaSession";
 import { copy, invertArray } from "$lib/utils/utils";
 import type { MinimalSong, SongWithPosition } from "$shared/types/beApi";
-import { scopeStyle } from "$lib/utils/logger";
+import { scopedDebugLog, scopeStyle } from "$lib/utils/logger";
 
 export interface SongLikedEventData {
   songId: Song["id"];
@@ -82,7 +82,7 @@ export class Queue implements Readable<QueueCallbackData> {
     this.queueStore = writable(
       copy(initialQueue).map(({ id }, index) => ({ id, position: index })),
     );
-    this.currentIndexStore = writable(initialIndex);
+    this.currentIndexStore = writable(initialIndex >= 0 ? initialIndex : 0);
     this.shuffledMapStore = writable(copy(initialShuffledMap));
 
     this.unsubscribers.push(
@@ -344,9 +344,20 @@ export class Queue implements Readable<QueueCallbackData> {
   }
 
   public setWriteToSettings(writeToSettings: boolean) {
+    if (this.writeToSettings === writeToSettings) return;
+
     this.writeToSettings = writeToSettings;
 
     if (writeToSettings) {
+      scopedDebugLog(
+        "info",
+        this.logScope,
+        "Queue",
+        "setWriteToSettings",
+        writeToSettings,
+        get(this.queueStore),
+        get(this.shuffledMapStore),
+      );
       settings.queue.set(get(this.queueStore));
       settings.shuffleMap.set(get(this.shuffledMapStore));
     }

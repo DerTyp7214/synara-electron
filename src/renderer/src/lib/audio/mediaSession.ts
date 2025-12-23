@@ -21,6 +21,7 @@ import type { UUID } from "node:crypto";
 import { nullSong } from "$shared/types/settings";
 import type { MinimalSong, SongWithPosition } from "$shared/types/beApi";
 import type { RGBColor } from "colorthief";
+import { tick } from "svelte";
 
 // noinspection JSUnusedGlobalSymbols
 export class MediaSession {
@@ -75,8 +76,9 @@ export class MediaSession {
     sub = derived(
       [loggedIn, settingsService.isLoaded()],
       ([$loggedIn, $settingsLoaded]) => $loggedIn && $settingsLoaded,
-    ).subscribe((ready) => {
+    ).subscribe(async (ready) => {
       if (ready) {
+        await tick();
         this.setup();
         sub?.();
       }
@@ -92,21 +94,28 @@ export class MediaSession {
 
     this.setupAudioConnection();
 
-    loggedIn.subscribe((loggedIn) => {
-      if (loggedIn) {
-        songByIds(...get(settings.queue).map((q) => q.id)).then((songs) => {
-          this.setQueue(
-            new Queue({
-              id: get(settings.playingSourceId),
-              shuffled: get(settings.shuffle),
-              initialIndex: get(settings.currentIndex),
-              initialQueue: songs,
-              initialShuffledMap: get(settings.shuffleMap),
-              writeToSettings: true,
-            }),
-          );
-        });
-      }
+    const queue = get(settings.queue);
+    const shuffleMap = get(settings.shuffleMap).map((s, index) =>
+      index === 0 ? (s ?? 0) : s,
+    );
+    const playingSourceId = get(settings.playingSourceId);
+
+    songByIds(...queue.map((q) => q.id)).then((songs) => {
+      const currentIndex = get(settings.currentIndex);
+      const originalSong = queue[currentIndex];
+
+      this.setQueue(
+        new Queue({
+          id: playingSourceId,
+          shuffled: get(settings.shuffle),
+          initialIndex: songs
+            .slice(0, currentIndex + 1)
+            .findLastIndex((s) => s.id === originalSong?.id),
+          initialQueue: songs,
+          initialShuffledMap: shuffleMap,
+          writeToSettings: false,
+        }),
+      );
     });
 
     this.queue.subscribe((queue) => {
