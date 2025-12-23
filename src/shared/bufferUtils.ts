@@ -2,7 +2,11 @@ import type { TypedArrayBuffer } from "./types/settings";
 
 export function decodeArrayBuffer<K>(buffer: TypedArrayBuffer<K>): K {
   const decoder = new TextDecoder();
-  return JSON.parse(decoder.decode(buffer));
+  try {
+    return JSON.parse(decoder.decode(buffer));
+  } catch (_) {
+    return null as never;
+  }
 }
 
 export function encodeArrayBuffer<K>(data: K): TypedArrayBuffer<K> {
