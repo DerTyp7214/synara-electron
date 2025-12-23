@@ -28,6 +28,7 @@
   let isActive = $state(false);
   let isAuthenticated = $state(false);
   let authenticationLoading = $state(false);
+  let logsLoading = $state(false);
 
   let logs: Array<string> = $state([]);
   let logsContainer: HTMLDivElement | null = $state(null);
@@ -45,7 +46,8 @@
   }
 
   async function fetchLogs() {
-    if (!isActive) return;
+    if (!isActive || logsLoading) return;
+    logsLoading = true;
 
     let scrollTimeout: NodeJS.Timeout | undefined;
 
@@ -59,6 +61,8 @@
       }
       scrollTimeout = setTimeout(scrollLogsToBottom, 100);
     });
+
+    logsLoading = false;
   }
 
   async function fetchQueue() {
@@ -90,6 +94,8 @@
   async function checkAuth() {
     isAuthenticated = await authenticated();
     isActive = true;
+
+    if (isAuthenticated) fetch();
   }
 
   async function authenticate() {
