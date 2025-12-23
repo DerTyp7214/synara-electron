@@ -35,7 +35,7 @@
     }, interval);
 
     currentProgressInterval = setInterval(() => {
-      value -= (100 / interval) * 100;
+      value -= 10000 / interval;
       if (value < 0) value = 100;
     }, 100);
   });

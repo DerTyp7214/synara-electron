@@ -63,6 +63,7 @@
   import { imageColors as derivedImageColors } from "$lib/color/imageUtils";
   import { objectPropertyStore } from "$lib/utils/storeUtils";
   import { getAnimatedCoverBySong } from "$lib/api/metadata";
+  import { nullSong } from "$shared/types/settings";
 
   let {
     isOpen = writable(false),
@@ -106,18 +107,24 @@
     url: getImageUrl($currentSong.coverId) ?? blackSvg,
     animated: false,
   });
+  let lastFallback: string | undefined;
 
   $effect(() => {
     $currentSong;
 
-    bigCover = {
-      url: getImageUrl($currentSong.coverId) ?? blackSvg,
-      animated: false,
-    };
+    if ($currentSong.coverId !== lastFallback) {
+      bigCover = {
+        url: getImageUrl($currentSong.coverId) ?? blackSvg,
+        animated: false,
+      };
+      lastFallback = $currentSong.coverId;
+    }
 
-    getAnimatedCoverBySong($currentSong).then((cover) => {
-      bigCover = cover;
-    });
+    if ($currentSong.id !== nullSong.id) {
+      getAnimatedCoverBySong($currentSong).then((cover) => {
+        bigCover = cover;
+      });
+    }
   });
 
   const imageColors = $derived(derivedImageColors($currentQueue?.currentSong));
