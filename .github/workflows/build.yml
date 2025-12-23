@@ -84,9 +84,6 @@ jobs:
       - name: Install Dependencies and sync svelte-kit
         run: |
           pnpm install --frozen-lockfile
-          ls
-          ls src
-          ls src/renderer
           pnpm sync:sveltekit
 
       - name: Build for ${{ matrix.build }}
