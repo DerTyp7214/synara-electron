@@ -1,5 +1,9 @@
 import ColorThief, { type RGBColor } from "colorthief";
-import { oklchToRgb, rgbToOklch } from "$lib/color/converters";
+import {
+  oklchToRgb,
+  rgbToOklch,
+  sortedByLightnessOklch,
+} from "$lib/color/converters";
 
 export async function getColorPalette(imageUrl?: string) {
   if (!imageUrl) return [[-1, -1, -1]] as RGBColor[];
@@ -64,6 +68,17 @@ export function oklchToString([L, C, H]: OKLCHColor): string {
   return `oklch(${L}% ${C} ${H}deg)`;
 }
 
+export function sortRgbColors(
+  color1: RGBColor,
+  color2: RGBColor,
+  shade: keyof IntervalType = 300,
+): Array<RGBColor> {
+  return sortedByLightnessOklch(
+    rgbToOklch(transformColor(color1, shade)),
+    rgbToOklch(transformColor(color2, shade)),
+  ).map(oklchToRgb);
+}
+
 export function generateOklchScale(
   color: RGBColor,
   colorName: string = "secondary",
@@ -101,4 +116,8 @@ export function getColorCssVars(color: Array<RGBColor>) {
       return `${color}: ${scale};`;
     })
     .join("\n");
+}
+
+export function rgbToCss(color: RGBColor): string {
+  return `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
 }

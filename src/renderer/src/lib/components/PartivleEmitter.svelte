@@ -2,10 +2,8 @@
   import { onMount } from "svelte";
   import cn from "classnames";
   import { createResizeListener } from "$lib/utils/utils";
-  import { oklchToRgb, sortedByLightnessOklch } from "$lib/color/converters";
   import type { RGBColor } from "colorthief";
-  import { transformColor } from "$lib/color/utils";
-  import { rgbToOklch } from "$lib/color/converters";
+  import { sortRgbColors } from "$lib/color/utils";
 
   let {
     velocityMultiplier = $bindable(1),
@@ -28,14 +26,7 @@
     class?: string;
   } = $props();
 
-  const color = $derived(
-    oklchToRgb(
-      sortedByLightnessOklch(
-        rgbToOklch(transformColor(colors[0], 300)),
-        rgbToOklch(transformColor(colors[1], 300)),
-      )[0],
-    ),
-  );
+  const color = $derived(sortRgbColors(colors[0], colors[1], 300)[0]);
 
   $effect(() => {
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions

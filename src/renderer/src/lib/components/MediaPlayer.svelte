@@ -53,7 +53,7 @@
   import Spinner from "$lib/components/Spinner.svelte";
   import { setLiked, type Song } from "$lib/api/songs";
   import { MEDIA_PLAYER_CONTEXT_KEY } from "$lib/consts";
-  import { getColorCssVars } from "$lib/color/utils";
+  import { getColorCssVars, rgbToCss, sortRgbColors } from "$lib/color/utils";
   import { debugLog } from "$lib/utils/logger";
   import type { SongLikedEventData } from "$lib/audio/queue";
   import lastFM from "$lib/audio/lastFM";
@@ -510,11 +510,14 @@
         loop
         src={bigCover.url}
         alt="cover"
-        style="width: min(80vw, 40vh); height: min(80vw, 40vh);"
+        style="width: min(80vw, 40vh); height: min(80vw, 40vh); border-color: {rgbToCss(
+          sortRgbColors($imageColors[0], $imageColors[1])[0],
+        )};"
         class={cn(
           "transition-all duration-75",
           "z-30 aspect-square",
           "rounded-container overflow-hidden",
+          "border-2",
           {
             "max-h-0 opacity-0": !$isOpen,
             "max-h-[40vh] opacity-100": $isOpen,
