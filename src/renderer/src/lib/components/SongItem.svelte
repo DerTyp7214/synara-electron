@@ -324,5 +324,7 @@
     <ToolTip text={originalUrl} class="flex items-center justify-center">
       <Tidal class="ms-auto mt-auto mb-auto" size={size / 3} />
     </ToolTip>
+  {:else}
+    <div style="min-width: {size / 3}px"></div>
   {/if}
 </div>
