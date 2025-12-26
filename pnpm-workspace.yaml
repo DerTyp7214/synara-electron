@@ -33,7 +33,7 @@ catalog:
   concurrently: ^9.2.1
   dayjs: ^1.11.19
   electron: github:castlabs/electron-releases#v39.2.4+wvcus
-  electron-builder: ^26.3.6
+  electron-builder: ^26.4.0
   electron-icon-builder: ^2.0.1
   electron-liquid-glass: ^1.1.1
   electron-serve: ^3.0.0
