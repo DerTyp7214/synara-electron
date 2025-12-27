@@ -318,7 +318,7 @@ export class Queue implements Readable<QueueCallbackData> {
   public getPage(pageSize: number) {
     let index = get(this.currentIndex);
     if (get(settings.shuffle)) index = get(this.shuffledMapStore)[index];
-    return Math.max(0, Math.ceil(index / pageSize) - 1);
+    return Math.max(0, Math.floor(index / pageSize));
   }
 
   public getCurrentSong() {
