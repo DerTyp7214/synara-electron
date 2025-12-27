@@ -58,7 +58,7 @@
   import type { SongLikedEventData } from "$lib/audio/queue";
   import lastFM from "$lib/audio/lastFM";
   import { settings } from "$lib/utils/settings";
-  import PartivleEmitter from "$lib/components/PartivleEmitter.svelte";
+  import ParticleManager from "$lib/components/ParticleManager.svelte";
   import { windowDimensions } from "$lib/utils/windowStore";
   import { imageColors as derivedImageColors } from "$lib/color/imageUtils";
   import { objectPropertyStore } from "$lib/utils/storeUtils";
@@ -474,7 +474,7 @@
       )}
     >
       {#if $showVisualizer && $isOpen && $audioVisualizerSettings.particleMultiplier > 0 && !$showQueue && !($showLyrics && hasLyrics)}
-        <PartivleEmitter
+        <ParticleManager
           class={cn("absolute top-0 left-0 z-20 h-screen w-screen")}
           colors={$imageColors}
           yOffset={-($windowDimensions.height * 0.044)}
