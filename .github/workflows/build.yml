@@ -155,6 +155,7 @@ jobs:
           target_commitish: desktop
           files: |
             dist/${{ env.CHANNEL_NAME }}.yml
+            dist/synara.db.tar.gz
             dist/synara-*
         env:
           GITHUB_TOKEN: ${{ secrets.SYNARA_GITHUB_TOKEN }}
@@ -170,6 +171,7 @@ jobs:
           target_commitish: desktop
           files: |
             dist/${{ env.CHANNEL_NAME }}.yml
+            dist/synara.db.tar.gz
             dist/synara-*
         env:
           GITHUB_TOKEN: ${{ secrets.SYNARA_GITHUB_TOKEN }}
