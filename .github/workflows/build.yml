@@ -80,6 +80,7 @@ jobs:
         run: |
           cd dist
           repo-add synara.db.tar.gz *.pacman
+          rm synara.db
           cp synara.db.tar.gz synara.db
 
       - name: Upload Artifacts
