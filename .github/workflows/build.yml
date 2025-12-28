@@ -59,6 +59,10 @@ jobs:
           sudo apt update
           sudo apt install -y --install-recommends libarchive-tools
 
+      - name: Install pacman tools
+        if: matrix.build == 'linux'
+        uses: termux-pacman/pacman-actions@v2.5
+
       - name: Install Dependencies and sync svelte-kit
         run: |
           pnpm install --frozen-lockfile
@@ -70,6 +74,11 @@ jobs:
           MAIN_VITE_LAST_FM_API_KEY: ${{ secrets.LAST_FM_API_KEY }}
           MAIN_VITE_LAST_FM_SHARED_SECRET: ${{ secrets.LAST_FM_SHARED_SECRET }}
           MAIN_VITE_DISCORD_CLIENT_ID: ${{ secrets.DISCORD_CLIENT_ID }}
+
+      - name: Create package db
+        if: matrix.build == 'linux'
+        run: |
+          repo-add synara.db.tar.gz dist/*.pacman
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v6
