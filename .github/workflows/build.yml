@@ -80,6 +80,7 @@ jobs:
         run: |
           cd dist
           repo-add synara.db.tar.gz *.pacman
+          cp synara.db.tar.gz synara.db
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v6
@@ -155,6 +156,7 @@ jobs:
           target_commitish: desktop
           files: |
             dist/${{ env.CHANNEL_NAME }}.yml
+            dist/synara.db
             dist/synara.db.tar.gz
             dist/synara-*
         env:
@@ -171,6 +173,7 @@ jobs:
           target_commitish: desktop
           files: |
             dist/${{ env.CHANNEL_NAME }}.yml
+            dist/synara.db
             dist/synara.db.tar.gz
             dist/synara-*
         env:
