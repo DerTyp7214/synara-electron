@@ -78,7 +78,8 @@ jobs:
       - name: Create package db
         if: matrix.build == 'linux'
         run: |
-          repo-add synara.db.tar.gz dist/*.pacman
+          cd dist
+          repo-add synara.db.tar.gz *.pacman
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v6
