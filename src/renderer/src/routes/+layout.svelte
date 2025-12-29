@@ -15,7 +15,7 @@
   import { setContext } from "svelte";
   import { TOAST_CONTEXT_KEY } from "$lib/consts";
   import { writable } from "svelte/store";
-  import lastFM from "$lib/audio/lastFM";
+  import musicScrobbler from "$lib/audio/musicScrobbler";
   import { mediaSession } from "$lib/audio/mediaSession";
 
   const { children } = $props();
@@ -50,7 +50,7 @@
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     $token;
     checkApiUrl($apiBase);
-    lastFM.connectMediaSession(mediaSession);
+    musicScrobbler.connectMediaSession(mediaSession);
   });
 
   $effect(() => {

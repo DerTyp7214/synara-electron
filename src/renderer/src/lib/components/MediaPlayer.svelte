@@ -56,7 +56,7 @@
   import { getColorCssVars, rgbToCss, sortRgbColors } from "$lib/color/utils";
   import { debugLog } from "$lib/utils/logger";
   import type { SongLikedEventData } from "$lib/audio/queue";
-  import lastFM from "$lib/audio/lastFM";
+  import musicScrobbler from "$lib/audio/musicScrobbler";
   import { settings } from "$lib/utils/settings";
   import ParticleManager from "$lib/components/ParticleManager.svelte";
   import { windowDimensions } from "$lib/utils/windowStore";
@@ -84,7 +84,9 @@
   let visualizerCanvas = $state<HTMLCanvasElement>();
   let queueElement = $state<HTMLElement>();
 
-  const targetScrobbledSysTime = $derived(lastFM.targetScrobbledSysTime());
+  const targetScrobbledSysTime = $derived(
+    musicScrobbler.targetScrobbledSysTime(),
+  );
   const bassAmplitude = $derived(mediaSession.bassAmplitude(0, 1, 2));
   const audioVisualizerSettings = $derived(settings.audioVisualizer);
   const playingSourceId = $derived(mediaSession.playingSourceId);
@@ -96,7 +98,7 @@
   const currentSong = $derived($currentQueue?.currentSong);
   const repeatMode = $derived(mediaSession.repeatMode);
   const sampleRate = $derived(mediaSession.sampleRate);
-  const hasScrobbled = $derived(lastFM.hasScrobbled());
+  const hasScrobbled = $derived(musicScrobbler.hasScrobbled());
   const shuffled = $derived(mediaSession.shuffled);
   const lastFmEnabled = $derived(settings.lastFm);
   const isPaused = $derived(mediaSession.paused);

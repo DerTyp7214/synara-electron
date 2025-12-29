@@ -13,7 +13,7 @@
   import Spinner from "$lib/components/Spinner.svelte";
   import { onMount } from "svelte";
   import { getUserInfo } from "$lib/api/lastFm";
-  import lastFM from "$lib/audio/lastFM";
+  import musicScrobbler from "$lib/audio/musicScrobbler";
   import { userInfo } from "$lib/api/auth";
   import { DEFAULT_SETTINGS } from "$shared/settings";
   import { objectPropertyStore } from "$lib/utils/storeUtils";
@@ -484,7 +484,7 @@
         {/await}
       {:else}
         <button
-          onclick={() => lastFM.startAuthFlow()}
+          onclick={() => musicScrobbler.startAuthFlow()}
           class="btn preset-filled-success-200-800 me-auto"
         >
           {$t("settings.lastFm.login")}

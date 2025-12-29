@@ -108,7 +108,9 @@ export interface MbSong {
 export interface QueueSettings {
   queue: Array<MinimalSong>;
   shuffleMap: Array<number>;
-  lastFmScrobbleQueue: Array<Song>;
+  lastFmScrobbleQueue: Array<
+    Song & { lastFm?: boolean; listenBrainz?: boolean }
+  >;
 }
 
 export const nullSong: Song & { position: number } = {

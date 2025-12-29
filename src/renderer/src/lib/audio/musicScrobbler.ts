@@ -206,7 +206,7 @@ class MusicScrobbler {
 
     scopedDebugLog("info", this.logScope, "nowPlaying", track, mbSong);
 
-    await Promise.all([
+    const success = await Promise.all([
       lastFmUpdateNowPlaying
         .bind(this)(track)
         .catch((err) => {
@@ -217,11 +217,13 @@ class MusicScrobbler {
         .catch((err) => {
           scopedDebugLog("error", this.logScope, err);
         }),
-    ]);
+    ]).then(([a, b]) => a && b);
+
+    if (!success) setTimeout(this.nowPlaying.bind(this), 3000, song);
   }
 
   public async addSongToScrobbleQueue(
-    song: Song,
+    song: Song & { lastFm?: boolean; listenBrainz?: boolean },
     chosenByUser: boolean = false,
   ) {
     if (!get(settings.lastFm)) return;
@@ -235,7 +237,11 @@ class MusicScrobbler {
     );
 
     try {
-      if (get(this.scrobbleQueue).length > 0 || !(await this.scrobble(song)))
+      const { lastFm, listenBrainz } = await this.scrobble(song);
+      song.lastFm = lastFm;
+      song.listenBrainz = listenBrainz;
+
+      if (get(this.scrobbleQueue).length > 0 || !lastFm || !listenBrainz)
         this.scrobbleQueue.update((queue) => [...queue, song]);
     } catch (error) {
       scopedDebugLog("error", this.logScope, error, song);
@@ -336,10 +342,21 @@ class MusicScrobbler {
     while (hasQueue) {
       const song = get(this.scrobbleQueue)[0];
 
-      const success = await this.scrobble(song);
+      const { lastFm, listenBrainz } = await this.scrobble(song);
 
-      if (success) this.scrobbleQueue.update((queue) => [...queue.slice(1)]);
-      else await sleep(5000);
+      if (lastFm && listenBrainz)
+        this.scrobbleQueue.update((queue) => [...queue.slice(1)]);
+      else {
+        this.scrobbleQueue.update((queue) => [
+          {
+            ...queue[0],
+            lastFm,
+            listenBrainz,
+          },
+          ...queue.slice(1),
+        ]);
+        await sleep(5000);
+      }
 
       hasQueue = get(this.scrobbleQueue).length > 0;
     }
@@ -347,19 +364,31 @@ class MusicScrobbler {
     this.scrobblingQueue = false;
   }
 
-  private async scrobble(song: Song): Promise<boolean> {
+  private async scrobble(
+    song: Song & { lastFm?: boolean; listenBrainz?: boolean },
+  ): Promise<{ lastFm: boolean; listenBrainz: boolean }> {
     scopedDebugLog("info", this.logScope, "scrobbling", song);
 
     try {
       const time = Date.now();
 
-      return await Promise.all([
-        lastFmScrobble.bind(this)(this.songToLastFmSong(song, false, time)),
-        mbScrobble.bind(this)(await this.songToMbSong(song, time)),
-      ]).then(([a, b]) => a && b);
+      return await Promise.allSettled([
+        !song.lastFm
+          ? lastFmScrobble.bind(this)(this.songToLastFmSong(song, false, time))
+          : true,
+        !song.listenBrainz
+          ? mbScrobble.bind(this)(await this.songToMbSong(song, time))
+          : true,
+      ]).then(([a, b]) => ({
+        lastFm: a.status === "fulfilled" && a.value,
+        listenBrainz: b.status === "fulfilled" && b.value,
+      }));
     } catch (error) {
       scopedDebugLog("error", this.logScope, "scrobbling", error);
-      return false;
+      return {
+        lastFm: false,
+        listenBrainz: false,
+      };
     }
   }
 
