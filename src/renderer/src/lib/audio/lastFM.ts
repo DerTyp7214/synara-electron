@@ -430,7 +430,7 @@ class MusicScrobbler {
         },
         artist_name:
           response["artist-credit"]
-            ?.map((a) => a.name + (a.joinphrase ?? " & "))
+            ?.map((a) => a.name + (a.joinphrase ?? ""))
             ?.join("") ?? song.artists.map((a) => a.name).join(" & "),
         track_name: response.title,
         release_name: release?.title ?? song.album?.name ?? song.title,
@@ -439,14 +439,17 @@ class MusicScrobbler {
   }
 
   private async searchMb(song: Song) {
-    const query = {
-      query: [
-        `recording:"${song.title}"`,
-        ...song.artists.map((a) => `artist:"${a.name}"`),
-        `release:"${song.album?.name ?? ""}"`,
-        ...(song.album?.artists?.map((a) => `artistname:"${a.name}"`) ?? []),
-      ].join(" AND "),
-    };
+    const regex =
+      /\s*([([]).*?(feat|ft|with|prod|live|remix|acoustic|radio edit|explicit|clean).*?([)\]])/gi;
+
+    const title = song.title.replace(regex, "").trimEnd();
+
+    const query = [
+      `recording:"${title}"`,
+      ...song.artists.map((a) => `artist:"${a.name}"`),
+      `release:"${song.album?.name ?? ""}"`,
+      ...(song.album?.artists?.map((a) => `artistname:"${a.name}"`) ?? []),
+    ].join(" AND ");
 
     return await this.mbApi
       .search("recording", {
