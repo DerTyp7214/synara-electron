@@ -77,6 +77,10 @@ const tokenSchema: Schema<TokenSettings> = {
     type: "object",
     default: DEFAULT_SETTINGS["lastFmSession"],
   },
+  listenBrainzToken: {
+    type: "string",
+    default: DEFAULT_SETTINGS["listenBrainzToken"],
+  },
 };
 
 const mediaSchema: Schema<MediaSettings> = {

@@ -1,6 +1,6 @@
 import { settings, settingsService } from "$lib/utils/settings";
 import type { Song, SongWithPosition } from "$shared/types/beApi";
-import { type LastFmSong, nullSong } from "$shared/types/settings";
+import { type LastFmSong, type MbSong, nullSong } from "$shared/types/settings";
 import {
   get,
   readonly,
@@ -14,20 +14,25 @@ import { openUrl, sleep } from "$lib/utils/utils";
 import {
   getRequestToken,
   getSessionKey,
-  scrobble,
-  updateNowPlaying,
+  scrobble as lastFmScrobble,
+  updateNowPlaying as lastFmUpdateNowPlaying,
 } from "$lib/api/lastFm";
+import {
+  scrobble as mbScrobble,
+  updateNowPlaying as mbUpdateNowPlaying,
+} from "$lib/api/musicBrainz";
 import { t } from "$lib/i18n/i18n";
 import { MusicBrainzApi } from "musicbrainz-api";
+import { version } from "$app/environment";
 
-class LastFM {
+class MusicScrobbler {
   private logScope = {
-    name: "LastFM",
+    name: "MusicScrobbler",
     style: scopeStyle("#D32F2F"),
   };
 
   private mbApi = new MusicBrainzApi({
-    appName: "synara-lastFm",
+    appName: "synara",
     appVersion: "1.0",
     appContactInfo: "github@dertyp.dev",
   });
@@ -194,15 +199,25 @@ class LastFM {
       return;
     }
 
-    const track = await this.songToLastFmSong(song, false);
+    const time = Date.now();
 
-    scopedDebugLog("info", this.logScope, "nowPlaying", track);
+    const track = this.songToLastFmSong(song, false, time);
+    const mbSong = await this.songToMbSong(song, time);
 
-    await updateNowPlaying
-      .bind(this)(track)
-      .catch((err) => {
-        scopedDebugLog("error", this.logScope, err);
-      });
+    scopedDebugLog("info", this.logScope, "nowPlaying", track, mbSong);
+
+    await Promise.all([
+      lastFmUpdateNowPlaying
+        .bind(this)(track)
+        .catch((err) => {
+          scopedDebugLog("error", this.logScope, err);
+        }),
+      mbUpdateNowPlaying
+        .bind(this)(mbSong)
+        .catch((err) => {
+          scopedDebugLog("error", this.logScope, err);
+        }),
+    ]);
   }
 
   public async addSongToScrobbleQueue(
@@ -220,9 +235,8 @@ class LastFM {
     );
 
     try {
-      const track = await this.songToLastFmSong(song, chosenByUser);
-      if (get(this.scrobbleQueue).length > 0 || !(await scrobble(track)))
-        this.scrobbleQueue.update((queue) => [...queue, track]);
+      if (get(this.scrobbleQueue).length > 0 || !(await this.scrobble(song)))
+        this.scrobbleQueue.update((queue) => [...queue, song]);
     } catch (error) {
       scopedDebugLog("error", this.logScope, error, song);
     }
@@ -333,21 +347,27 @@ class LastFM {
     this.scrobblingQueue = false;
   }
 
-  private async scrobble(lastFmSong: LastFmSong): Promise<boolean> {
-    scopedDebugLog("info", this.logScope, "scrobbling", lastFmSong);
+  private async scrobble(song: Song): Promise<boolean> {
+    scopedDebugLog("info", this.logScope, "scrobbling", song);
 
     try {
-      return await scrobble.bind(this)(lastFmSong);
+      const time = Date.now();
+
+      return await Promise.all([
+        lastFmScrobble.bind(this)(this.songToLastFmSong(song, false, time)),
+        mbScrobble.bind(this)(await this.songToMbSong(song, time)),
+      ]).then(([a, b]) => a && b);
     } catch (error) {
       scopedDebugLog("error", this.logScope, "scrobbling", error);
       return false;
     }
   }
 
-  private async songToLastFmSong(
+  private songToLastFmSong(
     song: Song,
     chosenByUser: boolean,
-  ): Promise<LastFmSong> {
+    time: number = Date.now(),
+  ): LastFmSong {
     const mainArtist =
       song.artists.find(({ name }) =>
         song.album?.artists.find((a) => a.name === name),
@@ -356,33 +376,80 @@ class LastFM {
     return {
       artist: [mainArtist],
       track: song.title,
-      timestamp: Math.floor(Date.now() / 1000),
+      timestamp: Math.floor(time / 1000),
       album: song.album?.name,
       chosenByUser: chosenByUser,
       trackNumber: song.trackNumber,
-      mbid: await this.getMbId(song),
       albumArtist: song.album?.artists.map((a) => a.name),
       duration: song.duration,
     };
   }
 
-  private async getMbId(song: Song): Promise<string | undefined> {
+  private async songToMbSong(
+    song: Song,
+    time: number = Date.now(),
+  ): Promise<MbSong> {
+    const response = await this.searchMb(song).then(
+      (res) => res?.recordings?.[0],
+    );
+
+    if (!response) {
+      return {
+        listened_at: Math.floor(time / 1000),
+        track_metadata: {
+          additional_info: {
+            media_player: "Synara",
+            submission_client: "Synara Music Player",
+            submission_client_version: version,
+            tags: [],
+            duration_ms: song.duration,
+          },
+          artist_name: song.artists.map((a) => a.name).join(" & "),
+          track_name: song.title,
+          release_name: song.album?.name ?? song.title,
+        },
+      };
+    }
+
+    return {
+      listened_at: Math.floor(time / 1000),
+      track_metadata: {
+        additional_info: {
+          media_player: "Synara",
+          submission_client: "Synara Music Player",
+          submission_client_version: version,
+          release_mbid: response.releases?.[0]?.id,
+          artist_mbids: response["artist-credit"]?.map((a) => a.artist.id),
+          recording_mbid: response.id,
+          tags: [],
+          duration_ms: response.length,
+        },
+        artist_name:
+          response["artist-credit"]
+            ?.map((a) => a.name + (a.joinphrase ?? " & "))
+            ?.join("") ?? song.artists.map((a) => a.name).join(" & "),
+        track_name: response.title,
+        release_name:
+          response.releases?.[0]?.title ?? song.album?.name ?? song.title,
+      },
+    };
+  }
+
+  private async searchMb(song: Song) {
     const queryString = [
-      `query=recording:"${song.title}"`,
-      `artist:"${song.artists[0].name}"`,
-      `release:"${song.album?.name}"`,
-      `artistname:"${song.album?.artists[0].name}"`,
+      `query=recording:"${encodeURIComponent(song.title)}"`,
+      `artist:"${encodeURIComponent(song.artists[0].name)}"`,
+      `release:"${encodeURIComponent(song.album?.name ?? "")}"`,
+      `artistname:"${encodeURIComponent(song.album?.artists[0].name ?? "")}"`,
     ].join(" AND ");
 
-    const response = await this.mbApi
+    return await this.mbApi
       .search("recording", {
         query: queryString,
         limit: 1,
       })
       .catch(() => undefined);
-
-    return (response?.count ?? 0) > 0 ? response!.recordings[0].id : undefined;
   }
 }
 
-export default new LastFM();
+export default new MusicScrobbler();

@@ -29,6 +29,7 @@
     discordRpc: settings.discordRpc,
     lastFm: settings.lastFm,
     cleanTitles: settings.cleanTitles,
+    listenBrainzToken: settings.listenBrainzToken,
 
     downloadDir: settings.downloadDir,
 
@@ -46,6 +47,7 @@
 
   const lastFmTokens = $derived(stores.lastFmTokens);
   const lastFmSession = $derived(stores.lastFmSession);
+  const listenBrainzToken = $derived(stores.listenBrainzToken);
 
   const hideOnClose = $derived(stores.hideOnClose);
   const discordRpc = $derived(stores.discordRpc);
@@ -67,6 +69,7 @@
     discordRpc: $discordRpc,
     lastFm: $lastFm,
     cleanTitles: $cleanTitles,
+    listenBrainzToken: $listenBrainzToken,
 
     downloadDir: $downloadDir,
 
@@ -446,6 +449,9 @@
       {@render booleanValue("lastFm")}
       <span class="h2">{$t("settings.lastFm")}</span>
     </div>
+
+    {@render textValue("listenBrainzToken", false, true)}
+
     {#if $settingsValues["lastFm"]}
       {@render textValue("lastFmApiKey", false, true)}
       {@render textValue("lastFmSharedSecret", false, true)}

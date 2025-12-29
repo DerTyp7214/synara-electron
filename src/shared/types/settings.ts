@@ -55,6 +55,7 @@ export interface TokenSettings {
     key?: string;
     name?: string;
   };
+  listenBrainzToken: string;
 }
 
 export interface MediaSettings {
@@ -85,10 +86,29 @@ export interface LastFmSong {
   duration?: number;
 }
 
+export interface MbSong {
+  listened_at?: number;
+  track_metadata: {
+    additional_info: {
+      media_player: string;
+      submission_client: string;
+      submission_client_version: string;
+      release_mbid?: string;
+      artist_mbids?: Array<string>;
+      recording_mbid?: string;
+      tags: Array<string>;
+      duration_ms: number;
+    };
+    artist_name: string;
+    track_name: string;
+    release_name: string;
+  };
+}
+
 export interface QueueSettings {
   queue: Array<MinimalSong>;
   shuffleMap: Array<number>;
-  lastFmScrobbleQueue: Array<LastFmSong>;
+  lastFmScrobbleQueue: Array<Song>;
 }
 
 export const nullSong: Song & { position: number } = {
@@ -135,6 +155,7 @@ export const TOKEN_SETTINGS_KEYS: Array<keyof TokenSettings> = [
   "token",
   "lastFmTokens",
   "lastFmSession",
+  "listenBrainzToken",
 ];
 
 export const MEDIA_SETTINGS_KEYS: Array<keyof MediaSettings> = [

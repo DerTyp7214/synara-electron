@@ -35,6 +35,7 @@ export const DEFAULT_SETTINGS: AppSettings &
     sharedSecret: import.meta.env.MAIN_VITE_LAST_FM_SHARED_SECRET,
   },
   lastFmSession: {},
+  listenBrainzToken: "",
 
   currentIndex: -1,
   playingSourceType: PlayingSourceType.LikedSongs,
