@@ -10,7 +10,7 @@ function cleanSong(song: Song): Song {
   if (!get(settings.cleanTitles)) return song;
 
   const regex =
-    /\s*([([]).*?(feat|ft|with|prod|live|remix|acoustic|radio edit|explicit|clean).*?([)\]])/gi;
+    /\s*([([].*?(feat|ft|with|prod|live|remix|acoustic|radio\sedit|explicit|clean).*?[)\]])|\s+(feat|ft|with|prod)\.?\s+.*$/gi;
 
   return {
     ...song,

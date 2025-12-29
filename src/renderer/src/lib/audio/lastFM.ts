@@ -389,7 +389,7 @@ class MusicScrobbler {
     if (!title) return title;
 
     const regex =
-      /\s*([([]).*?(feat|ft|with|prod|live|remix|acoustic|radio edit|explicit|clean).*?([)\]])/gi;
+      /\s*([([].*?(feat|ft|with|prod|live|remix|acoustic|radio\sedit|explicit|clean).*?[)\]])|\s+(feat|ft|with|prod)\.?\s+.*$/gi;
 
     return title.replace(regex, "").trimEnd() as T;
   }
