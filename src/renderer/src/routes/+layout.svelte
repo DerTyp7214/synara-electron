@@ -17,6 +17,7 @@
   import { writable } from "svelte/store";
   import musicScrobbler from "$lib/audio/musicScrobbler";
   import { mediaSession } from "$lib/audio/mediaSession";
+  import AddToPlaylistDialog from "$lib/addToPlaylist/AddToPlaylistDialog.svelte";
 
   const { children } = $props();
 
@@ -69,6 +70,7 @@
 
 {#if !$mediaPlayerOpen}
   <ContextMenuManager />
+  <AddToPlaylistDialog />
 {/if}
 
 <main

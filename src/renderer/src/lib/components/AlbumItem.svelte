@@ -14,6 +14,7 @@
   import type { Album, Artist, Song } from "$shared/types/beApi";
   import { deleteAlbum, listSongsByAlbum } from "$lib/api/albums";
   import type { PagedResponse } from "$lib/api/apiTypes";
+  import { showDialog } from "$lib/addToPlaylist/store.svelte";
 
   const {
     albumRef,
@@ -134,6 +135,18 @@
     );
   }
 
+  async function handleAddToPlaylist() {
+    const songs = await listSongsByAlbum(
+      albumRef.id,
+      0,
+      Number.MAX_SAFE_INTEGER,
+    )
+      .then((res) => res.data.map((song) => song.id))
+      .catch(() => []);
+
+    showDialog(...songs);
+  }
+
   async function handleDelete() {
     const confirmed = confirm(
       $t("delete.album.confirm", { name: albumRef.name }),
@@ -152,7 +165,16 @@
         action: handleAddToQueue,
       },
       {
+        label: $t("playlist.add.title"),
+        action: handleAddToPlaylist,
+      },
+      {
+        divider: true,
+      },
+      {
         label: $t("delete.album"),
+        class:
+          "text-surface-contrast-100-900 hover:bg-red-500 hover:text-white",
         action: handleDelete,
       },
     ]);
@@ -214,9 +236,7 @@
       <Play />
     </button>
   </div>
-  <div
-    class="flex flex-grow flex-col justify-center overflow-hidden font-medium"
-  >
+  <div class="flex grow flex-col justify-center overflow-hidden font-medium">
     <span class="line-clamp-1 overflow-ellipsis" title={name}>{name}</span>
     <span class="text-surface-contrast-50-950/50 flex flex-row gap-1 text-sm">
       {#if by}

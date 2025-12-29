@@ -4,15 +4,22 @@
   import { resolve } from "$app/paths";
   import { onMount } from "svelte";
 
-  let query: string = "";
+  const {
+    onSubmit,
+  }: {
+    onSubmit?: (query: string) => void;
+  } = $props();
+
+  let query: string = $state("");
 
   let inputField: HTMLInputElement | null = null;
 
   async function handleSubmit(event: Event) {
     event.preventDefault();
 
+    if (onSubmit) onSubmit(query);
     // eslint-disable-next-line svelte/no-navigation-without-resolve
-    await goto(`${resolve("/search")}?query=${encodeURIComponent(query)}`);
+    else await goto(`${resolve("/search")}?query=${encodeURIComponent(query)}`);
   }
 
   function focusInput() {

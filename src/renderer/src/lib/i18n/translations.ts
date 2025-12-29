@@ -73,8 +73,13 @@ export default {
     "play.next.error": "Error adding songs: {{message}}",
 
     "play.addToQueue": "Add to Queue",
-    "play.addToQueue.success": "Added <b>{{songCount}}</b> songs to queue.",
+    "play.addToQueue.success": "Added <b>{{songCount}}</b> songs to the queue.",
     "play.addToQueue.error": "Error adding songs: {{message}}",
+
+    "playlist.add.title": "Add to Playlist",
+    "playlist.added.songs":
+      "Added {{songCount}} songs to <b>{{playlistName}}</b>",
+    "playlist.added.song": "Added one song to <b>{{playlistName}}</b>",
 
     "delete.song": "Delete Song",
     "delete.song.confirm":

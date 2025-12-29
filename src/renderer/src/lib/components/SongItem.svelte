@@ -31,6 +31,7 @@
   import dayjs from "$lib/utils/dayJsUtils";
   import { debugLog } from "$lib/utils/logger";
   import type { SongLikedEventData } from "$lib/audio/queue";
+  import { showDialog } from "$lib/addToPlaylist/store.svelte";
 
   let {
     id,
@@ -132,7 +133,16 @@
         args: songRef,
       },
       {
+        label: $t("playlist.add.title"),
+        action: () => showDialog(songRef.id),
+      },
+      {
+        divider: true,
+      },
+      {
         label: $t("delete.song"),
+        class:
+          "text-surface-contrast-100-900 hover:bg-red-500 hover:text-white",
         action: handleDelete,
       },
     ]);

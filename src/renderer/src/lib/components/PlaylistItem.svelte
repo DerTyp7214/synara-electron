@@ -15,6 +15,7 @@
   import { TOAST_CONTEXT_KEY, type ToasterContext } from "$lib/consts";
   import type { Song } from "$shared/types/beApi";
   import type { PagedResponse } from "$lib/api/apiTypes";
+  import { showDialog } from "$lib/addToPlaylist/store.svelte";
 
   type PlaylistOrigin = "tidal" | "spotify";
 
@@ -137,6 +138,18 @@
     );
   }
 
+  async function handleAddToPlaylist() {
+    const songs = await listSongsByPlaylist(
+      playlistRef.id,
+      0,
+      Number.MAX_SAFE_INTEGER,
+    )
+      .then((res) => res.data.map((song) => song.id))
+      .catch(() => []);
+
+    showDialog(...songs);
+  }
+
   function handleContextMenu(event: MouseEvent) {
     openContextMenu(event, [
       {
@@ -146,6 +159,10 @@
       {
         label: $t("play.addToQueue"),
         action: handleAddToQueue,
+      },
+      {
+        label: $t("playlist.add.title"),
+        action: handleAddToPlaylist,
       },
     ]);
   }

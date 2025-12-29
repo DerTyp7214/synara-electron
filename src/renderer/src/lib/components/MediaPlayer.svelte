@@ -64,6 +64,7 @@
   import { objectPropertyStore } from "$lib/utils/storeUtils";
   import { getAnimatedCoverBySong } from "$lib/api/metadata";
   import { nullSong } from "$shared/types/settings";
+  import AddToPlaylistDialog from "$lib/addToPlaylist/AddToPlaylistDialog.svelte";
 
   let {
     isOpen = writable(false),
@@ -379,6 +380,7 @@
 >
   {#if $isOpen}
     <ContextMenuManager />
+    <AddToPlaylistDialog />
   {/if}
 
   {#if $currentSong?.coverId}

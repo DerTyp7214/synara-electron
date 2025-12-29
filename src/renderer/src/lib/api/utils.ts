@@ -9,7 +9,13 @@ import {
 } from "$lib/api/apiTypes";
 import { scopedDebugLog, scopeStyle } from "$lib/utils/logger";
 import { settings } from "$lib/utils/settings";
-import type { Album, Artist, Playlist, Song } from "$shared/types/beApi";
+import type {
+  Album,
+  Artist,
+  Playlist,
+  Song,
+  UserPlaylist,
+} from "$shared/types/beApi";
 import { checkLogin } from "$lib/api/auth";
 
 export const apiLogScope = { name: "Api", style: scopeStyle("#0a22b2") };
@@ -106,9 +112,11 @@ type SearchType<T> = T extends Song
     ? "album"
     : T extends Artist
       ? "artist"
-      : T extends Playlist
-        ? "playlist"
-        : never;
+      : T extends UserPlaylist
+        ? "userPlaylist"
+        : T extends Playlist
+          ? "playlist"
+          : never;
 
 export async function queryApi<T>(
   type: SearchType<T>,

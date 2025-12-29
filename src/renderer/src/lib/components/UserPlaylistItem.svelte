@@ -18,10 +18,12 @@
     listSongsByUserPlaylist,
     type UserPlaylist,
   } from "$lib/api/userPlaylists";
+  import { showDialog } from "$lib/addToPlaylist/store.svelte";
 
   type PlaylistOrigin = "tidal" | "spotify";
 
   const {
+    onClick,
     playlistRef,
     name,
     by,
@@ -31,6 +33,7 @@
     size = 64,
     style = "",
   }: {
+    onClick?: (playlist: UserPlaylist) => void;
     playlistRef: UserPlaylist;
     name: string;
     by?: string;
@@ -140,6 +143,18 @@
     );
   }
 
+  async function handleAddToPlaylist() {
+    const songs = await listSongsByUserPlaylist(
+      playlistRef.id,
+      0,
+      Number.MAX_SAFE_INTEGER,
+    )
+      .then((res) => res.data.map((song) => song.id))
+      .catch(() => []);
+
+    showDialog(...songs);
+  }
+
   function handleContextMenu(event: MouseEvent) {
     openContextMenu(event, [
       {
@@ -149,6 +164,10 @@
       {
         label: $t("play.addToQueue"),
         action: handleAddToQueue,
+      },
+      {
+        label: $t("playlist.add.title"),
+        action: handleAddToPlaylist,
       },
     ]);
   }
@@ -167,8 +186,9 @@
   )}
   oncontextmenu={handleContextMenu}
   onclick={() => {
+    if (onClick) onClick(playlistRef);
     // eslint-disable-next-line svelte/no-navigation-without-resolve
-    goto(`${resolve("/userPlaylists")}?playlistId=${playlistRef.id}`);
+    else goto(`${resolve("/userPlaylists")}?playlistId=${playlistRef.id}`);
   }}
 >
   <Avatar
@@ -188,8 +208,10 @@
     <span class="line-clamp-1 overflow-ellipsis">{name}</span>
     <span
       class="text-surface-contrast-50-950/50 line-clamp-1 text-sm overflow-ellipsis"
-      >{by ? `${by} · ` : ""}{songCount} {$t("songs")}</span
     >
+      {by ? `${by} · ` : ""}{songCount}
+      {$t("songs")}
+    </span>
   </div>
   {#if origin === "spotify"}
     <Spotify class="ms-auto mt-auto mb-auto" size={size / 2.5} />

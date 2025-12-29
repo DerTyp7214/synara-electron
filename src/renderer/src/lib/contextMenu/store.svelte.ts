@@ -1,10 +1,16 @@
 export type ActionFn<TArgs> = (args: TArgs) => void;
 
-export interface MenuItem<TArgs> {
-  label: string;
-  action: ActionFn<TArgs>;
-  args?: TArgs;
-}
+export type MenuItem<TArgs> =
+  | {
+      label: string;
+      action: ActionFn<TArgs>;
+      args?: TArgs;
+      class?: string;
+      divider?: false;
+    }
+  | {
+      divider: true;
+    };
 
 interface ContextMenuState<T> {
   isOpen: boolean;

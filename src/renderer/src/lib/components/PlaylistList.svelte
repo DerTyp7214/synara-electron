@@ -38,7 +38,10 @@
     isLoading = false;
   }
 
-  const { size }: { size?: number } = $props();
+  const {
+    onClick,
+    size,
+  }: { size?: number; onClick?: (playlist: UserPlaylist) => void } = $props();
 
   onMount(() => {
     loadPlaylistPage();
@@ -47,6 +50,7 @@
 
 {#each allPlaylists as playlist (playlist.id)}
   <UserPlaylistItem
+    {onClick}
     playlistRef={playlist}
     name={playlist.name}
     imageUrl={getImageUrl(playlist.imageId, size)}
