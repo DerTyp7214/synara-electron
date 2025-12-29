@@ -411,6 +411,10 @@ class MusicScrobbler {
       };
     }
 
+    const release = response.releases?.find(
+      (r) => r.title === song.album?.name,
+    );
+
     return {
       listened_at: Math.floor(time / 1000),
       track_metadata: {
@@ -418,7 +422,7 @@ class MusicScrobbler {
           media_player: "Synara",
           submission_client: "Synara Music Player",
           submission_client_version: version,
-          release_mbid: response.releases?.[0]?.id,
+          release_mbid: release?.id,
           artist_mbids: response["artist-credit"]?.map((a) => a.artist.id),
           recording_mbid: response.id,
           tags: [],
@@ -429,23 +433,24 @@ class MusicScrobbler {
             ?.map((a) => a.name + (a.joinphrase ?? " & "))
             ?.join("") ?? song.artists.map((a) => a.name).join(" & "),
         track_name: response.title,
-        release_name:
-          response.releases?.[0]?.title ?? song.album?.name ?? song.title,
+        release_name: release?.title ?? song.album?.name ?? song.title,
       },
     };
   }
 
   private async searchMb(song: Song) {
-    const queryString = [
-      `query=recording:"${encodeURIComponent(song.title)}"`,
-      `artist:"${encodeURIComponent(song.artists[0].name)}"`,
-      `release:"${encodeURIComponent(song.album?.name ?? "")}"`,
-      `artistname:"${encodeURIComponent(song.album?.artists[0].name ?? "")}"`,
-    ].join(" AND ");
+    const query = {
+      query: [
+        `recording:"${song.title}"`,
+        ...song.artists.map((a) => `artist:"${a.name}"`),
+        `release:"${song.album?.name ?? ""}"`,
+        ...(song.album?.artists?.map((a) => `artistname:"${a.name}"`) ?? []),
+      ].join(" AND "),
+    };
 
     return await this.mbApi
       .search("recording", {
-        query: queryString,
+        query: query,
         limit: 1,
       })
       .catch(() => undefined);
