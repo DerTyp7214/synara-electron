@@ -385,6 +385,15 @@ class MusicScrobbler {
     };
   }
 
+  private cleanTitle<T extends string | undefined>(title: T): T {
+    if (!title) return title;
+
+    const regex =
+      /\s*([([]).*?(feat|ft|with|prod|live|remix|acoustic|radio edit|explicit|clean).*?([)\]])/gi;
+
+    return title.replace(regex, "").trimEnd() as T;
+  }
+
   private async songToMbSong(
     song: Song,
     time: number = Date.now(),
@@ -411,9 +420,10 @@ class MusicScrobbler {
       };
     }
 
-    const release = response.releases?.find(
-      (r) => r.title === song.album?.name,
-    );
+    const release =
+      response.releases?.find(
+        (r) => r.title === this.cleanTitle(song.album?.name),
+      ) ?? response.releases?.[0];
 
     return {
       listened_at: Math.floor(time / 1000),
@@ -439,17 +449,17 @@ class MusicScrobbler {
   }
 
   private async searchMb(song: Song) {
-    const regex =
-      /\s*([([]).*?(feat|ft|with|prod|live|remix|acoustic|radio edit|explicit|clean).*?([)\]])/gi;
-
-    const title = song.title.replace(regex, "").trimEnd();
+    const title = this.cleanTitle(song.title);
+    const albumName = this.cleanTitle(song.album?.name);
 
     const query = [
       `recording:"${title}"`,
       ...song.artists.map((a) => `artist:"${a.name}"`),
-      `release:"${song.album?.name ?? ""}"`,
+      albumName !== title ? `release:"${albumName}"` : "",
       ...(song.album?.artists?.map((a) => `artistname:"${a.name}"`) ?? []),
-    ].join(" AND ");
+    ]
+      .filter(Boolean)
+      .join(" AND ");
 
     return await this.mbApi
       .search("recording", {
