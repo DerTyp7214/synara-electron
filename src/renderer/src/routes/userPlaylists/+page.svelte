@@ -18,6 +18,8 @@
     listSongsByUserPlaylist,
     type UserPlaylist,
   } from "$lib/api/userPlaylists";
+  import type { Snapshot } from "@sveltejs/kit";
+  import { tick } from "svelte";
 
   let playlistId = $derived(page.url.searchParams.get("playlistId")) as
     | UserPlaylist["id"]
@@ -38,9 +40,42 @@
     playlistId;
 
     items = [];
+
+    nextUpPage = -1;
+    nextDownPage = 0;
   });
 
   onNavigate(defaultNavigation);
+
+  let scrollContainer: HTMLDivElement | undefined = $state();
+  let nextUpPage = $state(-1);
+  let nextDownPage = $state(0);
+
+  export const snapshot: Snapshot<{
+    items: Array<Song>;
+    nextUpPage: number;
+    nextDownPage: number;
+    scrollPosition: number;
+  }> = {
+    capture: () => ({
+      items,
+      nextUpPage,
+      nextDownPage,
+      scrollPosition: scrollContainer?.scrollTop ?? 0,
+    }),
+    restore: async (state) => {
+      items = state.items;
+      nextUpPage = state.nextUpPage;
+      nextDownPage = state.nextDownPage;
+
+      await tick();
+
+      scrollContainer?.scrollTo({
+        top: state.scrollPosition,
+        behavior: "instant",
+      });
+    },
+  };
 </script>
 
 {#key playlistId}
@@ -49,8 +84,9 @@
       class="flex h-full max-h-full w-full flex-1 flex-col gap-2 overflow-y-auto"
       pageSize={80}
       bind:items
-      initialPageUp={-1}
-      initialPageDown={0}
+      bind:scrollContainer
+      bind:nextUpPage
+      bind:nextDownPage
       loadMoreUp={getSongs}
       loadMoreDown={getSongs}
     >

@@ -4,7 +4,7 @@
   import type { PagedResponse } from "$lib/api/apiTypes";
   import { byId, listSongsByArtist, type Artist } from "$lib/api/artists";
   import type { Song } from "$lib/api/songs";
-  import { distinctBy, getImageUrl } from "$lib/utils/utils";
+  import { copy, distinctBy, getImageUrl } from "$lib/utils/utils";
   import { t } from "$lib/i18n/i18n";
   import { Play, Shuffle } from "@lucide/svelte";
   import { ChevronRight } from "@jis3r/icons";
@@ -17,6 +17,8 @@
   import { byArtistId } from "$lib/api/albums";
   import AlbumItem from "$lib/components/AlbumItem.svelte";
   import cn from "classnames";
+  import type { Snapshot } from "@sveltejs/kit";
+  import { tick } from "svelte";
 
   let artistId = $derived(page.url.searchParams.get("artistId")) as
     | Artist["id"]
@@ -93,6 +95,9 @@
     singleItems = [];
     singleHasNext = true;
     singleExpanded = false;
+
+    nextUpPage = -1;
+    nextDownPage = 0;
   });
 
   $effect(() => {
@@ -101,6 +106,59 @@
       getSingles();
     }
   });
+
+  let scrollContainer: HTMLDivElement | undefined = $state();
+  let nextUpPage: number = $state(-1);
+  let nextDownPage: number = $state(0);
+
+  export const snapshot: Snapshot<{
+    songItems: Array<Song>;
+    albumPage: number;
+    albumItems: Array<Album>;
+    albumExpanded: boolean;
+    singlePage: number;
+    singleItems: Array<Album>;
+    singleExpanded: boolean;
+
+    nextUpPage: number;
+    nextDownPage: number;
+
+    scrollPosition: number;
+  }> = {
+    capture: () => ({
+      songItems: copy(songItems),
+      albumPage,
+      albumItems,
+      albumExpanded,
+      singlePage,
+      singleItems,
+      singleExpanded,
+
+      nextUpPage,
+      nextDownPage,
+
+      scrollPosition: scrollContainer?.scrollTop ?? 0,
+    }),
+    restore: async (state) => {
+      songItems = state.songItems;
+      albumPage = state.albumPage;
+      albumItems = state.albumItems;
+      albumExpanded = state.albumExpanded;
+      singlePage = state.singlePage;
+      singleItems = state.singleItems;
+      singleExpanded = state.singleExpanded;
+
+      nextDownPage = state.nextDownPage;
+      nextUpPage = state.nextUpPage;
+
+      await tick();
+
+      scrollContainer?.scrollTo({
+        top: state.scrollPosition,
+        behavior: "instant",
+      });
+    },
+  };
 </script>
 
 {#key artistId}
@@ -109,8 +167,9 @@
       class="flex h-full max-h-full w-full flex-1 flex-col gap-2 overflow-y-auto"
       pageSize={80}
       bind:items={songItems}
-      initialPageUp={-1}
-      initialPageDown={0}
+      bind:scrollContainer
+      bind:nextUpPage
+      bind:nextDownPage
       loadMoreUp={getSongs}
       loadMoreDown={getSongs}
     >

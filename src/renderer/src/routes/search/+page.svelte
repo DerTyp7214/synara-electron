@@ -14,6 +14,8 @@
   import AlbumItem from "$lib/components/AlbumItem.svelte";
   import { goto, onNavigate } from "$app/navigation";
   import { resolve } from "$app/paths";
+  import type { Snapshot } from "@sveltejs/kit";
+  import { tick } from "svelte";
 
   let searchQuery = $derived(page.url.searchParams.get("query")) as
     | string
@@ -49,9 +51,43 @@
   });
 
   onNavigate(defaultNavigation);
+
+  let scrollContainer: HTMLDivElement | null = $state(null);
+
+  export const snapshot: Snapshot<{
+    songs: Array<Song>;
+    albums: Array<Album>;
+    artists: Array<Artist>;
+    playlists: Array<Playlist>;
+    scrollPosition: number;
+  }> = {
+    capture: () => ({
+      songs: songs,
+      albums: albums,
+      artists: artists,
+      playlists: playlists,
+      scrollPosition: scrollContainer?.scrollTop ?? 0,
+    }),
+    restore: async (state) => {
+      songs = state.songs;
+      albums = state.albums;
+      artists = state.artists;
+      playlists = state.playlists;
+
+      await tick();
+
+      scrollContainer?.scrollTo({
+        top: state.scrollPosition,
+        behavior: "instant",
+      });
+    },
+  };
 </script>
 
-<div class="flex h-full max-h-full w-full flex-col gap-4 overflow-y-auto p-4">
+<div
+  bind:this={scrollContainer}
+  class="flex h-full max-h-full w-full flex-col gap-4 overflow-y-auto p-4"
+>
   <span class="h5">
     Results for: <span class="italic">{searchQuery}</span>
   </span>

@@ -1,4 +1,9 @@
 import type { RGBColor } from "colorthief";
+import type {
+  SvelteVirtualListProps,
+  SvelteVirtualListScrollOptions,
+} from "@humanspeak/svelte-virtual-list";
+import type { SvelteComponent } from "svelte";
 
 export type PartialRecord<K extends PropertyKey, T> = {
   [P in K]?: T;
@@ -29,4 +34,19 @@ export type ParticleState = {
   yOffset: number;
   startOffset: number;
   color: RGBColor;
+};
+
+export type SvelteVirtualListRefType<T> = SvelteComponent<
+  SvelteVirtualListProps<T>,
+  object,
+  object
+> & {
+  $$bindings?: "" | undefined;
+} & {
+  scrollToIndex: (
+    index: number,
+    smoothScroll?: boolean | undefined,
+    shouldThrowOnBounds?: boolean | undefined,
+  ) => void;
+  scroll: (options: SvelteVirtualListScrollOptions) => Promise<unknown>;
 };

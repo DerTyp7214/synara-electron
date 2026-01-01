@@ -18,7 +18,7 @@
     pageSize: number;
 
     initialPageUp?: number;
-    initialPageDown: number;
+    initialPageDown?: number;
 
     nextUpPage?: number;
     nextDownPage?: number;
@@ -43,7 +43,7 @@
     loadMoreDown,
     pageSize,
     initialPageUp = -1,
-    initialPageDown,
+    initialPageDown = 0,
     nextUpPage = $bindable(initialPageUp),
     nextDownPage = $bindable(initialPageDown),
     hasMoreUp = $bindable(true),
@@ -56,6 +56,18 @@
     noMoreDown,
     noItems,
   }: Props<T> = $props();
+
+  $effect(() => {
+    debugLog("info", "InfiniteScroll effect", {
+      items,
+      nextUpPage,
+      nextDownPage,
+      initialPageUp,
+      initialPageDown,
+      hasMoreUp,
+      hasMoreDown,
+    });
+  });
 
   let topSentinel = $state<HTMLElement>();
   let bottomSentinel = $state<HTMLElement>();

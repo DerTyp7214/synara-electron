@@ -87,6 +87,7 @@ class MusicScrobbler {
     );
   }
 
+  private currentPlayingTimeout: NodeJS.Timeout | undefined;
   public connectMediaSession(mediaSession: MediaSession) {
     this.unsubscribers.push(
       mediaSession.getDerivedQueue().subscribe((queue) => {
@@ -115,12 +116,18 @@ class MusicScrobbler {
           this.queueUnsubscribers = [];
         }
       }),
-      this.currentSong.subscribe((song) => {
-        this.songTimeoutStartTime = Date.now();
-        this.songTimeoutEndTime = this.songTimeoutStartTime;
+      this.currentSong.subscribe(() => {
+        if (this.currentPlayingTimeout)
+          clearTimeout(this.currentPlayingTimeout);
+        this.currentPlayingTimeout = setTimeout(() => {
+          this.songTimeoutStartTime = Date.now();
+          this.songTimeoutEndTime = this.songTimeoutStartTime;
 
-        this.songTimer(song);
-        void this.nowPlaying(song);
+          const song = get(this.currentSong);
+
+          this.songTimer(song);
+          void this.nowPlaying(song);
+        }, 3000);
       }),
       mediaSession.paused.subscribe((paused) => {
         if (paused) {

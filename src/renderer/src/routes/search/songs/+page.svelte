@@ -11,6 +11,7 @@
   import { ArrowLeft } from "@jis3r/icons";
   import { onNavigate } from "$app/navigation";
   import { defaultNavigation } from "$lib/utils/utils";
+  import type { Snapshot } from "@sveltejs/kit";
 
   const playingSource: PlayingSource = {
     type: PlayingSourceType.LikedSongs,
@@ -37,6 +38,17 @@
   }
 
   onNavigate(defaultNavigation);
+
+  export const snapshot: Snapshot<{
+    items: Array<Song>;
+  }> = {
+    capture: () => ({
+      items,
+    }),
+    restore: (state) => {
+      items = state.items;
+    },
+  };
 </script>
 
 <div class="flex h-full w-full flex-col gap-2">
