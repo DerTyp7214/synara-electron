@@ -23,6 +23,7 @@ import { mediaSession } from "$lib/audio/mediaSession";
 import { playBackStateToMediaSessionState } from "$lib/audio/utils";
 import type { SettingsAPI } from "$shared/types/settings";
 import { getImageUrlBySong } from "$lib/api/metadata";
+import { cleanTitle } from "$lib/utils/ui";
 
 declare global {
   // noinspection JSUnusedGlobalSymbols
@@ -181,8 +182,8 @@ class ElectronController {
           });
 
         navigator.mediaSession.metadata = new MediaMetadata({
-          title: song.title,
-          album: song.album?.name ?? song.title,
+          title: cleanTitle(song.title),
+          album: cleanTitle(song.album?.name ?? song.title),
           artist: song.artists.map((a) => a.name).join(", "),
           artwork: artwork,
         });
@@ -209,9 +210,9 @@ class ElectronController {
     if (!isElectron() || !song) return;
 
     const metadata: MediaInfo = {
-      title: song.title,
+      title: cleanTitle(song.title),
       artists: song.artists.map((artist) => artist.name),
-      album: song.album?.name ?? song?.title,
+      album: cleanTitle(song.album?.name ?? song?.title),
       image: getImageUrl(song.coverId),
       duration: song.duration,
       current: position,

@@ -65,6 +65,7 @@
   import { getAnimatedCoverBySong } from "$lib/api/metadata";
   import { nullSong } from "$shared/types/settings";
   import AddToPlaylistDialog from "$lib/addToPlaylist/AddToPlaylistDialog.svelte";
+  import { cleanTitle } from "$lib/utils/ui";
 
   let {
     isOpen = writable(false),
@@ -105,6 +106,7 @@
   const isPaused = $derived(mediaSession.paused);
   const bitrate = $derived(mediaSession.bitrate);
   const muted = $derived(mediaSession.muted);
+  const title = $derived(cleanTitle($currentSong?.title));
 
   let bigCover = $state({
     url: getImageUrl($currentSong.coverId) ?? blackSvg,
@@ -618,7 +620,7 @@
         <Avatar class="rounded-base h-16 w-16">
           <Avatar.Image src={getImageUrl($currentSong.coverId, 64)} />
           <Avatar.Fallback class="bg-tertiary-100-900">
-            {$currentSong.title
+            {title
               .split(" ")
               .slice(0, 2)
               .map((s) => s.substring(0, 1).toUpperCase())
@@ -653,8 +655,10 @@
         <div class="flex flex-row items-center gap-2 pe-1">
           <span
             class="line-clamp-1 font-medium break-all overflow-ellipsis"
-            title={$currentSong.title}>{$currentSong.title}</span
+            {title}
           >
+            {title}
+          </span>
           {#if $currentSong.explicit}
             <Explicit />
           {/if}

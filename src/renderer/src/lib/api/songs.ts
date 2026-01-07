@@ -3,18 +3,16 @@ import type { PagedResponse } from "$lib/api/apiTypes";
 import type { Song } from "$shared/types/beApi";
 import { get } from "svelte/store";
 import { settings } from "$lib/utils/settings";
+import { cleanTitle } from "$lib/utils/ui";
 
 export { type Song };
 
 function cleanSong(song: Song): Song {
   if (!get(settings.cleanTitles)) return song;
 
-  const regex =
-    /\s*([([].*?(feat|ft|with|prod|live|remix|acoustic|radio\sedit|explicit|clean).*?[)\]])|\s+(feat|ft|with|prod)\.?\s+.*$/gi;
-
   return {
     ...song,
-    title: song.title.replace(regex, "").trimEnd(),
+    title: cleanTitle(song.title),
   };
 }
 

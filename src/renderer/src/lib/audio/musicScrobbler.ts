@@ -24,6 +24,7 @@ import {
 import { t } from "$lib/i18n/i18n";
 import { MusicBrainzApi } from "musicbrainz-api";
 import { version } from "$app/environment";
+import { cleanTitle } from "$lib/utils/ui";
 
 class MusicScrobbler {
   private logScope = {
@@ -421,15 +422,6 @@ class MusicScrobbler {
     };
   }
 
-  private cleanTitle<T extends string | undefined>(title: T): T {
-    if (!title) return title;
-
-    const regex =
-      /\s*([([].*?(feat|ft|with|prod|live|remix|acoustic|radio\sedit|explicit|clean).*?[)\]])|\s+(feat|ft|with|prod)\.?\s+.*$/gi;
-
-    return title.replace(regex, "").trimEnd() as T;
-  }
-
   private async songToMbSong(
     song: Song,
     time: number = Date.now(),
@@ -458,7 +450,7 @@ class MusicScrobbler {
 
     const release =
       response.releases?.find(
-        (r) => r.title === this.cleanTitle(song.album?.name),
+        (r) => r.title === cleanTitle(song.album?.name),
       ) ?? response.releases?.[0];
 
     return {
@@ -485,8 +477,8 @@ class MusicScrobbler {
   }
 
   private async searchMb(song: Song) {
-    const title = this.cleanTitle(song.title);
-    const albumName = this.cleanTitle(song.album?.name);
+    const title = cleanTitle(song.title);
+    const albumName = cleanTitle(song.album?.name);
 
     const query = [
       `recording:"${title}"`,
