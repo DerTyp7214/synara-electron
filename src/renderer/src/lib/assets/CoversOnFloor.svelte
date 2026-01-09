@@ -1,21 +1,37 @@
 <script lang="ts">
   import coverBackground from "./cover-art-on-floor.png";
 
+  let svgElement: SVGSVGElement;
+
   const {
     class: clazz = "",
     style = "",
+    background = coverBackground,
     coverUrls,
   }: {
     class?: string;
     style?: string;
+    background?: string;
     coverUrls: [string, string, string, string, string];
   } = $props();
 
   const [coverUrl1, coverUrl2, coverUrl3, coverUrl4, coverUrl5] =
     $derived(coverUrls);
+
+  export function getSvgUrl(): string | null {
+    if (!svgElement) return null;
+
+    const serializer = new XMLSerializer();
+    const svgString = serializer.serializeToString(svgElement);
+
+    const blob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+
+    return URL.createObjectURL(blob);
+  }
 </script>
 
 <svg
+  bind:this={svgElement}
   {style}
   class={clazz}
   height="750"
@@ -81,5 +97,5 @@
   >
   </image>
 
-  <image x="0" y="0" width="750" height="750" href={coverBackground}> </image>
+  <image x="0" y="0" width="750" height="750" href={background}></image>
 </svg>

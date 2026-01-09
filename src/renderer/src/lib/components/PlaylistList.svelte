@@ -3,7 +3,6 @@
   import { debugLog } from "$lib/utils/logger";
   import { onMount } from "svelte";
   import Spinner from "$lib/components/Spinner.svelte";
-  import { getImageUrl } from "$lib/utils/utils";
   import type { UserPlaylist } from "$shared/types/beApi";
   import { listUserPlaylists } from "$lib/api/userPlaylists";
   import UserPlaylistItem from "$lib/components/UserPlaylistItem.svelte";
@@ -53,7 +52,6 @@
     {onClick}
     playlistRef={playlist}
     name={playlist.name}
-    imageUrl={getImageUrl(playlist.imageId, size)}
     songCount={playlist.songs.length}
     {size}
   />

@@ -6,3 +6,14 @@ export function cleanTitle<T extends string | undefined>(title: T): T {
 
   return title.replace(regex, "").trimEnd() as T;
 }
+
+export async function toDataURL(url: string): Promise<string> {
+  const response = await fetch(url);
+  const blob = await response.blob();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}

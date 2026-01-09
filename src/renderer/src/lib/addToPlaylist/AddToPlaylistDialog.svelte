@@ -14,7 +14,6 @@
   import { t } from "$lib/i18n/i18n";
   import Search from "$lib/components/Search.svelte";
   import UserPlaylistItem from "$lib/components/UserPlaylistItem.svelte";
-  import { getImageUrl } from "$lib/utils/utils";
 
   const toastContext = getContext<ToasterContext>(TOAST_CONTEXT_KEY);
 
@@ -90,7 +89,6 @@
               onClick={selectPlaylist}
               playlistRef={playlist}
               name={playlist.name}
-              imageUrl={getImageUrl(playlist.imageId, 44)}
               songCount={playlist.songs.length}
               size={44}
             />

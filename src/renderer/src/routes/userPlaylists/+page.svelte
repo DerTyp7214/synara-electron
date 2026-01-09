@@ -3,7 +3,7 @@
   import { page } from "$app/state";
   import type { PagedResponse } from "$lib/api/apiTypes";
   import type { Song } from "$lib/api/songs";
-  import { defaultNavigation, getImageUrl } from "$lib/utils/utils";
+  import { defaultNavigation } from "$lib/utils/utils";
   import { t } from "$lib/i18n/i18n";
   import { millisecondsToHumanReadable } from "$lib/utils/utils";
   import { Play, Shuffle } from "@lucide/svelte";
@@ -20,6 +20,7 @@
   } from "$lib/api/userPlaylists";
   import type { Snapshot } from "@sveltejs/kit";
   import { tick } from "svelte";
+  import { getPlaylistCover } from "$lib/utils/playlist.svelte";
 
   let playlistId = $derived(page.url.searchParams.get("playlistId")) as
     | UserPlaylist["id"]
@@ -98,7 +99,9 @@
                 class="rounded-container"
                 style="min-width: 128px; min-height: 128px; max-width: 128px; max-height: 128px;"
               >
-                <Avatar.Image src={getImageUrl(playlist.imageId, 128)} />
+                {#await getPlaylistCover(playlist, 128) then url}
+                  <Avatar.Image src={url} />
+                {/await}
                 <Avatar.Fallback class="bg-tertiary-100-900">
                   {playlist.name
                     .split(" ")

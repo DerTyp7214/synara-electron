@@ -16,6 +16,7 @@
   import type { Song } from "$shared/types/beApi";
   import type { PagedResponse } from "$lib/api/apiTypes";
   import { showDialog } from "$lib/addToPlaylist/store.svelte";
+  import { getPlaylistCover } from "$lib/utils/playlist.svelte";
 
   type PlaylistOrigin = "tidal" | "spotify";
 
@@ -25,7 +26,6 @@
     by,
     songCount,
     origin,
-    imageUrl,
     size = 64,
     style = "",
   }: {
@@ -34,7 +34,6 @@
     by?: string;
     songCount: number;
     origin?: PlaylistOrigin;
-    imageUrl?: string;
     size?: number;
     style?: string;
   } = $props();
@@ -189,7 +188,9 @@
     class="rounded-base"
     style="min-width: {size}px; min-height: {size}px; max-width: {size}px; max-height: {size}px;"
   >
-    <Avatar.Image src={imageUrl} />
+    {#await getPlaylistCover(playlistRef, size) then url}
+      <Avatar.Image src={url} />
+    {/await}
     <Avatar.Fallback class="bg-tertiary-100-900"
       >{name
         .split(" ")
