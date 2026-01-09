@@ -16,13 +16,15 @@ export async function getPlaylistCover(
   const songs = await listSongsByUserPlaylist(playlist.id, 0, 25);
 
   // eslint-disable-next-line svelte/prefer-svelte-reactivity
-  const covers = [...new Set(songs.data.map((song) => song.coverId))];
+  const covers = [...new Set(songs.data.map((song) => song.coverId))].filter(
+    (id) => id,
+  );
 
   if (covers.length === 0) return getImageUrl(playlist.imageId, size);
 
   const ids: Array<UUID | undefined> = [];
   while (ids.length < 5) {
-    ids.push(...covers.filter((id) => id));
+    ids.push(...covers);
   }
 
   const urls = ids
