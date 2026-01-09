@@ -124,8 +124,8 @@ catalogs:
       specifier: ^3.13.1
       version: 3.13.1
     file-type:
-      specifier: ^21.1.1
-      version: 21.1.1
+      specifier: ^21.3.0
+      version: 21.3.0
     flow-bin:
       specifier: ^0.295.0
       version: 0.295.0
@@ -253,7 +253,7 @@ importers:
         version: 3.13.1(eslint@9.39.2(jiti@2.6.1))(svelte@5.46.0)
       file-type:
         specifier: 'catalog:'
-        version: 21.1.1
+        version: 21.3.0
       flow-bin:
         specifier: 'catalog:'
         version: 0.295.0
@@ -2564,8 +2564,8 @@ packages:
     resolution: {integrity: sha512-/yFHK0aGjFEgDJjEKP0pWCplsPFPhwyfwevf/pVxiN0tmE4L9LmwWxWukdJSHdoCli4VgQLehjJtwQBnqmsKcw==}
     engines: {node: '>=10'}
 
-  file-type@21.1.1:
-    resolution: {integrity: sha512-ifJXo8zUqbQ/bLbl9sFoqHNTNWbnPY1COImFfM6CCy7z+E+jC1eY9YfOKkx0fckIg+VljAy2/87T61fp0+eEkg==}
+  file-type@21.3.0:
+    resolution: {integrity: sha512-8kPJMIGz1Yt/aPEwOsrR97ZyZaD1Iqm8PClb1nYFclUCkBi0Ma5IsYNQzvSFS9ib51lWyIw5mIT9rWzI/xjpzA==}
     engines: {node: '>=20'}
 
   file-uri-to-path@1.0.0:
@@ -6907,7 +6907,7 @@ snapshots:
       strtok3: 6.3.0
       token-types: 4.2.1
 
-  file-type@21.1.1:
+  file-type@21.3.0:
     dependencies:
       '@tokenizer/inflate': 0.4.1
       strtok3: 10.3.4
