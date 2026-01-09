@@ -4,7 +4,7 @@ import type { UUID } from "node:crypto";
 import { mount, tick, unmount } from "svelte";
 import CoversOnFloor from "$lib/assets/CoversOnFloor.svelte";
 import { listSongsByUserPlaylist } from "$lib/api/userPlaylists";
-import { toDataURL } from "$lib/utils/ui";
+import { getBase64FromAsset, toDataURL } from "$lib/utils/ui";
 import coverBackground from "$lib/assets/cover-art-on-floor.png";
 
 export async function getPlaylistCover(
@@ -39,7 +39,9 @@ export async function getPlaylistCover(
 
   const host = document.createElement("div");
 
-  const b64Background = await toDataURL(coverBackground);
+  const b64Background = coverBackground.startsWith("app:")
+    ? await getBase64FromAsset(coverBackground)
+    : await toDataURL(coverBackground);
   const b64Covers = (await Promise.all(urls.map((url) => toDataURL(url)))) as [
     string,
     string,

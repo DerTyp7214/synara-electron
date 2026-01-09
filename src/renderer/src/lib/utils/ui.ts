@@ -17,3 +17,24 @@ export async function toDataURL(url: string): Promise<string> {
     reader.readAsDataURL(blob);
   });
 }
+
+export function getBase64FromAsset(url: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "Anonymous";
+
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return reject("Could not get canvas context");
+
+      ctx.drawImage(img, 0, 0);
+      resolve(canvas.toDataURL("image/png"));
+    };
+
+    img.onerror = () => reject(`Failed to load image at ${url}`);
+    img.src = url;
+  });
+}
