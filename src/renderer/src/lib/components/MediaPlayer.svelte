@@ -848,7 +848,7 @@
           {#if !$isPaused && $targetScrobbledSysTime - $currentTime > 0}
             <span class="text-2xs tabular-nums opacity-50">
               {millisecondsToHumanReadable(
-                $targetScrobbledSysTime - $currentTime,
+                $targetScrobbledSysTime - $currentTime + 1000,
               )}
             </span>
           {/if}

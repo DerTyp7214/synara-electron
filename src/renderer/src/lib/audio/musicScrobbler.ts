@@ -279,6 +279,7 @@ class MusicScrobbler {
     if (this.songTimeout) {
       clearTimeout(this.songTimeout);
       this.songTimeoutEndTime = this.songTimeoutStartTime;
+      this.songTimeout = null;
     } else {
       scopedDebugLog(
         "info",
