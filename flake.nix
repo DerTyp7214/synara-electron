@@ -57,9 +57,17 @@
             ];
 
             extraInstallCommands = ''
-              # Creates the font mapping so the app finds Inter instead of falling back to Serifs
               mkdir -p $out/etc/fonts
               ln -s ${pkgs.makeFontsConf { fontDirectories = [ pkgs.inter ]; }} $out/etc/fonts/fonts.conf
+
+              mkdir -p $out/share/applications
+              echo "[Desktop Entry]
+              Name=Synara Dev
+              Exec=${pname} --ozone-platform-hint=auto --enable-features=WaylandWindowDecorations --enable-wayland-ime --no-sandbox %U
+              Terminal=false
+              Type=Application
+              Icon=synara-desktop
+              Categories=Network;" > $out/share/applications/${pname}.desktop
             '';
           };
       in {

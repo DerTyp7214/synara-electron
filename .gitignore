@@ -13,3 +13,5 @@ package
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 dev-config
+
+result
