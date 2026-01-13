@@ -1,80 +1,95 @@
 {
-  description = "Synara Desktop - NixOS Standard Repackager";
+  description = "Synara Desktop Binary Flake";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
-
-    dev-metadata = {
-      url = "https://github.com/DerTyp7214/synara/releases/download/latest-dev-desktop/dev-desktop.yml";
-      flake = false;
-    };
-
-    # Change when prod is released
-    prod-metadata = {
-      url = "https://github.com/DerTyp7214/synara/releases/download/latest-dev-desktop/dev-desktop.yml";
-      flake = false;
-    };
+    utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, flake-utils, dev-metadata, prod-metadata }:
-    flake-utils.lib.eachDefaultSystem (system:
+  outputs = { self, nixpkgs, utils }:
+    utils.lib.eachDefaultSystem (system:
       let
-        pkgs = nixpkgs.legacyPackages.${system};
-        
-        parseConfig = ymlPath: isDev:
-          let
-            content = builtins.readFile ymlPath;
-            versionMatch = builtins.match ".*version: ([0-9.-]+).*" content;
-            version = builtins.elemAt versionMatch 0;
-            tag = "v${version}${if isDev then "-dev-desktop" else "-desktop"}";
-            assetMatch = ".*url: (synara-desktop-${version}.AppImage)\n    sha512: ([a-zA-Z0-9+/=]+).*";
-            matches = builtins.match assetMatch content;
-          in {
-            inherit version tag;
-            filename = builtins.elemAt matches 0;
-            sha512 = builtins.elemAt matches 1;
-          };
-
-        mkSynara = { metadata, isDev }:
-          let
-            conf = parseConfig metadata isDev;
-            pname = "synara${if isDev then "-dev" else ""}";
-          in
-          pkgs.appimageTools.wrapType2 {
-            inherit pname;
-            inherit (conf) version;
-
-            src = pkgs.fetchurl {
-              url = "https://github.com/DerTyp7214/synara/releases/download/${conf.tag}/${conf.filename}";
-              hash = "sha512-${conf.sha512}";
-            };
-
-            extraPkgs = pkgs: with pkgs; [ 
-              libsecret
-              fontconfig
-              inter
-            ];
-
-            extraInstallCommands = ''
-              mkdir -p $out/etc/fonts
-              ln -s ${pkgs.makeFontsConf { fontDirectories = [ pkgs.inter ]; }} $out/etc/fonts/fonts.conf
-
-              mkdir -p $out/share/applications
-              echo "[Desktop Entry]
-              Name=Synara Dev
-              Exec=${pname} --ozone-platform-hint=auto --enable-features=WaylandWindowDecorations --enable-wayland-ime --no-sandbox %U
-              Terminal=false
-              Type=Application
-              Icon=synara-desktop
-              Categories=Network;" > $out/share/applications/${pname}.desktop
-            '';
-          };
-      in {
-        packages = {
-          default = mkSynara { metadata = prod-metadata; isDev = false; };
-          dev = mkSynara { metadata = dev-metadata; isDev = true; };
+        pkgs = import nixpkgs {
+          inherit system;
         };
-      }
-    );
+
+        pname = "synara-desktop";
+        version = "latest";
+
+        runtimeLibs = with pkgs; [
+          gtk3 nspr nss atk at-spi2-atk dbus pango cairo libdrm libGL 
+          mesa vulkan-loader expat alsa-lib libxkbcommon pixman zlib 
+          glib libsecret libpulseaudio systemd libuuid cups
+          xorg.libX11 xorg.libXcomposite xorg.libXdamage xorg.libXext 
+          xorg.libXfixes xorg.libXrandr stdenv.cc.cc.lib libgbm
+          gsettings-desktop-schemas
+        ];
+      in
+      {
+        packages.default = pkgs.stdenv.mkDerivation {
+          inherit pname version;
+
+          src = pkgs.fetchurl {
+            url = "https://github.com/DerTyp7214/synara/releases/download/latest-dev-desktop/synara-desktop.tar.gz";
+            sha256 = "sha256-QALbnqiw+rbrIzju5cky+JZL5EmW3Yl9zesp/WIyY6M=";
+          };
+
+          nativeBuildInputs = with pkgs; [ 
+            autoPatchelfHook 
+            makeWrapper 
+            wrapGAppsHook3
+            copyDesktopItems
+          ];
+
+          buildInputs = runtimeLibs;
+          dontBuild = true;
+
+          desktopItems = [
+            (pkgs.makeDesktopItem {
+              name = "synara";
+              exec = pname;
+              icon = "synara-desktop";
+              desktopName = "Synara";
+              genericName = "Synara";
+              comment = "Synara Desktop application.";
+              categories = [ "Network" "Application" "AudioVideo" "Audio" "Video" ];
+              terminal = false;
+              startupNotify = true;
+              startupWMClass = "synara";
+              mimeTypes = [ "x-scheme-handler/synara" ];
+              extraConfig = {
+                "X-PulseAudio-Properties" = "media.role=music";
+              };
+            })
+          ];
+
+          installPhase = ''
+            runHook preInstall
+            
+            mkdir -p $out/share/$pname
+            cp -r . $out/share/$pname/
+
+            mkdir -p $out/share/icons/hicolor/512x512/apps
+            mkdir -p $out/share/icons/hicolor/scalable/apps
+            
+            cp $out/share/$pname/resources/app.asar.unpacked/resources/icon.png \
+               $out/share/icons/hicolor/512x512/apps/synara-desktop.png || true
+            
+            cp $out/share/$pname/resources/app.asar.unpacked/resources/icon.svg \
+               $out/share/icons/hicolor/scalable/apps/synara-desktop.svg || true
+
+            autoPatchelf $out/share/$pname
+
+            mkdir -p $out/bin
+            makeWrapper $out/share/$pname/synara-desktop $out/bin/$pname \
+              --prefix LD_LIBRARY_PATH : "${pkgs.lib.makeLibraryPath runtimeLibs}" \
+              --add-flags "--enable-features=WaylandWindowDecorations" \
+              --add-flags "--ozone-platform-hint=auto" \
+              --add-flags "--enable-wayland-ime" \
+              --add-flags "--no-sandbox"
+              
+            runHook postInstall
+          '';
+        };
+      });
 }

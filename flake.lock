@@ -1,35 +1,5 @@
 {
   "nodes": {
-    "dev-metadata": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-RqkOVp1ELvGmdcpg9DARe6smHXY8S0Cv3gY3ool3dJo=",
-        "type": "file",
-        "url": "https://github.com/DerTyp7214/synara/releases/download/latest-dev-desktop/dev-desktop.yml"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://github.com/DerTyp7214/synara/releases/download/latest-dev-desktop/dev-desktop.yml"
-      }
-    },
-    "flake-utils": {
-      "inputs": {
-        "systems": "systems"
-      },
-      "locked": {
-        "lastModified": 1731533236,
-        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
-        "type": "github"
-      },
-      "original": {
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "type": "github"
-      }
-    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1767892417,
@@ -46,24 +16,10 @@
         "type": "github"
       }
     },
-    "prod-metadata": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-RqkOVp1ELvGmdcpg9DARe6smHXY8S0Cv3gY3ool3dJo=",
-        "type": "file",
-        "url": "https://github.com/DerTyp7214/synara/releases/download/latest-dev-desktop/dev-desktop.yml"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://github.com/DerTyp7214/synara/releases/download/latest-dev-desktop/dev-desktop.yml"
-      }
-    },
     "root": {
       "inputs": {
-        "dev-metadata": "dev-metadata",
-        "flake-utils": "flake-utils",
         "nixpkgs": "nixpkgs",
-        "prod-metadata": "prod-metadata"
+        "utils": "utils"
       }
     },
     "systems": {
@@ -78,6 +34,24 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "utils": {
+      "inputs": {
+        "systems": "systems"
+      },
+      "locked": {
+        "lastModified": 1731533236,
+        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
         "type": "github"
       }
     }
