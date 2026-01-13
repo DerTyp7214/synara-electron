@@ -146,6 +146,16 @@ jobs:
           echo "$FINAL_JSON" | yq -P > "$OUTPUT_FILE"
           echo "✅ Consolidated metadata saved to $OUTPUT_FILE"
 
+      - name: Generate hash file
+        shell: bash
+        run: |
+          cd dist
+
+          sha256sum ${{ env.CHANNEL_NAME }}.yml \
+                    synara.db \
+                    synara.db.tar.gz \
+                    synara-* > SHASUMS256.txt
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
@@ -160,8 +170,28 @@ jobs:
             dist/synara.db
             dist/synara.db.tar.gz
             dist/synara-*
+            dist/SHASUMS256.txt
         env:
           GITHUB_TOKEN: ${{ secrets.SYNARA_GITHUB_TOKEN }}
+
+      - name: Rename artifacts to remove version and generate hash file
+        shell: bash
+        run: |
+          VERSION="${{ steps.collect_final_assets.outputs.RELEASE_VERSION }}"
+          cd dist
+          for file in synara-$VERSION*; do
+            if [ -f "$file" ]; then
+              # Remove the version string and the following hyphen/dot
+              new_name=$(echo "$file" | sed "s/-$VERSION//")
+              mv "$file" "$new_name"
+              echo "Renamed $file to $new_name"
+            fi
+          done
+
+          sha256sum ${{ env.CHANNEL_NAME }}.yml \
+                    synara.db \
+                    synara.db.tar.gz \
+                    synara-* > SHASUMS256.txt
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
@@ -177,5 +207,6 @@ jobs:
             dist/synara.db
             dist/synara.db.tar.gz
             dist/synara-*
+            dist/SHASUMS256.txt
         env:
           GITHUB_TOKEN: ${{ secrets.SYNARA_GITHUB_TOKEN }}
