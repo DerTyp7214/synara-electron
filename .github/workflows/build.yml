@@ -181,7 +181,7 @@ jobs:
           cd dist
           for file in synara-*$VERSION*; do
             if [ -f "$file" ]; then
-              new_name=$(echo "$file" | sed "s/[-.]\?$VERSION//g")
+              new_name=$(echo "$file" | sed "s/[-._]\?$VERSION//g")
               
               if [ "$file" != "$new_name" ]; then
                 mv "$file" "$new_name"
@@ -194,6 +194,8 @@ jobs:
                     synara.db \
                     synara.db.tar.gz \
                     synara-* > SHASUMS256.txt
+
+          cat SCHASUMS256.txt
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
