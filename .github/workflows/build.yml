@@ -195,7 +195,7 @@ jobs:
                     synara.db.tar.gz \
                     synara-* > SHASUMS256.txt
 
-          cat SCHASUMS256.txt
+          cat SHASUMS256.txt
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
