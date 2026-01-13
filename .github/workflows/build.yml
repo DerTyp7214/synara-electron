@@ -179,12 +179,14 @@ jobs:
         run: |
           VERSION="${{ steps.collect_final_assets.outputs.RELEASE_VERSION }}"
           cd dist
-          for file in synara-$VERSION*; do
+          for file in synara-*$VERSION*; do
             if [ -f "$file" ]; then
-              # Remove the version string and the following hyphen/dot
-              new_name=$(echo "$file" | sed "s/-$VERSION//")
-              mv "$file" "$new_name"
-              echo "Renamed $file to $new_name"
+              new_name=$(echo "$file" | sed "s/[-.]\?$VERSION//g")
+              
+              if [ "$file" != "$new_name" ]; then
+                mv "$file" "$new_name"
+                echo "Renamed $file -> $new_name"
+              fi
             fi
           done
 
