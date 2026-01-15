@@ -62,7 +62,7 @@
           ?.map((artist) => `${artist.artist_credit_name}${artist.join_phrase}`)
           ?.join("") ?? listen.track_metadata.artist_name}
       <div class="flex flex-row gap-2 select-none">
-        <Avatar class="rounded-base h-16 w-16">
+        <Avatar class="rounded-base h-16 w-16 min-w-16">
           {#if release_mbid}
             <Avatar.Image
               class="h-16 w-16 object-cover"
@@ -77,7 +77,7 @@
               .join("")}
           </Avatar.Fallback>
         </Avatar>
-        <div class="flex flex-col">
+        <div class="flex flex-1 flex-col">
           <span class="line-clamp-1 font-medium overflow-ellipsis">
             {title}
           </span>
