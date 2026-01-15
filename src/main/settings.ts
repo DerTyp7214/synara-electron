@@ -1,5 +1,8 @@
 import Store, { Schema } from "electron-store";
+import type Conf from "conf";
+import type { Options } from "conf";
 import {
+  AnySettings,
   APP_SETTINGS_KEYS,
   AppSettings,
   MediaSettings,
@@ -77,9 +80,9 @@ const tokenSchema: Schema<TokenSettings> = {
     type: "object",
     default: DEFAULT_SETTINGS["lastFmSession"],
   },
-  listenBrainzToken: {
-    type: "string",
-    default: DEFAULT_SETTINGS["listenBrainzToken"],
+  listenBrainz: {
+    type: "object",
+    default: DEFAULT_SETTINGS["listenBrainz"],
   },
 };
 
@@ -121,10 +124,71 @@ const queueSchema: Schema<QueueSettings> = {
   },
 };
 
-export const store = new Store({ schema });
-export const token = new Store({ schema: tokenSchema, name: "token" });
-export const media = new Store({ schema: mediaSchema, name: "media" });
-export const queue = new Store({ schema: queueSchema, name: "queue" });
+type BeforeEachMigration<T extends AnySettings> =
+  Options<T>["beforeEachMigration"];
+type BeforeEachMigrationContext<T extends AnySettings> = Parameters<
+  NonNullable<BeforeEachMigration<T>>
+>[1];
+
+const beforeEachMigration = <T extends AnySettings>(
+  store: Conf<T>,
+  context: BeforeEachMigrationContext<T>,
+) => {
+  // eslint-disable-next-line no-console
+  console.log(
+    `Migrating [${store.path.split("/").reverse()[0].replace(".json", "")}] from version ${context.fromVersion} to ${context.toVersion}`,
+  );
+};
+
+export const store = new Store({
+  schema,
+  beforeEachMigration,
+  migrations: {
+    "0.0.1": (store) => {
+      store.set("debugPhase", true);
+    },
+  },
+});
+
+export const token = new Store({
+  schema: tokenSchema,
+  name: "token",
+  beforeEachMigration,
+  migrations: {
+    "0.0.1": (store) => {
+      store.set("debugPhase", true);
+    },
+    "1.0.0-2": (store) => {
+      store.set("listenBrainz", {
+        user: "",
+        token: store.get("listenBrainzToken"),
+      });
+      store.delete("listenBrainzToken" as never);
+    },
+  },
+});
+
+export const media = new Store({
+  schema: mediaSchema,
+  name: "media",
+  beforeEachMigration,
+  migrations: {
+    "0.0.1": (store) => {
+      store.set("debugPhase", true);
+    },
+  },
+});
+
+export const queue = new Store({
+  schema: queueSchema,
+  name: "queue",
+  beforeEachMigration,
+  migrations: {
+    "0.0.1": (store) => {
+      store.set("debugPhase", true);
+    },
+  },
+});
 
 export function setupSettings() {
   ipcMain.handle("settings:get", (_, key) => {

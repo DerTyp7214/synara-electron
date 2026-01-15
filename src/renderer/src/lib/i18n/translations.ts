@@ -15,6 +15,9 @@ export default {
     "songs.loadMore": "Load More",
     "songs.all": "All Songs",
 
+    copied: "Copied",
+    "copied.success": "Copied {{type}} to clipboard.",
+
     "lastFm.confirmToken": "Confirm when you approved token permissions",
 
     "likedSongs.title": "Liked Songs",
@@ -49,6 +52,8 @@ export default {
     "settings.lastFm.login": "Login",
     "settings.lastFm.logout": "Logout",
     "settings.lastFmSession": "LastFM Session",
+    "settings.listenBrainz": "ListenBrainz",
+    "settings.listenBrainzUser": "ListenBrainz User",
     "settings.listenBrainzToken": "ListenBrainz Token",
     "settings.cleanTitles": "Clean Titles",
     "settings.downloadDir": "Download Directory",

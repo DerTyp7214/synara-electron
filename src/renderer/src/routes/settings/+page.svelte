@@ -29,7 +29,7 @@
     discordRpc: settings.discordRpc,
     lastFm: settings.lastFm,
     cleanTitles: settings.cleanTitles,
-    listenBrainzToken: settings.listenBrainzToken,
+    listenBrainz: settings.listenBrainz,
 
     downloadDir: settings.downloadDir,
 
@@ -47,7 +47,7 @@
 
   const lastFmTokens = $derived(stores.lastFmTokens);
   const lastFmSession = $derived(stores.lastFmSession);
-  const listenBrainzToken = $derived(stores.listenBrainzToken);
+  const listenBrainz = $derived(stores.listenBrainz);
 
   const hideOnClose = $derived(stores.hideOnClose);
   const discordRpc = $derived(stores.discordRpc);
@@ -69,7 +69,8 @@
     discordRpc: $discordRpc,
     lastFm: $lastFm,
     cleanTitles: $cleanTitles,
-    listenBrainzToken: $listenBrainzToken,
+    listenBrainzToken: $listenBrainz.token,
+    listenBrainzUser: $listenBrainz.user,
 
     downloadDir: $downloadDir,
 
@@ -146,6 +147,14 @@
           applyState[key] = "success";
           break;
         }
+        case "listenBrainzUser":
+        case "listenBrainzToken":
+          stores.listenBrainz.set({
+            user: $settingsValues.listenBrainzUser,
+            token: $settingsValues.listenBrainzToken,
+          });
+          applyState[key] = "success";
+          break;
         default:
           (stores[key] as Writable<SettingsType[typeof key]>).set(
             value as SettingsType[typeof key],
@@ -449,10 +458,10 @@
       {@render booleanValue("lastFm")}
       <span class="h2">{$t("settings.lastFm")}</span>
     </div>
-
-    {@render textValue("listenBrainzToken", false, true)}
-
     {#if $settingsValues["lastFm"]}
+      {@render textValue("listenBrainzToken", false, true)}
+      {@render textValue("listenBrainzUser", false)}
+
       {@render textValue("lastFmApiKey", false, true)}
       {@render textValue("lastFmSharedSecret", false, true)}
 

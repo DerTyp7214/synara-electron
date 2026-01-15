@@ -93,6 +93,21 @@ export function copy<T>(dataIn: T): T {
   return JSON.parse(JSON.stringify(dataIn)) as T;
 }
 
+export async function copyText(text: string) {
+  if (navigator.clipboard) {
+    await navigator.clipboard.writeText(text);
+  } else {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    // noinspection JSDeprecatedSymbols
+    document.execCommand("copy");
+    document.body.removeChild(textArea);
+  }
+}
+
 export function millisecondsToHumanReadable(
   millis: number,
   displayMillis: boolean = false,

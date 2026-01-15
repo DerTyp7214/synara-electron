@@ -25,7 +25,13 @@ export type Settings = AppSettings &
   MediaSettings &
   QueueSettings;
 
-export interface AppSettings {
+export type AnySettings =
+  | AppSettings
+  | TokenSettings
+  | MediaSettings
+  | QueueSettings;
+
+export interface AppSettings extends Record<string, unknown> {
   theme: "dark" | "light";
   apiBase: string | undefined;
   volume: number;
@@ -45,7 +51,7 @@ export interface AppSettings {
   };
 }
 
-export interface TokenSettings {
+export interface TokenSettings extends Record<string, unknown> {
   token: { jwt?: string; refreshToken?: string };
   lastFmTokens: {
     apiKey?: string;
@@ -55,10 +61,13 @@ export interface TokenSettings {
     key?: string;
     name?: string;
   };
-  listenBrainzToken: string;
+  listenBrainz: {
+    user: string;
+    token: string;
+  };
 }
 
-export interface MediaSettings {
+export interface MediaSettings extends Record<string, unknown> {
   currentIndex: number;
   playingSourceType: PlayingSourceType;
   playingSourceId: PlayingSource["id"];
@@ -105,7 +114,7 @@ export interface MbSong {
   };
 }
 
-export interface QueueSettings {
+export interface QueueSettings extends Record<string, unknown> {
   queue: Array<MinimalSong>;
   shuffleMap: Array<number>;
   lastFmScrobbleQueue: Array<
@@ -157,7 +166,7 @@ export const TOKEN_SETTINGS_KEYS: Array<keyof TokenSettings> = [
   "token",
   "lastFmTokens",
   "lastFmSession",
-  "listenBrainzToken",
+  "listenBrainz",
 ];
 
 export const MEDIA_SETTINGS_KEYS: Array<keyof MediaSettings> = [

@@ -40,6 +40,22 @@
     }, 100);
   });
 
+  export function reset() {
+    value = 100;
+
+    if (currentInterval) clearInterval(currentInterval);
+    if (currentProgressInterval) clearInterval(currentProgressInterval);
+
+    currentInterval = setInterval(() => {
+      if (!disabled) onInterval();
+    }, interval);
+
+    currentProgressInterval = setInterval(() => {
+      value -= 10000 / interval;
+      if (value < 0) value = 100;
+    }, 100);
+  }
+
   onDestroy(() => {
     if (currentInterval) clearInterval(currentInterval);
     if (currentProgressInterval) clearInterval(currentProgressInterval);

@@ -5,6 +5,7 @@
   import Tidal from "$lib/assets/Tidal.svelte";
   import { deleteSong, setLiked, type Song } from "$lib/api/songs";
   import {
+    copyText,
     getImageUrl,
     getOrigin,
     millisecondsToHumanReadable,
@@ -28,10 +29,10 @@
   import type { MinimalSong, SongWithPosition } from "$shared/types/beApi";
   import { goto } from "$app/navigation";
   import { get, type Writable } from "svelte/store";
-  import dayjs from "$lib/utils/dayJsUtils";
   import { debugLog } from "$lib/utils/logger";
   import type { SongLikedEventData } from "$lib/audio/queue";
   import { showDialog } from "$lib/addToPlaylist/store.svelte";
+  import SinceCounter from "$lib/components/SinceCounter.svelte";
 
   let {
     id,
@@ -76,6 +77,8 @@
   ];
 
   const textClasses = ["line-clamp-1", "overflow-ellipsis", ...baseTextClasses];
+
+  let time = $state(Date.now());
 
   const currentQueue = mediaSession.getDerivedQueue();
   const currentSong = $derived($currentQueue?.currentSong);
@@ -206,7 +209,22 @@
   }
 
   onMount(() => {
-    return window.listenCustomEvent("songLiked", handleLikedSongEvent);
+    let interval: NodeJS.Timeout | undefined;
+    if (addedAt) {
+      interval = setInterval(() => {
+        time = Date.now();
+      }, 1000 * 60);
+    }
+
+    const unsubscriber = window.listenCustomEvent(
+      "songLiked",
+      handleLikedSongEvent,
+    );
+
+    return () => {
+      unsubscriber();
+      if (interval) clearInterval(interval);
+    };
   });
 </script>
 
@@ -304,16 +322,14 @@
     {/if}
   {/if}
   {#if addedAt}
-    <ToolTip
-      text={dayjs(addedAt).format("LLL")}
-      class={cn(
-        "me-2 mt-auto mb-auto flex flex-[0.5] items-center justify-center",
-      )}
-    >
-      <span class={cn(textClasses, "font-bold")}>
-        {dayjs(addedAt).fromNow()}
-      </span>
-    </ToolTip>
+    {#key time}
+      <SinceCounter
+        time={addedAt}
+        refresh={1000 * 50}
+        textClasses={cn(textClasses, "font-bold")}
+        toolTipClasses="me-2 mt-auto mb-auto flex flex-[0.5] items-center justify-center"
+      />
+    {/key}
   {/if}
   <span class={cn(textClasses, "me-2 mt-auto mb-auto font-bold")}>
     {millisecondsToHumanReadable(duration)}
@@ -332,7 +348,17 @@
     <Spotify class="ms-auto mt-auto mb-auto" size={size / 2.5} />
   {:else if getOrigin(originalUrl) === SongOrigin.Tidal}
     <ToolTip text={originalUrl} class="flex items-center justify-center">
-      <Tidal class="ms-auto mt-auto mb-auto" size={size / 3} />
+      <button
+        onclick={() => {
+          copyText(originalUrl);
+          toastContext.info({
+            description: $t("copied.success", { type: "url" }),
+            duration: 4000,
+          });
+        }}
+      >
+        <Tidal class="ms-auto mt-auto mb-auto" size={size / 3} />
+      </button>
     </ToolTip>
   {:else}
     <div style="min-width: {size / 3}px"></div>
