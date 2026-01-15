@@ -22,6 +22,10 @@ on:
     branches: [ master, release ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   build:
     strategy:
@@ -97,6 +101,8 @@ jobs:
     name: Create GitHub Release
     needs: [build]
     runs-on: ubuntu-latest
+    outputs:
+      RELEASE_VERSION: ${{ steps.collect_final_assets.outputs.RELEASE_VERSION }}
     env:
       CHANNEL_NAME: ${{ github.ref_name == 'master' && 'dev-desktop' || 'desktop' }}
       PRE_RELEASE: ${{ github.ref_name == 'master' }}
@@ -182,7 +188,7 @@ jobs:
           for file in synara-*$VERSION*; do
             if [ -f "$file" ]; then
               new_name=$(echo "$file" | sed "s/[-._]\?$VERSION//g")
-              
+
               if [ "$file" != "$new_name" ]; then
                 mv "$file" "$new_name"
                 echo "Renamed $file -> $new_name"
@@ -214,3 +220,57 @@ jobs:
             dist/SHASUMS256.txt
         env:
           GITHUB_TOKEN: ${{ secrets.SYNARA_GITHUB_TOKEN }}
+
+  update-nix:
+    name: Update Nix Flake
+    needs: [release]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+
+      - name: Generate Metadata
+        shell: bash
+        run: |
+          VERSION="${{ needs.release.outputs.RELEASE_VERSION }}"
+
+          if [[ "${{ github.ref_name }}" == "master" ]]; then
+            FILENAME="metadata-dev.json"
+            URL="https://github.com/DerTyp7214/synara/releases/download/latest-dev-desktop/synara-desktop.tar.gz"
+          else
+            FILENAME="metadata.json"
+            URL="https://github.com/DerTyp7214/synara/releases/download/latest-desktop/synara-desktop.tar.gz"
+          fi
+
+          echo "Fetching hash for $URL..."
+
+          NEW_HASH=$(nix-prefetch-url $URL --type sha256 | xargs nix hash to-sri --type sha256)
+
+          cat <<EOF > $FILENAME
+          {
+            "version": "$VERSION",
+            "hash": "$NEW_HASH",
+            "url": "$URL",
+            "channel": "${{ github.ref_name == 'master' && 'dev' || 'stable' }}"
+          }
+          EOF
+
+      - name: Commit and Push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          nix flake update
+
+          git add metadata.json metadata-dev.json flake.lock
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore(nix): update ${{ github.ref_name }} metadata [skip ci]"
+            git push
+          fi

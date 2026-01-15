@@ -13,30 +13,36 @@
           inherit system;
         };
 
+        loadMeta = file: if builtins.pathExists file
+          then builtins.fromJSON (builtins.readFile file)
+          else { version = "latest"; url = ""; hash = ""; };
+
+        metaStable = loadMeta ./metadata.json;
+        metaDev = loadMeta ./metadata-dev.json;
+
         pname = "synara-desktop";
-        version = "latest";
 
         runtimeLibs = with pkgs; [
-          gtk3 nspr nss atk at-spi2-atk dbus pango cairo libdrm libGL 
-          mesa vulkan-loader expat alsa-lib libxkbcommon pixman zlib 
+          gtk3 nspr nss atk at-spi2-atk dbus pango cairo libdrm libGL
+          mesa vulkan-loader expat alsa-lib libxkbcommon pixman zlib
           glib libsecret libpulseaudio systemd libuuid cups
-          xorg.libX11 xorg.libXcomposite xorg.libXdamage xorg.libXext 
+          xorg.libX11 xorg.libXcomposite xorg.libXdamage xorg.libXext
           xorg.libXfixes xorg.libXrandr stdenv.cc.cc.lib libgbm
           gsettings-desktop-schemas
         ];
-      in
-      {
-        packages.default = pkgs.stdenv.mkDerivation {
-          inherit pname version;
+
+        mkSynara = meta: pkgs.stdenv.mkDerivation {
+          inherit pname;
+          version = meta.version;
 
           src = pkgs.fetchurl {
-            url = "https://github.com/DerTyp7214/synara/releases/download/latest-dev-desktop/synara-desktop.tar.gz";
-            sha256 = "sha256-QALbnqiw+rbrIzju5cky+JZL5EmW3Yl9zesp/WIyY6M=";
+            url = meta.url;
+            hash = meta.hash;
           };
 
-          nativeBuildInputs = with pkgs; [ 
-            autoPatchelfHook 
-            makeWrapper 
+          nativeBuildInputs = with pkgs; [
+            autoPatchelfHook
+            makeWrapper
             wrapGAppsHook3
             copyDesktopItems
           ];
@@ -47,7 +53,7 @@
           desktopItems = [
             (pkgs.makeDesktopItem {
               name = "synara";
-              exec = pname;
+              exec = "synara-desktop";
               icon = "synara-desktop";
               desktopName = "Synara";
               genericName = "Synara";
@@ -65,16 +71,16 @@
 
           installPhase = ''
             runHook preInstall
-            
+
             mkdir -p $out/share/$pname
             cp -r . $out/share/$pname/
 
             mkdir -p $out/share/icons/hicolor/512x512/apps
             mkdir -p $out/share/icons/hicolor/scalable/apps
-            
+
             cp $out/share/$pname/resources/app.asar.unpacked/resources/icon.png \
                $out/share/icons/hicolor/512x512/apps/synara-desktop.png || true
-            
+
             cp $out/share/$pname/resources/app.asar.unpacked/resources/icon.svg \
                $out/share/icons/hicolor/scalable/apps/synara-desktop.svg || true
 
@@ -87,9 +93,16 @@
               --add-flags "--ozone-platform-hint=auto" \
               --add-flags "--enable-wayland-ime" \
               --add-flags "--no-sandbox"
-              
+
             runHook postInstall
           '';
+        };
+      in
+      {
+        packages = {
+          default = if metaStable.url != "" then mkSynara metaStable else mkSynara metaDev;
+          synara = mkSynara metaStable;
+          synara-dev = mkSynara metaDev;
         };
       });
 }
