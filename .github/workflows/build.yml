@@ -63,10 +63,6 @@ jobs:
           sudo apt update
           sudo apt install -y --install-recommends libarchive-tools
 
-      - name: Install pacman tools
-        if: matrix.build == 'linux'
-        uses: termux-pacman/pacman-actions@v2.5
-
       - name: Install Dependencies and sync svelte-kit
         run: |
           pnpm install --frozen-lockfile
@@ -78,14 +74,6 @@ jobs:
           MAIN_VITE_LAST_FM_API_KEY: ${{ secrets.LAST_FM_API_KEY }}
           MAIN_VITE_LAST_FM_SHARED_SECRET: ${{ secrets.LAST_FM_SHARED_SECRET }}
           MAIN_VITE_DISCORD_CLIENT_ID: ${{ secrets.DISCORD_CLIENT_ID }}
-
-      - name: Create package db
-        if: matrix.build == 'linux'
-        run: |
-          cd dist
-          repo-add synara.db.tar.gz *.pacman
-          rm synara.db
-          cp synara.db.tar.gz synara.db
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v6
@@ -122,6 +110,10 @@ jobs:
       - name: Install jq
         run: sudo snap install jq yq
 
+      - name: Install pacman tools
+        if: matrix.build == 'linux'
+        uses: termux-pacman/pacman-actions@v2.5
+
       - name: Collect Assets and Version
         id: collect_final_assets
         shell: bash
@@ -152,6 +144,15 @@ jobs:
           echo "$FINAL_JSON" | yq -P > "$OUTPUT_FILE"
           echo "✅ Consolidated metadata saved to $OUTPUT_FILE"
 
+      - name: Create package db
+        if: matrix.build == 'linux'
+        run: |
+          cd dist
+          rm -f synara.db synara.db.tar.gz
+          repo-add synara.db.tar.gz *.pacman
+          rm synara.db
+          cp synara.db.tar.gz synara.db
+
       - name: Generate hash file
         shell: bash
         run: |
@@ -180,7 +181,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.SYNARA_GITHUB_TOKEN }}
 
-      - name: Rename artifacts to remove version and generate hash file
+      - name: Rename artifacts to remove version
         shell: bash
         run: |
           VERSION="${{ steps.collect_final_assets.outputs.RELEASE_VERSION }}"
@@ -196,12 +197,24 @@ jobs:
             fi
           done
 
+      - name: Create package db
+        if: matrix.build == 'linux'
+        run: |
+          cd dist
+          rm -f synara.db synara.db.tar.gz
+          repo-add synara.db.tar.gz *.pacman
+          rm synara.db
+          cp synara.db.tar.gz synara.db
+
+      - name: Generate hash file
+        shell: bash
+        run: |
+          cd dist
+
           sha256sum ${{ env.CHANNEL_NAME }}.yml \
                     synara.db \
                     synara.db.tar.gz \
                     synara-* > SHASUMS256.txt
-
-          cat SHASUMS256.txt
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
