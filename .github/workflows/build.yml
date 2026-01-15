@@ -145,7 +145,6 @@ jobs:
           echo "✅ Consolidated metadata saved to $OUTPUT_FILE"
 
       - name: Create package db
-        if: matrix.build == 'linux'
         run: |
           cd dist
           rm -f synara.db synara.db.tar.gz
@@ -198,7 +197,6 @@ jobs:
           done
 
       - name: Create package db
-        if: matrix.build == 'linux'
         run: |
           cd dist
           rm -f synara.db synara.db.tar.gz
