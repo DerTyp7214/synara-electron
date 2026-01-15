@@ -53,7 +53,14 @@
   <div class="flex h-full flex-col gap-2 overflow-auto p-4">
     {#each listens as listen (listen.listened_at + listen.recording_msid)}
       {@const release_mbid =
-        listen.track_metadata?.mbid_mapping?.caa_release_mbid}
+        listen.track_metadata.mbid_mapping?.caa_release_mbid}
+      {@const title =
+        listen.track_metadata.mbid_mapping?.recording_name ??
+        listen.track_metadata.track_name}
+      {@const artists =
+        listen.track_metadata.mbid_mapping?.artists
+          ?.map((artist) => `${artist.artist_credit_name}${artist.join_phrase}`)
+          ?.join("") ?? listen.track_metadata.artist_name}
       <div class="flex flex-row gap-2 select-none">
         <Avatar class="rounded-base h-16 w-16">
           {#if release_mbid}
@@ -63,7 +70,7 @@
             />
           {/if}
           <Avatar.Fallback class="bg-tertiary-100-900">
-            {listen.track_metadata.track_name
+            {title
               .split(" ")
               .slice(0, 2)
               .map((s) => s.substring(0, 1).toUpperCase())
@@ -72,10 +79,10 @@
         </Avatar>
         <div class="flex flex-col">
           <span class="line-clamp-1 font-medium overflow-ellipsis">
-            {listen.track_metadata.track_name}
+            {title}
           </span>
           <span class={cn(baseTextClasses, "font-medium", "whitespace-nowrap")}>
-            {listen.track_metadata.artist_name}
+            {artists}
           </span>
           <SinceCounter
             time={listen.listened_at * 1000}
