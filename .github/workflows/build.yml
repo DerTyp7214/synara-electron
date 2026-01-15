@@ -111,7 +111,6 @@ jobs:
         run: sudo snap install jq yq
 
       - name: Install pacman tools
-        if: matrix.build == 'linux'
         uses: termux-pacman/pacman-actions@v2.5
 
       - name: Collect Assets and Version
