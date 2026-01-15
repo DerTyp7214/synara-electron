@@ -249,7 +249,7 @@ jobs:
 
           echo "Fetching hash for $URL..."
 
-          NEW_HASH=$(nix-prefetch-url $URL --type sha256 | xargs nix hash to-sri --type sha256)
+          NEW_HASH=$(nix-prefetch-url $URL --type sha256 | xargs nix hash convert --to sri --hash-algo sha256)
 
           cat <<EOF > $FILENAME
           {
