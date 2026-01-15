@@ -58,7 +58,7 @@
         <Avatar class="rounded-base h-16 w-16">
           {#if release_mbid}
             <Avatar.Image
-              class="h-16 w-16 object-cover object-center"
+              class="h-16 w-16 object-cover"
               src="https://coverartarchive.org/release/{release_mbid}/front-250"
             />
           {/if}

@@ -66,6 +66,7 @@
   import { nullSong } from "$shared/types/settings";
   import AddToPlaylistDialog from "$lib/addToPlaylist/AddToPlaylistDialog.svelte";
   import { cleanTitle } from "$lib/utils/ui";
+  import LazyImage from "$lib/components/LazyImage.svelte";
 
   let {
     isOpen = writable(false),
@@ -386,10 +387,10 @@
   {/if}
 
   {#if $currentSong?.coverId}
-    <div
-      style="background-image: url({getImageUrl(
-        $currentSong.coverId,
-      )}); {audioVisualEffects}"
+    <LazyImage
+      blendTime={1000}
+      src={getImageUrl($currentSong.coverId)}
+      style={audioVisualEffects}
       class={cn(
         "absolute top-0 left-0 h-full w-full",
         "scale-110 bg-cover bg-center",
@@ -400,7 +401,7 @@
           "opacity-0": !$isOpen,
         },
       )}
-    ></div>
+    />
   {/if}
 
   <!-- Cover and visualizer/Lyrics/Queue -->
@@ -509,13 +510,10 @@
           ) * 0.9}
         />
       {/if}
-      <svelte:element
-        this={bigCover.animated ? "video" : "img"}
+      <LazyImage
+        animated={bigCover.animated}
         poster={getImageUrl($currentSong.coverId)}
-        autoplay
-        loop
         src={bigCover.url}
-        alt="cover"
         style="width: min(80vw, 40vh); height: min(80vw, 40vh); border-color: {rgbToCss(
           sortRgbColors($imageColors[0], $imageColors[1])[0],
         )};"
@@ -529,8 +527,7 @@
             "max-h-[40vh] opacity-100": $isOpen,
           },
         )}
-      >
-      </svelte:element>
+      />
       <canvas
         class={cn(
           "h-[20vh] w-11/12 transition-all",
