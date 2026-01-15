@@ -50,6 +50,7 @@
       albumPageSize,
       false,
     );
+    albumPage++;
     albumHasNext = newAlbums.hasNextPage;
     albumItems = distinctBy(
       [...albumItems, ...newAlbums.data],
@@ -67,6 +68,7 @@
       singlePageSize,
       true,
     );
+    singlePage++;
     singleHasNext = newSingles.hasNextPage;
     singleItems = distinctBy(
       [...singleItems, ...newSingles.data],
