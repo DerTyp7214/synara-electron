@@ -130,8 +130,8 @@ catalogs:
       specifier: ^0.295.0
       version: 0.295.0
     globals:
-      specifier: ^16.5.0
-      version: 16.5.0
+      specifier: ^17.0.0
+      version: 17.0.0
     mpris-service:
       specifier: ^2.1.2
       version: 2.1.2
@@ -259,7 +259,7 @@ importers:
         version: 0.295.0
       globals:
         specifier: 'catalog:'
-        version: 16.5.0
+        version: 17.0.0
       mpris-service:
         specifier: 'catalog:'
         version: 2.1.2(patch_hash=8258126e87f0be7115dfa5539cbe1628770b6dd300b4dd4fa779a5f5f111f78c)
@@ -338,7 +338,7 @@ importers:
         version: 2.6.0
       globals:
         specifier: 'catalog:'
-        version: 16.5.0
+        version: 17.0.0
       musicbrainz-api:
         specifier: 'catalog:'
         version: 0.27.0
@@ -2711,6 +2711,10 @@ packages:
 
   globals@16.5.0:
     resolution: {integrity: sha512-c/c15i26VrJ4IRt5Z89DnIzCGDn9EcebibhAOjw5ibqEHsE1wLUgkPn9RDmNcUKyU87GeaL633nyJ+pplFR2ZQ==}
+    engines: {node: '>=18'}
+
+  globals@17.0.0:
+    resolution: {integrity: sha512-gv5BeD2EssA793rlFWVPMMCqefTlpusw6/2TbAVMy0FzcG8wKJn4O+NqJ4+XWmmwrayJgw5TzrmWjFgmz1XPqw==}
     engines: {node: '>=18'}
 
   globalthis@1.0.4:
@@ -7083,6 +7087,8 @@ snapshots:
   globals@14.0.0: {}
 
   globals@16.5.0: {}
+
+  globals@17.0.0: {}
 
   globalthis@1.0.4:
     dependencies:
