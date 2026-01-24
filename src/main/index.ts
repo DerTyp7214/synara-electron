@@ -73,13 +73,38 @@ ipcMain.on("lastfm:open-external", (_, url: string) => {
   void shell.openExternal(url);
 });
 
+// Window control handlers
+ipcMain.on("window-minimize", (event) => {
+  const window = BrowserWindow.fromWebContents(event.sender);
+  window?.minimize();
+});
+
+ipcMain.on("window-maximize", (event) => {
+  const window = BrowserWindow.fromWebContents(event.sender);
+  if (window?.isMaximized()) {
+    window.unmaximize();
+  } else {
+    window?.maximize();
+  }
+});
+
+ipcMain.on("window-close", (event) => {
+  const window = BrowserWindow.fromWebContents(event.sender);
+  window?.close();
+});
+
+ipcMain.handle("window-is-maximized", (event) => {
+  const window = BrowserWindow.fromWebContents(event.sender);
+  return window?.isMaximized() ?? false;
+});
+
 function createWindow(): void {
   // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
     show: false,
-    transparent: true,
+    transparent: !platform.isWindows,
     ...(platform.isLinux ? { icon } : {}),
     ...(platform.isMacOS
       ? {
@@ -92,9 +117,9 @@ function createWindow(): void {
     ...(platform.isWindows
       ? {
           frame: false,
+          resizable: true,
           backgroundMaterial: "acrylic",
-          backgroundColor: "#00000000",
-          titleBarOverlay: true,
+          backgroundColor: "#00202020",
         }
       : {
           frame: false,
@@ -126,6 +151,14 @@ function createWindow(): void {
 
   mainWindow.on("leave-full-screen", () => {
     mainWindow.webContents.send("fullscreen-status-changed", false);
+  });
+
+  mainWindow.on("maximize", () => {
+    mainWindow.webContents.send("window-maximized-changed", true);
+  });
+
+  mainWindow.on("unmaximize", () => {
+    mainWindow.webContents.send("window-maximized-changed", false);
   });
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
