@@ -18,6 +18,7 @@
   import musicScrobbler from "$lib/audio/musicScrobbler";
   import { mediaSession } from "$lib/audio/mediaSession";
   import AddToPlaylistDialog from "$lib/addToPlaylist/AddToPlaylistDialog.svelte";
+  import WindowsTitlebar from "$lib/components/WindowsTitlebar.svelte";
 
   const { children } = $props();
 
@@ -87,7 +88,7 @@
   )}
 >
   {#if isWindows()}
-    <header class="bg-surface-50-950/60 draggable h-8 w-full"></header>
+    <WindowsTitlebar />
   {/if}
   {#if !$settingsLoaded}
     <div class="flex h-full w-full items-center justify-center">

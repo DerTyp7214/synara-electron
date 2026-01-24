@@ -62,4 +62,9 @@ export interface CustomApi {
   openExternal(url: string): void;
   setBadgeColor(color: string): void;
   clearBadge(): void;
+  minimizeWindow(): void;
+  maximizeWindow(): void;
+  closeWindow(): void;
+  getIsMaximized(): Promise<boolean>;
+  onMaximizedChange(callback: (isMaximized: boolean) => void): () => void;
 }

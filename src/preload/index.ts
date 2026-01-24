@@ -75,6 +75,17 @@ const api: CustomApi & SettingsAPI = {
   openExternal: (url: string) => ipcRenderer.send("lastfm:open-external", url),
   setBadgeColor: (color: string) => ipcRenderer.send("set-badge-color", color),
   clearBadge: () => ipcRenderer.send("clear-badge"),
+  minimizeWindow: () => ipcRenderer.send("window-minimize"),
+  maximizeWindow: () => ipcRenderer.send("window-maximize"),
+  closeWindow: () => ipcRenderer.send("window-close"),
+  getIsMaximized: () => ipcRenderer.invoke("window-is-maximized"),
+  onMaximizedChange: (callback: (isMaximized: boolean) => void) => {
+    const handler = (_: IpcRendererEvent, isMaximized: boolean) =>
+      callback(isMaximized);
+    ipcRenderer.on("window-maximized-changed", handler);
+    return () =>
+      ipcRenderer.removeListener("window-maximized-changed", handler);
+  },
 };
 
 // Use `contextBridge` APIs to expose Electron APIs to
