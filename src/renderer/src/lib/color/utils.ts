@@ -6,14 +6,37 @@ import {
 } from "$lib/color/converters";
 
 export async function getColorPalette(imageUrl?: string) {
-  if (!imageUrl) return [[-1, -1, -1]] as RGBColor[];
+  if (!imageUrl)
+    return [
+      [-1, -1, -1],
+      [-1, -1, -1],
+    ] as RGBColor[];
 
   const colorThief = new ColorThief();
   const img = new Image();
 
   const palette = new Promise<RGBColor[]>((resolve) => {
     img.addEventListener("load", () => {
-      resolve(colorThief.getPalette(img, 2));
+      try {
+        const colors = colorThief.getPalette(img, 2);
+        if (!colors || colors.length < 2) {
+          const fallback = colors?.[0] || [-1, -1, -1];
+          resolve([fallback, fallback]);
+        } else {
+          resolve(colors);
+        }
+      } catch (e) {
+        resolve([
+          [-1, -1, -1],
+          [-1, -1, -1],
+        ]);
+      }
+    });
+    img.addEventListener("error", () => {
+      resolve([
+        [-1, -1, -1],
+        [-1, -1, -1],
+      ]);
     });
   });
 

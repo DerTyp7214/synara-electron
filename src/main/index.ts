@@ -48,7 +48,9 @@ let mainWindow: BrowserWindow;
 let isQuitting = false;
 
 addMPRIS((eventName: MprisEventName, data: MprisEventData<MprisEventName>) => {
-  mainWindow?.webContents.send("mpris-event", { eventName, data });
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send("mpris-event", { eventName, data });
+  }
 });
 
 setupSettings();
@@ -59,7 +61,9 @@ const bonjour = new Bonjour();
 
 ipcMain.handle("bonjour-start", () => {
   bonjour.find({ type: "synara-api" }, (service) => {
-    mainWindow?.webContents.send("bonjour-event", service);
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send("bonjour-event", service);
+    }
   });
 });
 
@@ -142,6 +146,8 @@ function createWindow(): void {
     if (!isQuitting && store.get("hideOnClose")) {
       event.preventDefault();
       mainWindow.hide();
+    } else {
+      ipcMain.removeAllListeners("discord-rpc");
     }
   });
 
