@@ -16,8 +16,6 @@ export class AudioSession {
 
   private eventListeners: PartialRecord<Listeners, EventListener> = {};
 
-  private currentPlayAbortController: AbortController | null = null;
-
   constructor() {
     this.setup();
   }
@@ -73,45 +71,13 @@ export class AudioSession {
   }
 
   setSrc(url: string) {
-    if (this.currentPlayAbortController) {
-      this.currentPlayAbortController.abort();
-      this.currentPlayAbortController = null;
-    }
     this.audio.src = url;
     this.audio.load();
   }
 
-  async play() {
-    if (this.currentPlayAbortController) {
-      this.currentPlayAbortController.abort();
-    }
-
-    this.currentPlayAbortController = new AbortController();
-    const signal = this.currentPlayAbortController.signal;
-
-    try {
-      await this.audio.play();
-      if (!signal.aborted) {
-        this.currentPlayAbortController = null;
-      }
-    } catch (error) {
-      if (error instanceof DOMException && error.name === "AbortError") {
-        scopedDebugLog(
-          "info",
-          this.logScope,
-          "Play operation was aborted (expected when skipping songs)",
-        );
-        return;
-      }
-      throw error;
-    }
-  }
+  async play() {}
 
   pause() {
-    if (this.currentPlayAbortController) {
-      this.currentPlayAbortController.abort();
-      this.currentPlayAbortController = null;
-    }
     this.audio.pause();
   }
 
