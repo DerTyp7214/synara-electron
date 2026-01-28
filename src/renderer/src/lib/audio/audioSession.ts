@@ -75,6 +75,10 @@ export class AudioSession {
     this.audio.load();
   }
 
+  async play() {
+    await this.audio.play();
+  }
+
   pause() {
     this.audio.pause();
   }
