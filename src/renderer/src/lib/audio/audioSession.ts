@@ -75,8 +75,6 @@ export class AudioSession {
     this.audio.load();
   }
 
-  async play() {}
-
   pause() {
     this.audio.pause();
   }
