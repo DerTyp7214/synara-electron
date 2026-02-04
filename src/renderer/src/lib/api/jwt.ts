@@ -6,6 +6,7 @@ interface TokenPayload {
   aud: string;
   iss: string;
   username: string;
+  ses: string;
 }
 
 export function decodeJwt(token: string): TokenPayload | null {

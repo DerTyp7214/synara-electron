@@ -3,7 +3,7 @@
   import Logo from "$lib/components/Logo.svelte";
   import cn from "classnames";
   import { Menu } from "@lucide/svelte";
-  import { ChevronLeft, Cog, Download } from "@jis3r/icons";
+  import { ChevronLeft, Cog, Download, MonitorCog } from "@jis3r/icons";
   import MediaPlayer from "$lib/components/MediaPlayer.svelte";
   import PlaylistList from "$lib/components/PlaylistList.svelte";
   import { t } from "$lib/i18n/i18n";
@@ -190,6 +190,18 @@
             )}
           >
             <Download />
+          </button>
+          <button
+            onclick={() => goto(resolve("/sessions"))}
+            class={cn(
+              "ms-2",
+              "flex items-center justify-center",
+              "rounded-md p-2",
+              "transition-colors",
+              "hover:bg-surface-950-50/20",
+            )}
+          >
+            <MonitorCog />
           </button>
           <button
             onclick={() => goto(resolve("/settings"))}

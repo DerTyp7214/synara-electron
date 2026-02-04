@@ -315,6 +315,10 @@ export class Queue implements Readable<QueueCallbackData> {
     };
   }
 
+  public getUnshuffledQueue() {
+    return get(this.queueStore);
+  }
+
   public getPage(pageSize: number) {
     let index = get(this.currentIndex);
     if (get(settings.shuffle)) index = get(this.shuffledMapStore)[index];

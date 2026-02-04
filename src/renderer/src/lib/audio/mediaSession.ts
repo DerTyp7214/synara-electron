@@ -538,6 +538,10 @@ export class MediaSession {
     return this.currentQueue().get().queue;
   }
 
+  getUnshuffledQueue() {
+    return this.currentQueue().getUnshuffledQueue();
+  }
+
   getDerivedQueue() {
     return readonly(this.queue);
   }

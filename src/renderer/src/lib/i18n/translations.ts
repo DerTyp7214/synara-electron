@@ -94,5 +94,14 @@ export default {
       "Are you sure you want to delete this album ({{name}})?",
 
     "search.placeholder": "Search",
+
+    "sessions.title": "Sessions",
+    "sessions.currentSession": "Current Session",
+    "sessions.inactive": "Inactive",
+    "sessions.sync": "Sync Playback",
+    "sessions.delete": "Delete Session",
+    "sessions.confirmDelete": "Are you sure you want to delete this session?",
+    "sessions.syncSuccess": "Playback state synced successfully.",
+    "sessions.syncError": "Failed to sync playback state.",
   },
 } as const;
