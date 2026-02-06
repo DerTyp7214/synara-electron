@@ -97,8 +97,8 @@ catalogs:
       specifier: github:castlabs/electron-releases#v39.2.4+wvcus
       version: 39.2.4
     electron-builder:
-      specifier: ^26.3.6
-      version: 26.3.6
+      specifier: ^26.4.0
+      version: 26.4.0
     electron-liquid-glass:
       specifier: ^1.1.1
       version: 1.1.1
@@ -229,7 +229,7 @@ importers:
         version: https://codeload.github.com/castlabs/electron-releases/tar.gz/7cb662d6bc5d6c87a4bbb8a31885e0a54974025e
       electron-builder:
         specifier: 'catalog:'
-        version: 26.3.6(electron-builder-squirrel-windows@25.1.8)
+        version: 26.4.0(electron-builder-squirrel-windows@25.1.8)
       electron-serve:
         specifier: 'catalog:'
         version: 3.0.0
@@ -1846,12 +1846,12 @@ packages:
       dmg-builder: 25.1.8
       electron-builder-squirrel-windows: 25.1.8
 
-  app-builder-lib@26.3.6:
-    resolution: {integrity: sha512-PmABRmTJKEE4WC0Kan5q23iLpt6LFZ5MVxEYBLgi6ZGjoboGSE536ZO+iCsaoBo3+/hpwx0XK1Njts0/Y1Fe7w==}
+  app-builder-lib@26.4.0:
+    resolution: {integrity: sha512-Uas6hNe99KzP3xPWxh5LGlH8kWIVjZixzmMJHNB9+6hPyDpjc7NQMkVgi16rQDdpCFy22ZU5sp8ow7tvjeMgYQ==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
-      dmg-builder: 26.3.6
-      electron-builder-squirrel-windows: 26.3.6
+      dmg-builder: 26.4.0
+      electron-builder-squirrel-windows: 26.4.0
 
   aproba@2.1.0:
     resolution: {integrity: sha512-tLIEcj5GuR2RSTnxNKdkK0dJ/GrC7P38sUkiDmDuHfsHmbagTFAxDVIBltoklXEVIQ/f14IL8IMJ5pn9Hez1Ew==}
@@ -2267,8 +2267,8 @@ packages:
   discord-api-types@0.38.32:
     resolution: {integrity: sha512-UhIqkFuUVwBzejLPPWF18qixYPucMf718RnGh1NxZYNS7czXUmcUsWWkzWR7lRWj5pjfj4LwrnN9McvpfLvGqQ==}
 
-  dmg-builder@26.3.6:
-    resolution: {integrity: sha512-DFUJbtO6AQWZRZgMZnYd+/G1ehD1wncIKbu0fX5P0PJOnJ6K22GeYBESTjviFROsgTQCUtW1J5Lubx63ePt4Jw==}
+  dmg-builder@26.4.0:
+    resolution: {integrity: sha512-ce4Ogns4VMeisIuCSK0C62umG0lFy012jd8LMZ6w/veHUeX4fqfDrGe+HTWALAEwK6JwKP+dhPvizhArSOsFbg==}
 
   dmg-license@1.0.11:
     resolution: {integrity: sha512-ZdzmqwKmECOWJpqefloC5OJy1+WZBBse5+MR88z9g9Zn4VY+WYUkAyojmhzJckH5YbbZGcYIuGAkY5/Ys5OM2Q==}
@@ -2310,8 +2310,8 @@ packages:
   electron-builder-squirrel-windows@25.1.8:
     resolution: {integrity: sha512-2ntkJ+9+0GFP6nAISiMabKt6eqBB0kX1QqHNWFWAXgi0VULKGisM46luRFpIBiU3u/TDmhZMM8tzvo2Abn3ayg==}
 
-  electron-builder@26.3.6:
-    resolution: {integrity: sha512-6pf4oKHq+yotN8N6D9dWJaGbRMgZMG4mVQJ6CyvG0Y+6Y8dqUShUA8I/cxMhY5uI5XfFM3CpOp2wYU5aVCn4cQ==}
+  electron-builder@26.4.0:
+    resolution: {integrity: sha512-FCUqvdq2AULL+Db2SUGgjOYTbrgkPxZtCjqIZGnjH9p29pTWyesQqBIfvQBKa6ewqde87aWl49n/WyI/NyUBog==}
     engines: {node: '>=14.0.0'}
     hasBin: true
 
@@ -5898,7 +5898,7 @@ snapshots:
 
   app-builder-bin@5.0.0-alpha.12: {}
 
-  app-builder-lib@25.1.8(dmg-builder@26.3.6)(electron-builder-squirrel-windows@25.1.8):
+  app-builder-lib@25.1.8(dmg-builder@26.4.0)(electron-builder-squirrel-windows@25.1.8):
     dependencies:
       '@develar/schema-utils': 2.6.5
       '@electron/notarize': 2.5.0
@@ -5914,11 +5914,11 @@ snapshots:
       chromium-pickle-js: 0.2.0
       config-file-ts: 0.2.8-rc1
       debug: 4.4.3
-      dmg-builder: 26.3.6(electron-builder-squirrel-windows@25.1.8)
+      dmg-builder: 26.4.0(electron-builder-squirrel-windows@25.1.8)
       dotenv: 16.6.1
       dotenv-expand: 11.0.7
       ejs: 3.1.10
-      electron-builder-squirrel-windows: 25.1.8(dmg-builder@26.3.6)
+      electron-builder-squirrel-windows: 25.1.8(dmg-builder@26.4.0)
       electron-publish: 25.1.7
       form-data: 4.0.4
       fs-extra: 10.1.0
@@ -5938,7 +5938,7 @@ snapshots:
       - bluebird
       - supports-color
 
-  app-builder-lib@26.3.6(dmg-builder@26.3.6)(electron-builder-squirrel-windows@25.1.8):
+  app-builder-lib@26.4.0(dmg-builder@26.4.0)(electron-builder-squirrel-windows@25.1.8):
     dependencies:
       '@develar/schema-utils': 2.6.5
       '@electron/asar': 3.4.1
@@ -5955,11 +5955,11 @@ snapshots:
       chromium-pickle-js: 0.2.0
       ci-info: 4.3.1
       debug: 4.4.3
-      dmg-builder: 26.3.6(electron-builder-squirrel-windows@25.1.8)
+      dmg-builder: 26.4.0(electron-builder-squirrel-windows@25.1.8)
       dotenv: 16.6.1
       dotenv-expand: 11.0.7
       ejs: 3.1.10
-      electron-builder-squirrel-windows: 25.1.8(dmg-builder@26.3.6)
+      electron-builder-squirrel-windows: 25.1.8(dmg-builder@26.4.0)
       electron-publish: 26.3.4
       fs-extra: 10.1.0
       hosted-git-info: 4.1.0
@@ -6492,9 +6492,9 @@ snapshots:
 
   discord-api-types@0.38.32: {}
 
-  dmg-builder@26.3.6(electron-builder-squirrel-windows@25.1.8):
+  dmg-builder@26.4.0(electron-builder-squirrel-windows@25.1.8):
     dependencies:
-      app-builder-lib: 26.3.6(dmg-builder@26.3.6)(electron-builder-squirrel-windows@25.1.8)
+      app-builder-lib: 26.4.0(dmg-builder@26.4.0)(electron-builder-squirrel-windows@25.1.8)
       builder-util: 26.3.4
       fs-extra: 10.1.0
       iconv-lite: 0.6.3
@@ -6545,9 +6545,9 @@ snapshots:
     dependencies:
       jake: 10.9.4
 
-  electron-builder-squirrel-windows@25.1.8(dmg-builder@26.3.6):
+  electron-builder-squirrel-windows@25.1.8(dmg-builder@26.4.0):
     dependencies:
-      app-builder-lib: 25.1.8(dmg-builder@26.3.6)(electron-builder-squirrel-windows@25.1.8)
+      app-builder-lib: 25.1.8(dmg-builder@26.4.0)(electron-builder-squirrel-windows@25.1.8)
       archiver: 5.3.2
       builder-util: 25.1.7
       fs-extra: 10.1.0
@@ -6556,14 +6556,14 @@ snapshots:
       - dmg-builder
       - supports-color
 
-  electron-builder@26.3.6(electron-builder-squirrel-windows@25.1.8):
+  electron-builder@26.4.0(electron-builder-squirrel-windows@25.1.8):
     dependencies:
-      app-builder-lib: 26.3.6(dmg-builder@26.3.6)(electron-builder-squirrel-windows@25.1.8)
+      app-builder-lib: 26.4.0(dmg-builder@26.4.0)(electron-builder-squirrel-windows@25.1.8)
       builder-util: 26.3.4
       builder-util-runtime: 9.5.1
       chalk: 4.1.2
       ci-info: 4.3.1
-      dmg-builder: 26.3.6(electron-builder-squirrel-windows@25.1.8)
+      dmg-builder: 26.4.0(electron-builder-squirrel-windows@25.1.8)
       fs-extra: 10.1.0
       lazy-val: 1.0.5
       simple-update-notifier: 2.0.0
